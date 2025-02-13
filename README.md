@@ -4,7 +4,7 @@ Repository for the [TNY - 360 Robot](https://tny-robotics.com/robots/tny-360) so
 
 ## Source code
 
-Check out the [ESP32](./ESP32/README.md) folder to learn more about the source code.
+Check out the [ESP32](./ESP32) folder to learn more about the source code.
 
 ## 3D Models
 
