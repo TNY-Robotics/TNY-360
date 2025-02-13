@@ -1,15 +1,16 @@
 #pragma once
 #include "menu.hpp"
 
-class ResetMenu : public Menu
+class FactoryResetMenu : public Menu
 {
 public:
-    ResetMenu();
-    ResetMenu(Menu* parent);
-    virtual ~ResetMenu();
+    FactoryResetMenu();
+    FactoryResetMenu(Menu* parent);
+    virtual ~FactoryResetMenu();
 
 protected:
     bool m_resetting = false;
+    bool m_reset_error = false;
 
     virtual void onBack() override;
     virtual void onSelect() override;

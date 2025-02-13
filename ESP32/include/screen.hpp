@@ -34,17 +34,17 @@ typedef struct
  * creates a new screen buffer accessible through `get_screen_info()`
  * @param i2c_bus_handle: the i2c bus handle to use for communication
  */
-void screen_init(const i2c_master_bus_handle_t* i2c_bus_handle);
+esp_err_t screen_init(const i2c_master_bus_handle_t* i2c_bus_handle);
 
 /**
  * Sets all pixels in the screen buffer to `COLOR_BLACK`
  */
-void screen_clear();
+esp_err_t screen_clear();
 
 /** 
  * Transfers the entire screen buffer to the i2c screen
  */
-void screen_upload();
+esp_err_t screen_upload();
 
 /**
  * Returns the screen information, such as data buffer, width, height, etc.

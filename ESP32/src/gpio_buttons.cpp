@@ -11,7 +11,7 @@ void(*onLongPressed[2])() = {NULL, NULL};
 gpio_num_t left_btn_gpio = GPIO_NUM_NC;
 gpio_num_t right_btn_gpio = GPIO_NUM_NC;
 
-void gpio_buttons_init(gpio_num_t left, gpio_num_t right)
+esp_err_t gpio_buttons_init(gpio_num_t left, gpio_num_t right)
 {
     left_btn_gpio = left;
     right_btn_gpio = right;
@@ -22,10 +22,10 @@ void gpio_buttons_init(gpio_num_t left, gpio_num_t right)
     io_conf.pin_bit_mask = (1ULL << left) | (1ULL << right);
     io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE; // should have external pull-down
     io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
-    gpio_config(&io_conf);
+    return gpio_config(&io_conf);
 }
 
-void gpio_buttons_scan()
+esp_err_t gpio_buttons_scan()
 {
     bool btn_states_now[2] = {
         (bool) gpio_get_level(right_btn_gpio),
@@ -57,6 +57,8 @@ void gpio_buttons_scan()
         btn_states[i] = btn_states_now[i];
         long_pressed[i] &= btn_states[i];
     }
+
+    return ESP_OK;
 }
 
 void gpio_buttons_set_cb(void(*onLeftPressed)(), void(*onLeftLongPressed)(), void(*onRightPressed)(), void(*onRightLongPressed)())

@@ -1,9 +1,9 @@
 #include "screen.hpp"
 #include <memory.h>
-#include "esp_lcd_io_i2c.h"
-#include "esp_lcd_panel_sh1106.h"
-#include "esp_lcd_panel_io.h"
-#include "esp_lcd_panel_ops.h"
+#include <esp_lcd_io_i2c.h>
+#include <esp_lcd_panel_sh1106.h>
+#include <esp_lcd_panel_io.h>
+#include <esp_lcd_panel_ops.h>
 
 #define SH1106_PAGE_HEIGHT 8
 
@@ -38,7 +38,7 @@ void screen_to_buffer(screen_info_t* screen_info, uint8_t* buffer_data)
     }
 }
 
-void screen_init(const i2c_master_bus_handle_t* i2c_bus_handle)
+esp_err_t screen_init(const i2c_master_bus_handle_t* i2c_bus_handle)
 {
     esp_lcd_panel_io_handle_t io_handle = NULL;
     esp_lcd_panel_io_i2c_config_t io_config = ESP_SH1106_DEFAULT_IO_CONFIG;
@@ -62,18 +62,22 @@ void screen_init(const i2c_master_bus_handle_t* i2c_bus_handle)
     // Clear all screen data and upload it
     screen_clear();
     screen_upload();
+
+    return ESP_OK;
 }
 
-void screen_clear()
+esp_err_t screen_clear()
 {
     memset(screen_data, 0, SH1106_HEIGHT * SH1106_WIDTH);
     memset(buffer_data, 0, SH1106_BUFFER_SIZE);
+    return ESP_OK;
 }
 
-void screen_upload()
+esp_err_t screen_upload()
 {
     screen_to_buffer(&screen_info, buffer_data);
     ESP_ERROR_CHECK(esp_lcd_panel_draw_bitmap(panel_handle, 0, 0, SH1106_WIDTH, SH1106_HEIGHT, buffer_data));
+    return ESP_OK;
 }
 
 screen_info_t* get_screen_info()

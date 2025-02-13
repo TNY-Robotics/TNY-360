@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <esp_err.h>
 
 class Menu
 {
@@ -37,6 +38,6 @@ protected:
     virtual void onUpdate() = 0;
 };
 
-void menu_init();
+esp_err_t menu_init();
 Menu* get_current_menu();
 void set_current_menu(Menu* menu);

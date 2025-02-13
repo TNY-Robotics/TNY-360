@@ -1,6 +1,6 @@
 #pragma once
+#include <freertos/FreeRTOS.h>
 #include "menu.hpp"
-#include "freertos/FreeRTOS.h"
 
 class EyesMenu : public Menu
 {

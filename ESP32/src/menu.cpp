@@ -1,7 +1,10 @@
 #include "menu.hpp"
 #include "menulist.hpp"
-#include "menus/reset.hpp"
+#include "menus/factory_reset.hpp"
 #include "menus/eyes.hpp"
+#include "menus/wifi_status.hpp"
+#include "menus/wifi_connect.hpp"
+#include "menus/wifi_disconnect.hpp"
 #include "screen.hpp"
 #include "draw.hpp"
 
@@ -82,6 +85,10 @@ MenuList* tests_menu = new MenuList("Tests", main_menu);
 MenuList* about_menu = new MenuList("About", main_menu);
 MenuList* bluetooth_menu = new MenuList("Bluetooth", network_menu);
 MenuList* wifi_menu = new MenuList("Wi-Fi", network_menu);
+WifiStatusMenu* wifi_status_menu = new WifiStatusMenu(wifi_menu);
+WifiConnectMenu* wifi_connect_menu = new WifiConnectMenu(wifi_menu);
+WifiDisconnectMenu* wifi_disconnect_menu = new WifiDisconnectMenu(wifi_menu);
+
 
 Menu* main_menu_childs[] = {
     settings_menu,
@@ -90,20 +97,27 @@ Menu* main_menu_childs[] = {
     about_menu
 };
 Menu* settings_menu_childs[] = {
-    new ResetMenu(settings_menu)
+    new FactoryResetMenu(settings_menu)
 };
 Menu* network_menu_childs[] = {
     bluetooth_menu,
     wifi_menu
 };
+Menu* wifi_menu_childs[] = {
+    wifi_status_menu,
+    wifi_connect_menu,
+    wifi_disconnect_menu
+};
 
-void menu_init()
+esp_err_t menu_init()
 {
     eyes_menu->setMainMenu(main_menu);
     main_menu->setItems(main_menu_childs, 4);
     settings_menu->setItems(settings_menu_childs, 1);
     network_menu->setItems(network_menu_childs, 2);
+    wifi_menu->setItems(wifi_menu_childs, 3);
     set_current_menu(eyes_menu);
+    return ESP_OK;
 }
 
 Menu* get_current_menu()

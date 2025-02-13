@@ -1,9 +1,13 @@
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <esp_log.h>
 #include "gpio_buttons.hpp"
-#include "draw.hpp"
+#include "storage.hpp"
 #include "screen.hpp"
-#include "menulist.hpp"
+#include "draw.hpp"
+#include "menu.hpp"
+#include "wifi.hpp"
+#include "websocket.hpp"
 
 #define BTN_LEFT_GPIO GPIO_NUM_45
 #define BTN_RIGHT_GPIO GPIO_NUM_46
@@ -33,19 +37,24 @@ void app_main(void)
     i2c_master_bus_handle_t i2c_bus_handle = NULL;
     ESP_ERROR_CHECK(i2c_new_master_bus(&bus_config, &i2c_bus_handle));
 
-    screen_init(&i2c_bus_handle);
-    gpio_buttons_init(BTN_LEFT_GPIO, BTN_RIGHT_GPIO);
+    ESP_ERROR_CHECK(screen_init(&i2c_bus_handle));
+    ESP_ERROR_CHECK(gpio_buttons_init(BTN_LEFT_GPIO, BTN_RIGHT_GPIO));
     gpio_buttons_set_cb(
         []() { get_current_menu()->onLeftPressed(); },
         []() { get_current_menu()->onLeftLongPressed(); },
         []() { get_current_menu()->onRightPressed(); },
         []() { get_current_menu()->onRightLongPressed(); }
     );
-    menu_init();
+    ESP_ERROR_CHECK(menu_init());
+    ESP_ERROR_CHECK(storage_init());
+
+    ESP_ERROR_CHECK(wifi_init());
+    wifi_connect(); // don't check errors : maybe first startup and no wifi configured
     
     while (1)
     {
-        gpio_buttons_scan();
+        esp_err_t err = gpio_buttons_scan();
+        if (err != ESP_OK) ESP_LOGE("main", "Error scanning buttons: %d", err);
 
         get_current_menu()->update();
         get_current_menu()->render();
