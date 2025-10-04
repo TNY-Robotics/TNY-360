@@ -1,0 +1,10 @@
+# Websocket support
+CONFIG_HTTPD_WS_SUPPORT=y
+
+# Bluetooth support
+CONFIG_BT_ENABLED=y
+CONFIG_BT_NIMBLE_ENABLED=y
+CONFIG_BT_NIMBLE_50_FEATURE_SUPPORT=n
+
+# fix for long headers on android captive portal
+CONFIG_HTTPD_MAX_REQ_HDR_LEN=1024
