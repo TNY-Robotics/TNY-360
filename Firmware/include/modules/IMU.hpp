@@ -33,11 +33,18 @@ namespace IMU
     // Error GetOrientation(Quaternion* outOrientation);
 
     /**
-     * @brief Retrieves the current angular velocity from the IMU.
+     * @brief Retrieves the calibrated angular velocity from the IMU.
      * @param outAngularVelocity Pointer to store the angular velocity as a Vector3.
      * @return Error code indicating success or type of failure.
      */
     Error GetAngularVelocity(Vec3f* outAngularVelocity);
+
+    /**
+     * @brief Retrieves the raw angular velocity from the IMU.
+     * @param outAngularVelocity Pointer to store the angular velocity as a Vector3.
+     * @return Error code indicating success or type of failure.
+     */
+    Error GetAngularVelocityRaw(Vec3f* outAngularVelocity);
 
     /**
      * @brief Retrieves the current linear acceleration from the IMU.
@@ -57,4 +64,12 @@ namespace IMU
      * @return A float between 0.0 and 1.0 indicating calibration progress.
      */
     float getCalibrationProgress();
+
+    /**
+     * @brief Internal update task for IMU data acquisition.
+     * @param pvParams Task parameters.
+     * @note YOU SHOULD NOT CALL THIS FUNCTION DIRECTLY.
+     * @return void.
+     */
+    void _update_task(void* pvParams);
 }

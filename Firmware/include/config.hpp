@@ -3,7 +3,7 @@
 #include <driver/gpio.h>
 
 /** COMPILATION FLAGS **/
-#define DEBUG_MODE 1  // 1 to enable debug logs, 0 to disable
+#define DEBUG_MODE 1  // 1 to enable debug logs and behaviors, 0 to disable
 
 
 /** LOGGING **/
@@ -11,7 +11,6 @@
 constexpr uint8_t LOG_MAX_LINES = 10;
 // Maximum length of each log message
 constexpr uint8_t LOG_MAX_MSG_LEN = 128;
-
 
 /** FILESYSTEM **/
 // Maximum path length for file operations
@@ -40,9 +39,12 @@ constexpr uint8_t PROTOCOL_MAX_PENDING_CALLS = 16;
 
 
 /** I2C **/
-// I2C GPIO pins
-constexpr gpio_num_t I2C_SDA_GPIO = GPIO_NUM_47;
-constexpr gpio_num_t I2C_SCL_GPIO = GPIO_NUM_21;
+// Primary I2C GPIO pins (for critical modules, like sensors)
+constexpr gpio_num_t I2C_PRIMARY_SDA_GPIO_NUM = GPIO_NUM_47;
+constexpr gpio_num_t I2C_PRIMARY_SCL_GPIO_NUM = GPIO_NUM_21;
+// Secondary I2C GPIO pins (for less critical modules, like screens)
+constexpr gpio_num_t I2C_SECONDARY_SDA_GPIO_NUM = GPIO_NUM_38;
+constexpr gpio_num_t I2C_SECONDARY_SCL_GPIO_NUM = GPIO_NUM_45;
 
 
 /** Buttons **/
@@ -52,6 +54,13 @@ constexpr uint16_t BTN_LONG_PRESS_MS = 500; // ms
 // Buttons polling interval in milliseconds
 constexpr uint16_t BTN_POLL_INT_MS = 50; // ms
 
+/** Timer management **/
+// Main timer frequency in Hz
+constexpr uint16_t MAIN_TIMER_FREQUENCY_HZ = 800;
+// NOTE : 800Hz is chosen because we need to sample 16 channels at 50Hz (for motors + sensors),
+//        so we need at least 16*50 = 800 updates per second.
+constexpr uint16_t SECONDARY_FREQUENCY_HZ = 50; // 50Hz for slower updates (imu, motors, etc)
+constexpr uint16_t TIMER_DIVIDER_SECONDARY = MAIN_TIMER_FREQUENCY_HZ / SECONDARY_FREQUENCY_HZ;
 
 /** Analog scanner **/
 // GPIO pins for the 4-bit multiplexer select lines
@@ -59,8 +68,6 @@ constexpr gpio_num_t SCANNER_SLCT_PIN1 = GPIO_NUM_39;
 constexpr gpio_num_t SCANNER_SLCT_PIN2 = GPIO_NUM_40;
 constexpr gpio_num_t SCANNER_SLCT_PIN3 = GPIO_NUM_41;
 constexpr gpio_num_t SCANNER_SLCT_PIN4 = GPIO_NUM_42;
-// Analog scanner update interval in milliseconds
-constexpr uint16_t SCANNER_UPDT_INT_MS = 20; // ms
 
 
 /** IMU **/
@@ -68,11 +75,15 @@ constexpr uint16_t SCANNER_UPDT_INT_MS = 20; // ms
 constexpr uint8_t IMU_I2C_ADDR = 0x68;
 // I2C clock speed for IMU communication
 constexpr uint32_t IMU_I2C_CLOCK = 100000; // 100kHz, could be up to 400kHz but i'm not 100% confident in the wiring
-// IMU update interval in milliseconds
-constexpr uint16_t IMU_UPDT_INT_MS = 20; // ms
 // number of samples to gather for calibration
 constexpr uint16_t IMU_NB_CALIB_SAMPLES = 100;
+// NOTE : Internal robot imu update is driven by the main timer at 50Hz
 
-
-/** Motors **/
-constexpr uint16_t MOTORS_UPDT_INT_MS = 20; // ms
+/** Motor **/
+// I2C address for the motor driver (PCA9685)
+constexpr uint8_t MOTOR_DRIVER_I2C_ADDR = 0x40;
+// I2C clock speed for motor driver communication
+constexpr uint32_t MOTOR_DRIVER_I2C_CLOCK = 100000; // 100kHz, could be up to 400kHz but i'm not 100% confident in the wiring
+// PWM frequency for the motor driver (standard servo frequency)
+constexpr uint16_t MOTOR_DRIVER_PWM_FREQUENCY_HZ = 50; // 50Hz
+// NOTE : Internal robot motor update is driven by the main timer at 50Hz

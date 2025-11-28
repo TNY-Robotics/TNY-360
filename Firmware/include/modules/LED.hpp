@@ -93,4 +93,12 @@ namespace LED
      * @return Error code.
      */
     Error GetColors(const Id ids[], Color* outColors, uint8_t count);
+
+    /**
+     * @brief Show error code on first LED as a color.
+     * @param errCode Error code to display.
+     * @note This function enters an infinite loop, displaying the error code.
+     * @return void.
+     */
+    void LoopErrorCode(uint8_t errCode);
 }

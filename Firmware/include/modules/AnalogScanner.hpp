@@ -94,4 +94,12 @@ namespace AnalogScanner
     * @return Error code indicating success or failure.
     */
     Error GetRawValues(const Id* ids, int* outRawValues, uint8_t count);
+    
+    /**
+     * @brief Internal update task for analog scanning.
+     * @param pvParams Task parameters.
+     * @note YOU SHOULD NOT CALL THIS FUNCTION DIRECTLY.
+     * @return void.
+     */
+    void _update_task(void *pvParams);
 }

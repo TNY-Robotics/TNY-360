@@ -8,9 +8,9 @@
 
 namespace AnalogScanner
 {
-    bool initialized = false;
-    NVS::Handle *nvsHandle = nullptr;
-    adc_oneshot_unit_handle_t adc_handle = nullptr;
+    static bool initialized = false;
+    static NVS::Handle *nvsHandle = nullptr;
+    static adc_oneshot_unit_handle_t adc_handle = nullptr;
 
     int min_raw_values[static_cast<uint8_t>(Id::Count)] = { 0 };         // raw min value, for calibration
     int max_raw_values[static_cast<uint8_t>(Id::Count)] = { 0 };         // raw max value, for calibration
@@ -18,6 +18,8 @@ namespace AnalogScanner
     float max_calibrated_values[static_cast<uint8_t>(Id::Count)] = { 0.0f };  // calibrated max value, for calibration
     int last_raw_values[static_cast<uint8_t>(Id::Count)] = { 0 };        // last raw value read by the scan task
     float last_calibrated_values[static_cast<uint8_t>(Id::Count)] = { 0.0f }; // last calibrated value read by the scan task
+
+    static uint8_t update_current_channel = 0;
     
     Error select(uint8_t index)
     {
@@ -30,33 +32,6 @@ namespace AnalogScanner
             return Error::Unknown;
         }
         return Error::Ok;
-    }
-
-    void update_task(void *pvParameters)
-    {
-        TickType_t start_tick = xTaskGetTickCount();
-        TickType_t end_tick = xTaskGetTickCount();
-        while (true)
-        {
-            start_tick = xTaskGetTickCount();
-            for (int i = 0; i < 16; i++)
-            {
-                select(i);
-                vTaskDelay(pdMS_TO_TICKS(1));
-                if (adc_oneshot_read(adc_handle, ADC_CHANNEL_1, &last_raw_values[i]) != ESP_OK)
-                {
-                    Log::Add(Log::Level::Error, "AnalogScanner: Failed to read ADC value");
-                    // FIXME : should we continue or break here?
-                }
-                last_calibrated_values[i] = map<float>(
-                    last_raw_values[i], min_raw_values[i],
-                    max_raw_values[i], min_calibrated_values[i],
-                    max_calibrated_values[i]
-                );
-            }
-            end_tick = xTaskGetTickCount();
-            vTaskDelay(pdMS_TO_TICKS(SCANNER_UPDT_INT_MS) - (end_tick - start_tick));
-        }
     }
 
     Error Init()
@@ -106,13 +81,10 @@ namespace AnalogScanner
             Log::Add(Log::Level::Error, "AnalogScanner: Failed to configure ADC oneshot channel");
             return Error::Unknown;
         }
+        // FIXME : Should check if above configuration is valid (voltages, attenuation, etc.)
 
-        // launch update task
-        if (xTaskCreate(update_task, "AnalogScanner::update_task", 2048, nullptr, 5, nullptr) != pdPASS)
-        {
-            Log::Add(Log::Level::Error, "AnalogScanner: Failed to create update task");
-            return Error::Unknown;
-        }
+        // select initial channel
+        select(update_current_channel); // 0
 
         initialized = true;
         return Error::Ok;
@@ -192,5 +164,23 @@ namespace AnalogScanner
             outRawValues[i] = last_raw_values[static_cast<uint8_t>(ids[i])];
         }
         return Error::Ok;
+    }
+
+    void _update_task(void *pvParams)
+    {
+        if (adc_oneshot_read(adc_handle, ADC_CHANNEL_1, &last_raw_values[update_current_channel]) != ESP_OK)
+        {
+            Log::Add(Log::Level::Error, "AnalogScanner: Failed to read ADC value");
+            // TODO : should we continue or break here?
+        }
+        last_calibrated_values[update_current_channel] = map<float>(
+            last_raw_values[update_current_channel], min_raw_values[update_current_channel],
+            max_raw_values[update_current_channel], min_calibrated_values[update_current_channel],
+            max_calibrated_values[update_current_channel]
+        );
+        
+        // select next index (lets time to settle before next update)
+        update_current_channel = (update_current_channel + 1) % static_cast<uint8_t>(Id::Count);
+        select(update_current_channel);
     }
 }

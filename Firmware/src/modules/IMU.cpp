@@ -8,18 +8,20 @@
 
 namespace IMU
 {
-    NVS::Handle* nvsHandle = nullptr;
-    mpu6050_handle_t mpu_handle;
-    mpu6050_gyro_value_t gyro_value;
-    mpu6050_accel_value_t acce_value;
-    mpu6050_temp_value_t temp_value;
+    static NVS::Handle* nvsHandle = nullptr;
+    static mpu6050_handle_t mpu_handle;
+    static mpu6050_gyro_value_t gyro_value;
+    static mpu6050_accel_value_t acce_value;
+    static mpu6050_temp_value_t temp_value;
 
-    mpu6050_gyro_value_t gyro_calibrated_mean;
-    mpu6050_gyro_value_t* gyro_calib_samples;
-    uint8_t calib_sample_index;
-    bool calibrating = false;
+    static mpu6050_gyro_value_t gyro_calibrated_mean;
+    static mpu6050_gyro_value_t* gyro_calib_samples;
+    static uint8_t calib_sample_index;
+    static bool calibrating = false;
 
-    Callback on_calib_done_cb = nullptr;
+    static uint8_t temp_counter = 0;
+
+    static Callback on_calib_done_cb = nullptr;
 
     void on_calib_samples_gathered()
     {
@@ -52,44 +54,6 @@ namespace IMU
         }
     }
 
-    void update_task(void* pvParameters)
-    {
-        TickType_t start_tick = xTaskGetTickCount();
-        TickType_t end_tick = xTaskGetTickCount();
-
-        uint8_t counter = 0;
-
-        while (true)
-        {
-            start_tick = xTaskGetTickCount();
-            
-            // get the values
-            if (mpu6050_get_gyro(mpu_handle, &gyro_value) != ESP_OK)
-            {
-                Log::Add(Log::Level::Error, "IMU: Failed to get gyro data");
-            }
-            if (mpu6050_get_accel(mpu_handle, &acce_value) != ESP_OK)
-            {
-                Log::Add(Log::Level::Error, "IMU: Failed to get accel data");
-            }
-
-            if (counter++ == (1000 / 20)) // read temp less often (assuming IMU_UPDT_INT_MS = 20 for 1Hz update)
-            {
-                ESP_ERROR_CHECK_WITHOUT_ABORT(mpu6050_get_temp(mpu_handle, &temp_value));
-                counter = 0;
-            }
-            if (calibrating)
-            {
-                gyro_calib_samples[calib_sample_index++] = gyro_value;
-                if (calib_sample_index == IMU_NB_CALIB_SAMPLES)
-                    on_calib_samples_gathered();
-            }
-
-            end_tick = xTaskGetTickCount();
-            vTaskDelay(pdMS_TO_TICKS(IMU_UPDT_INT_MS) - (end_tick - start_tick));
-        }
-    }
-
     Error Init()
     {
         if (I2C::Init() != Error::Ok) {
@@ -107,12 +71,12 @@ namespace IMU
             gyro_calibrated_mean = { 0, 0, 0 };
         }
 
-        // create MPU6050 handle
+        // create MPU6050 handle (primary I2C bus)
         mpu6050_info_t infos {
             .address = IMU_I2C_ADDR,
             .clock_speed = IMU_I2C_CLOCK
         };
-        if (mpu6050_create(I2C::handle, infos, &mpu_handle) != ESP_OK)
+        if (mpu6050_create(I2C::handle_primary, infos, &mpu_handle) != ESP_OK)
         {
             Log::Add(Log::Level::Error, "IMU: Failed to create MPU6050 handle");
             return Error::Unknown;
@@ -131,13 +95,6 @@ namespace IMU
         if (mpu6050_wake_up(mpu_handle) != ESP_OK)
         {
             Log::Add(Log::Level::Error, "IMU: Failed to wake up MPU6050");
-            return Error::Unknown;
-        }
-        
-        // launch update task
-        if (xTaskCreate(update_task, "IMU::update_task", 2048, nullptr, 5, nullptr) != pdPASS)
-        {
-            Log::Add(Log::Level::Error, "IMU: Failed to create update task");
             return Error::Unknown;
         }
 
@@ -172,6 +129,14 @@ namespace IMU
         return Error::Ok;
     }
 
+    Error GetAngularVelocityRaw(Vec3f* outAngularVelocity)
+    {
+        outAngularVelocity->x = gyro_value.gyro_x;
+        outAngularVelocity->y = gyro_value.gyro_y;
+        outAngularVelocity->z = gyro_value.gyro_z;
+        return Error::Ok;
+    }
+
     Error GetLinearAcceleration(Vec3f* outLinearAcceleration)
     {
         outLinearAcceleration->x = acce_value.accel_x;
@@ -190,5 +155,29 @@ namespace IMU
         if (!calibrating)
             return 1.0f;
         return (float)calib_sample_index / (float)IMU_NB_CALIB_SAMPLES;
+    }
+    
+    void _update_task(void* pvParams)
+    {
+        if (mpu6050_get_gyro(mpu_handle, &gyro_value) != ESP_OK)
+        {
+            Log::Add(Log::Level::Error, "IMU: Failed to get gyro data");
+        }
+        if (mpu6050_get_accel(mpu_handle, &acce_value) != ESP_OK)
+        {
+            Log::Add(Log::Level::Error, "IMU: Failed to get accel data");
+        }
+
+        if (temp_counter++ == (1000 / 20)) // read temp less often (assuming 50Hz update for 1Hz temp)
+        {
+            ESP_ERROR_CHECK_WITHOUT_ABORT(mpu6050_get_temp(mpu_handle, &temp_value));
+            temp_counter = 0;
+        }
+        if (calibrating)
+        {
+            gyro_calib_samples[calib_sample_index++] = gyro_value;
+            if (calib_sample_index == IMU_NB_CALIB_SAMPLES)
+                on_calib_samples_gathered();
+        }
     }
 }

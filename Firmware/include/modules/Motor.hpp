@@ -171,4 +171,12 @@ namespace Motor
     * @return Error code.
     */
     Error GetCurrentAngles(const Id* ids, float* outAngles, uint8_t count);
+
+    /**
+     * @brief Internal update task for motor control.
+     * @param pvParams Task parameters.
+     * @note YOU SHOULD NOT CALL THIS FUNCTION DIRECTLY.
+     * @return void.
+     */
+    void _update_task(void *pvParams);
 }

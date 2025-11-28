@@ -33,7 +33,7 @@ void Log::Add(Log::Level level, const char* fmt, ...)
     // Log the message to serial for immediate feedback
     // This is useful for debugging during development
 
-#ifdef DEBUG_MODE
+#if DEBUG_MODE == 1
     const char* levelStr = LevelToString(level);
     printf("[%s] %s\n", levelStr, message);
 #endif

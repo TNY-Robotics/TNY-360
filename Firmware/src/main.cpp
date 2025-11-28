@@ -12,6 +12,7 @@
 #include "modules/Sound.hpp"
 #include "modules/Power.hpp"
 #include "modules/LED.hpp"
+#include "modules/Timer.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,22 +29,22 @@ void app_main()
         Log::Add(Log::Level::Info, "LED Module initialized");
     }
 
-    LED::SetColor(0, {64, 32, 0}, 0.2f); // Set LED 0 to orange as startup indicator
+    LED::SetColor(0, {64, 32, 0}, 0.2f); // Set LED 0 to low orange as startup indicator
 
     // Initialize NVS
     Log::Add(Log::Level::Info, "Initializing NVS...");
     if (Error err = NVS::Init(); err != Error::Ok) {
         Log::Add(Log::Level::Error, "NVS Init failed with error: %d", static_cast<uint8_t>(err));
+        LED::LoopErrorCode(0xaa); // 0b10101010
     } else {
         Log::Add(Log::Level::Info, "NVS initialized");
     }
-
-    // TODO : Use 800Hz timer for analog scanner sampling + motor and imu management
 
     // Initialize Analog Scanner
     Log::Add(Log::Level::Info, "Initializing Analog Scanner...");
     if (Error err = AnalogScanner::Init(); err != Error::Ok) {
         Log::Add(Log::Level::Error, "Analog Scanner Init failed with error: %d", static_cast<uint8_t>(err));
+        LED::LoopErrorCode(0x33); // 0b001100110011
     } else {
         Log::Add(Log::Level::Info, "Analog Scanner initialized");
     }
@@ -52,6 +53,7 @@ void app_main()
     Log::Add(Log::Level::Info, "Initializing Pressure Sensor...");
     if (Error err = Pressure::Init(); err != Error::Ok) {
         Log::Add(Log::Level::Error, "Pressure Sensor Init failed with error: %d", static_cast<uint8_t>(err));
+        LED::LoopErrorCode(0x0f); // 0b00001111
     } else {
         Log::Add(Log::Level::Info, "Pressure Sensor initialized");
     }
@@ -60,6 +62,7 @@ void app_main()
     Log::Add(Log::Level::Info, "Initializing Sound Module...");
     if (Error err = Sound::Init(); err != Error::Ok) {
         Log::Add(Log::Level::Error, "Sound Module Init failed with error: %d", static_cast<uint8_t>(err));
+        LED::LoopErrorCode(0xf0); // 0b11110000
     } else {
         Log::Add(Log::Level::Info, "Sound Module initialized");
     }
@@ -68,6 +71,7 @@ void app_main()
     Log::Add(Log::Level::Info, "Initializing I2C...");
     if (Error err = I2C::Init(); err != Error::Ok) {
         Log::Add(Log::Level::Error, "I2C Init failed with error: %d", static_cast<uint8_t>(err));
+        LED::LoopErrorCode(0xe7); // 0b11100111
     } else {
         Log::Add(Log::Level::Info, "I2C initialized");
     }
@@ -76,14 +80,17 @@ void app_main()
     Log::Add(Log::Level::Info, "Initializing IMU...");
     if (Error err = IMU::Init(); err != Error::Ok) {
         Log::Add(Log::Level::Error, "IMU Init failed with error: %d", static_cast<uint8_t>(err));
+        LED::LoopErrorCode(0xac); // 0b10101100
     } else {
         Log::Add(Log::Level::Info, "IMU initialized");
     }
+
 
     // Initialize Motor Control
     Log::Add(Log::Level::Info, "Initializing Motor Control...");
     if (Error err = Motor::Init(); err != Error::Ok) {
         Log::Add(Log::Level::Error, "Motor Control Init failed with error: %d", static_cast<uint8_t>(err));
+        LED::LoopErrorCode(0x57); // 0b01010111
     } else {
         Log::Add(Log::Level::Info, "Motor Control initialized");
     }
@@ -92,6 +99,7 @@ void app_main()
     Log::Add(Log::Level::Info, "Initializing Power Management...");
     if (Error err = Power::Init(); err != Error::Ok) {
         Log::Add(Log::Level::Error, "Power Management Init failed with error: %d", static_cast<uint8_t>(err));
+        LED::LoopErrorCode(0x39); // 0b00111001
     } else {
         Log::Add(Log::Level::Info, "Power Management initialized");
     }
@@ -110,7 +118,6 @@ void app_main()
                     return;
                 }
                 Log::Add(Log::Level::Info, "WebServer and websocket started");
-                LED::SetColor(0, {0, 16, 0}, 0.2f); // Set LED 0 to green as a test
             },
             [](Error err) { // on failure, start AP
                 Log::Add(Log::Level::Info, "Failed to connect to Wi-Fi, starting AP...");
@@ -122,7 +129,6 @@ void app_main()
                             return;
                         }
                         Log::Add(Log::Level::Info, "Captive portal ready");
-                        LED::SetColor(0, {0, 0, 16}, 0.2f); // Set LED 0 to green as a test
                     },
                     [](Error err) { // on failure, log error
                         Log::Add(Log::Level::Error, "Failed to start AP, this might be a serious issue.");
@@ -131,7 +137,21 @@ void app_main()
             }
         );
     }
-    else Log::Add(Log::Level::Error, "Wi-Fi Init failed with error: %d", static_cast<uint8_t>(err));
+    else {
+        Log::Add(Log::Level::Error, "Wi-Fi Init failed with error: %d", static_cast<uint8_t>(err));
+        LED::LoopErrorCode(0x4e); // 0b01001110
+    }
+
+    // Initialize Main Timer (starts main lifecycle tasks like IMU updates, motor control, etc.)
+    Log::Add(Log::Level::Info, "Initializing Main Timer...");
+    if (Error err = Timer::Init(); err != Error::Ok) {
+        Log::Add(Log::Level::Error, "Main Timer Init failed with error: %d", static_cast<uint8_t>(err));
+        LED::LoopErrorCode(0x69); // 0b01101001
+    } else {
+        Log::Add(Log::Level::Info, "Main Timer initialized");
+    }
+
+    LED::SetColor(0, {0, 64, 0}, 0.2f); // Set LED 0 to low green to indicate ready state
 
     Log::Add(Log::Level::Info, "Robot initialization complete.");
 }
