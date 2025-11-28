@@ -6,6 +6,7 @@ enum class Error: uint8_t {
     Ok = 0,            // No error
     Unknown,           // Used for unspecified errors
     InvalidParameters, // Used when function parameters are invalid
+    InvalidState,      // Used when the system is in an invalid state for the requested operation
     NotFound,          // Used when a requested item is not found
     NoMemory,          // Used when memory allocation fails or memory is insufficient
 };

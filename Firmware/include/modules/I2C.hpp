@@ -4,11 +4,11 @@
 
 namespace I2C
 {
-    static i2c_master_bus_handle_t handle = nullptr;
+    i2c_master_bus_handle_t handle = nullptr;
 
     /**
      * @brief Initializes the I2C module.
      * @return Error code indicating success or failure.
      */
-    static Error Init();
+    Error Init();
 }

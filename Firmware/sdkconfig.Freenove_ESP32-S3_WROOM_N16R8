@@ -2333,6 +2333,22 @@ CONFIG_LITTLEFS_MALLOC_STRATEGY_DEFAULT=y
 CONFIG_LITTLEFS_ASSERTS=y
 # CONFIG_LITTLEFS_MMAP_PARTITION is not set
 # end of LittleFS
+
+#
+# INA226
+#
+
+#
+# MPU6050
+#
+
+#
+# PCA9685
+#
+
+#
+# SH1106 ESP-IDF Driver
+#
 # end of Component config
 
 # CONFIG_IDF_EXPERIMENTAL_FEATURES is not set

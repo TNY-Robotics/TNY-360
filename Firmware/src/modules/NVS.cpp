@@ -3,7 +3,7 @@
 
 namespace NVS
 {
-    static bool initialized = false;
+    bool initialized = false;
 
     class HandleImpl : public Handle
     {

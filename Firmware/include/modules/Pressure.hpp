@@ -16,14 +16,14 @@ namespace Pressure
     * @brief Initializes the Pressure module.
     * @return Error code indicating success or failure.
     */
-    static Error Init();
+    Error Init();
 
     /**
     * @brief Calibrates the Pressure module.
     * @param onDone Callback to be called when calibration is done.
     * @return Error code indicating success or failure.
     */
-    static Error Calibrate(Callback onDone);
+    Error Calibrate(Callback onDone);
 
     /**
     * @brief Gets the pressure for a specific sensor.
@@ -31,14 +31,14 @@ namespace Pressure
     * @param outPressure Pointer to store the pressure value.
     * @return Error code indicating success or failure.
     */
-    static Error GetPressure(Id id, float* outPressure);
+    Error GetPressure(Id id, float* outPressure);
 
     /**
     * @brief Gets all pressure values.
     * @param outPressures Pointer to array to store pressure values.
     * @return Error code indicating success or failure.
     */
-    static Error GetPressures(float* outPressures);
+    Error GetPressures(float* outPressures);
 
     /**
     * @brief Gets pressure values for specific sensor IDs.
@@ -47,5 +47,5 @@ namespace Pressure
     * @param count Number of sensor IDs.
     * @return Error code indicating success or failure.
     */
-    static Error GetPressures(const Id* ids, float* outPressures, uint8_t count);
+    Error GetPressures(const Id* ids, float* outPressures, uint8_t count);
 }

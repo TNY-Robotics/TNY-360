@@ -16,12 +16,12 @@ namespace Buttons
     * @brief Initializes the GPIO module.
     * @return Error code indicating success or failure.
     */
-    static Error Init();
+    Error Init();
 
     /**
      * @brief Sets the callback functions for button events.
      * @param callbacks The set of callback functions to be assigned.
      * @return Error code indicating success or failure.
      */
-    static Error SetCallbacks(const CallbackSet& callbacks);
+    Error SetCallbacks(const CallbackSet& callbacks);
 }

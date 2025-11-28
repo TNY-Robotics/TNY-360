@@ -1,3 +1,15 @@
 [submodule "ESP32/components/sh1106-esp-idf"]
 	path = ESP32/components/sh1106-esp-idf
 	url = https://github.com/TNY-Robotics/sh1106-esp-idf.git
+[submodule "Firmware/components/sh1106"]
+	path = Firmware/components/sh1106
+	url = https://github.com/TNY-Robotics/sh1106-esp-idf.git
+[submodule "Firmware/components/mpu6050"]
+	path = Firmware/components/mpu6050
+	url = https://github.com/TNY-Robotics/mpu6050-esp-idf.git
+[submodule "Firmware/components/ina226"]
+	path = Firmware/components/ina226
+	url = https://github.com/TNY-Robotics/ina226-esp-idf.git
+[submodule "Firmware/components/pca9685"]
+	path = Firmware/components/pca9685
+	url = https://github.com/TNY-Robotics/pca9685-esp-idf.git

@@ -29,7 +29,7 @@ namespace Motor
     * @brief Initializes the Motor module.
     * @return Error code indicating success or failure.
     */
-    static Error Init();
+    Error Init();
 
     /**
     * @brief Sets the target angle for a motor.
@@ -37,7 +37,7 @@ namespace Motor
     * @param angle Target angle in degrees.
     * @return Error code.
     */
-    static Error SetAngle(Id id, float angle);
+    Error SetAngle(Id id, float angle);
 
     /**
     * @brief Sets the target angle for a motor over a specified duration.
@@ -46,14 +46,14 @@ namespace Motor
     * @param duration_s Duration in seconds.
     * @return Error code.
     */
-    static Error SetAngle(Id id, float angle, float duration_s);
+    Error SetAngle(Id id, float angle, float duration_s);
 
     /**
     * @brief Sets target angles for all motors.
     * @param angles Array of target angles.
     * @return Error code.
     */
-    static Error SetAngles(const float* angles);
+    Error SetAngles(const float* angles);
 
     /**
     * @brief Sets target angles for all motors over specified durations.
@@ -61,7 +61,7 @@ namespace Motor
     * @param durations_s Array of durations in seconds.
     * @return Error code.
     */
-    static Error SetAngles(const float* angles, const float* durations_s);
+    Error SetAngles(const float* angles, const float* durations_s);
 
     /**
     * @brief Sets target angles for specified motors.
@@ -69,7 +69,7 @@ namespace Motor
     * @param angles Array of target angles.
     * @return Error code.
     */
-    static Error SetAngles(const Id* ids, const float* angles, uint8_t count);
+    Error SetAngles(const Id* ids, const float* angles, uint8_t count);
 
     /**
     * @brief Sets target angles for specified motors over specified durations.
@@ -78,7 +78,7 @@ namespace Motor
     * @param durations_s Array of durations in seconds.
     * @return Error code.
     */
-    static Error SetAngles(const Id* ids, const float* angles, const float* durations_s, uint8_t count);
+    Error SetAngles(const Id* ids, const float* angles, const float* durations_s, uint8_t count);
 
     /**
     * @brief Sets the force level for a motor.
@@ -86,14 +86,14 @@ namespace Motor
     * @param force Desired force level.
     * @return Error code.
     */
-    static Error SetForce(Id id, ForceLevel force);
+    Error SetForce(Id id, ForceLevel force);
 
     /**
     * @brief Sets force levels for all motors.
     * @param forces Array of force levels.
     * @return Error code.
     */
-    static Error SetForces(const ForceLevel* forces);
+    Error SetForces(const ForceLevel* forces);
 
     /**
     * @brief Sets force levels for specified motors.
@@ -101,7 +101,7 @@ namespace Motor
     * @param forces Array of force levels.
     * @return Error code.
     */
-    static Error SetForces(const Id* ids, const ForceLevel* forces, uint8_t count);
+    Error SetForces(const Id* ids, const ForceLevel* forces, uint8_t count);
 
     /**
     * @brief Gets the force level of a motor.
@@ -109,14 +109,14 @@ namespace Motor
     * @param outForce Pointer to store the force level.
     * @return Error code.
     */
-    static Error GetForce(Id id, ForceLevel* outForce);
+    Error GetForce(Id id, ForceLevel* outForce);
 
     /**
     * @brief Gets force levels of all motors.
     * @param outForces Pointer to array to store force levels.
     * @return Error code.
     */
-    static Error GetForces(ForceLevel* outForces);
+    Error GetForces(ForceLevel* outForces);
 
     /**
     * @brief Gets force levels of specified motors.
@@ -124,7 +124,7 @@ namespace Motor
     * @param outForces Pointer to array to store force levels.
     * @return Error code.
     */
-    static Error GetForces(const Id* ids, ForceLevel* outForces, uint8_t count);
+    Error GetForces(const Id* ids, ForceLevel* outForces, uint8_t count);
 
     /**
     * @brief Gets the target angle of a motor.
@@ -132,14 +132,14 @@ namespace Motor
     * @param outAngle Pointer to store the target angle.
     * @return Error code.
     */
-    static Error GetTargetAngle(Id id, float* outAngle);
+    Error GetTargetAngle(Id id, float* outAngle);
 
     /**
     * @brief Gets target angles of all motors.
     * @param outAngles Pointer to array to store target angles.
     * @return Error code.
     */
-    static Error GetTargetAngles(float* outAngles);
+    Error GetTargetAngles(float* outAngles);
 
     /**
     * @brief Gets target angles of specified motors.
@@ -147,7 +147,7 @@ namespace Motor
     * @param outAngles Pointer to array to store target angles.
     * @return Error code.
     */
-    static Error GetTargetAngles(const Id* ids, float* outAngles, uint8_t count);
+    Error GetTargetAngles(const Id* ids, float* outAngles, uint8_t count);
 
     /**
     * @brief Gets the current angle of a motor.
@@ -155,14 +155,14 @@ namespace Motor
     * @param outAngle Pointer to store the current angle.
     * @return Error code.
     */
-    static Error GetCurrentAngle(Id id, float* outAngle);
+    Error GetCurrentAngle(Id id, float* outAngle);
 
     /**
     * @brief Gets current angles of all motors.
     * @param outAngles Pointer to array to store current angles.
     * @return Error code.
     */
-    static Error GetCurrentAngles(float* outAngles);
+    Error GetCurrentAngles(float* outAngles);
 
     /**
     * @brief Gets current angles of specified motors.
@@ -170,5 +170,5 @@ namespace Motor
     * @param outAngles Pointer to array to store current angles.
     * @return Error code.
     */
-    static Error GetCurrentAngles(const Id* ids, float* outAngles, uint8_t count);
+    Error GetCurrentAngles(const Id* ids, float* outAngles, uint8_t count);
 }

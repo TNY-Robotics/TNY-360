@@ -18,7 +18,7 @@ namespace LED
      * @brief Initializes the LED module.
      * @return Error code indicating success or failure.
      */
-    static Error Init();
+    Error Init();
 
     /**
      * @brief Sets the color of a specific LED.
@@ -26,7 +26,7 @@ namespace LED
      * @param color The color to set.
      * @return Error code.
      */
-    static Error SetColor(Id id, Color color);
+    Error SetColor(Id id, Color color);
 
     /**
      * @brief Sets the color of a specific LED for a duration.
@@ -35,14 +35,14 @@ namespace LED
      * @param duration_s Duration in seconds.
      * @return Error code.
      */
-    static Error SetColor(Id id, Color color, float duration_s);
+    Error SetColor(Id id, Color color, float duration_s);
 
     /**
      * @brief Sets colors for all LEDs.
      * @param colors Array of colors.
      * @return Error code.
      */
-    static Error SetColors(const Color colors[]);
+    Error SetColors(const Color colors[]);
 
     /**
      * @brief Sets colors for all LEDs with durations.
@@ -50,7 +50,7 @@ namespace LED
      * @param durations_s Array of durations in seconds.
      * @return Error code.
      */
-    static Error SetColors(const Color colors[], const float durations_s[]);
+    Error SetColors(const Color colors[], const float durations_s[]);
 
     /**
      * @brief Sets colors for specific LEDs.
@@ -58,7 +58,7 @@ namespace LED
      * @param colors Array of colors.
      * @return Error code.
      */
-    static Error SetColors(const Id ids[], const Color colors[], uint8_t count);
+    Error SetColors(const Id ids[], const Color colors[], uint8_t count);
 
     /**
      * @brief Sets colors for specific LEDs with durations.
@@ -67,7 +67,7 @@ namespace LED
      * @param durations_s Array of durations in seconds.
      * @return Error code.
      */
-    static Error SetColors(const Id ids[], const Color colors[], const float durations_s[], uint8_t count);
+    Error SetColors(const Id ids[], const Color colors[], const float durations_s[], uint8_t count);
 
     /**
      * @brief Gets the color of a specific LED.
@@ -75,14 +75,14 @@ namespace LED
      * @param outColor Pointer to output color.
      * @return Error code.
      */
-    static Error GetColor(Id id, Color* outColor);
+    Error GetColor(Id id, Color* outColor);
 
     /**
      * @brief Gets colors of all LEDs.
      * @param outColors Pointer to array of output colors.
      * @return Error code.
      */
-    static Error GetColors(Color* outColors);
+    Error GetColors(Color* outColors);
 
     /**
      * @brief Gets colors of specific LEDs.
@@ -90,5 +90,5 @@ namespace LED
      * @param outColors Pointer to array of output colors.
      * @return Error code.
      */
-    static Error GetColors(const Id ids[], Color* outColors, uint8_t count);
+    Error GetColors(const Id ids[], Color* outColors, uint8_t count);
 }

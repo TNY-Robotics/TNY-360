@@ -11,7 +11,7 @@ namespace Buttons
 
     CallbackSet callbacks = { {nullptr, nullptr}, {nullptr, nullptr}, {nullptr, nullptr} };
 
-    void scan_task(void* pvParameters)
+    void update_task(void* pvParameters)
     {
         bool btn_states_now[2] = {
             (bool) gpio_get_level(BTN_RIGHT_PIN),
@@ -56,7 +56,7 @@ namespace Buttons
         }
     }
 
-    static Error Init()
+    Error Init()
     {
         gpio_config_t io_conf;
         io_conf.intr_type = GPIO_INTR_DISABLE;
@@ -71,16 +71,16 @@ namespace Buttons
             return Error::Unknown;
         }
 
-        if (xTaskCreate(scan_task, "GPIO Scan Task", 2048, nullptr, tskIDLE_PRIORITY + 1, nullptr) != pdPASS)
+        if (xTaskCreate(update_task, "Buttons::update_task", 2048, nullptr, tskIDLE_PRIORITY + 1, nullptr) != pdPASS)
         {
-            Log::Add(Log::Level::Error, "GPIO: Failed to create GPIO scan task");
+            Log::Add(Log::Level::Error, "GPIO: Failed to create GPIO update task");
             return Error::Unknown;
         }
 
         return Error::Ok;
     }
 
-    static Error SetCallbacks(const CallbackSet& cb)
+    Error SetCallbacks(const CallbackSet& cb)
     {
         callbacks = cb;
         return Error::Ok;

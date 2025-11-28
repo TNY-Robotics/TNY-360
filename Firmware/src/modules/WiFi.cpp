@@ -16,26 +16,26 @@
 
 namespace WiFi
 {
-    static NVS::Handle* nvs_handle = nullptr;
+    NVS::Handle* nvs_handle = nullptr;
 
-    static bool initialized = false;
-    static bool connected = false;
-    static bool ap_started = false;
-    static char ip_address[16] = {0};
-    static char mac_address[18] = {0};
-    static esp_netif_t* sta_netif = nullptr;
-    static esp_netif_t* ap_netif = nullptr;
+    bool initialized = false;
+    bool connected = false;
+    bool ap_started = false;
+    char ip_address[16] = {0};
+    char mac_address[18] = {0};
+    esp_netif_t* sta_netif = nullptr;
+    esp_netif_t* ap_netif = nullptr;
 
-    static WiFiCallbackThen connect_cb_then = nullptr;
-    static WiFiCallbackCatch connect_cb_catch = nullptr;
-    static WiFiCallbackThen ap_cb_then = nullptr;
-    static WiFiCallbackCatch ap_cb_catch = nullptr;
-    static const char* temp_ssid = nullptr;
-    static const char* temp_password = nullptr;
-    static uint8_t retry_count = 0;
+    WiFiCallbackThen connect_cb_then = nullptr;
+    WiFiCallbackCatch connect_cb_catch = nullptr;
+    WiFiCallbackThen ap_cb_then = nullptr;
+    WiFiCallbackCatch ap_cb_catch = nullptr;
+    const char* temp_ssid = nullptr;
+    const char* temp_password = nullptr;
+    uint8_t retry_count = 0;
 
     // Event handler for WiFi events
-    static void wifi_event_handler(void* arg, esp_event_base_t event_base,
+    void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
     {
         Log::Add(Log::Level::Debug, "WiFi Event: base=%s, id=%d", event_base, event_id);

@@ -21,6 +21,12 @@ namespace NVS
             return set(key, &value, sizeof(T));
         }
 
+        Error get(const char* key, void* out_value, size_t length)
+        {
+            size_t length = length;
+            return get(key, out_value, &length);
+        }
+
         virtual Error get(const char* key, void* out_value, size_t* length) = 0;
         virtual Error set(const char* key, const void* value, size_t length) = 0;
         virtual Error erase(const char* key) = 0;

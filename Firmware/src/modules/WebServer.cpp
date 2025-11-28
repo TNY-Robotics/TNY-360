@@ -8,8 +8,8 @@
 namespace WebServer
 {
     // Static variables
-    static httpd_handle_t server = nullptr;
-    static bool running = false;
+    httpd_handle_t server = nullptr;
+    bool running = false;
 \
     Error Init()
     {

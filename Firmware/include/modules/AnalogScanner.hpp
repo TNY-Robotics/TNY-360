@@ -27,7 +27,7 @@ namespace AnalogScanner
     * @brief Initializes the AnalogScanner module.
     * @return Error code indicating success or failure.
     */
-    static Error Init();
+    Error Init();
 
     /**
     * @brief Calibrates an analog input.
@@ -39,13 +39,13 @@ namespace AnalogScanner
     * @return Error code indicating success or failure.
     * @note Calibration data should be saved using SaveCalibration() to persist across reboots.
     */
-    static Error Calibrate(Id id, float raw_min, float raw_max, float real_min, float real_max);
+    Error Calibrate(Id id, float raw_min, float raw_max, float real_min, float real_max);
 
     /**
      * @brief Saves the current calibration data to non-volatile storage.
      * @return Error code indicating success or failure.
      */
-    static Error SaveCalibration();
+    Error SaveCalibration();
 
     /**
     * @brief Gets the calibrated value of an analog input.
@@ -53,14 +53,14 @@ namespace AnalogScanner
     * @param outValue Pointer to store the value.
     * @return Error code indicating success or failure.
     */
-    static Error GetValue(Id id, float* outValue);
+    Error GetValue(Id id, float* outValue);
 
     /**
     * @brief Gets all calibrated analog values.
     * @param outValues Pointer to array to store values.
     * @return Error code indicating success or failure.
     */
-    static Error GetValues(float* outValues);
+    Error GetValues(float* outValues);
 
     /**
     * @brief Gets calibrated values for specified analog inputs.
@@ -69,7 +69,7 @@ namespace AnalogScanner
     * @param count Number of elements in the ids array.
     * @return Error code indicating success or failure.
     */
-    static Error GetValues(const Id* ids, float* outValues, uint8_t count);
+    Error GetValues(const Id* ids, float* outValues, uint8_t count);
 
     /**
     * @brief Gets the raw value of an analog input.
@@ -77,14 +77,14 @@ namespace AnalogScanner
     * @param outRawValue Pointer to store the raw value.
     * @return Error code indicating success or failure.
     */
-    static Error GetRawValue(Id id, int* outRawValue);
+    Error GetRawValue(Id id, int* outRawValue);
 
     /**
     * @brief Gets all raw analog values.
     * @param outRawValues Pointer to array to store raw values.
     * @return Error code indicating success or failure.
     */
-    static Error GetRawValues(int* outRawValues);
+    Error GetRawValues(int* outRawValues);
 
     /**
     * @brief Gets raw values for specified analog inputs.
@@ -93,5 +93,5 @@ namespace AnalogScanner
     * @param count Number of elements in the ids array.
     * @return Error code indicating success or failure.
     */
-    static Error GetRawValues(const Id* ids, int* outRawValues, uint8_t count);
+    Error GetRawValues(const Id* ids, int* outRawValues, uint8_t count);
 }

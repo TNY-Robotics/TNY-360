@@ -9,12 +9,12 @@
 
 namespace DNSServer
 {
-    static bool running = false;
-    static int socket_handle = -1;
-    static TaskHandle_t task_handle = nullptr;
+    bool running = false;
+    int socket_handle = -1;
+    TaskHandle_t task_handle = nullptr;
 
     // Simple DNS response packet
-    static void create_dns_response(uint8_t* query, size_t query_len, uint8_t* response, size_t* response_len)
+    void create_dns_response(uint8_t* query, size_t query_len, uint8_t* response, size_t* response_len)
     {
         // Copy query header
         memcpy(response, query, 12);
@@ -65,7 +65,7 @@ namespace DNSServer
         *response_len = answer_offset + 16;
     }
 
-    static void dns_server_task(void* parameter)
+    void dns_server_task(void* parameter)
     {
         struct sockaddr_in server_addr;
         struct sockaddr_in client_addr;

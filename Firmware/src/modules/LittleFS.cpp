@@ -5,8 +5,8 @@
 
 namespace LittleFS
 {
-    static bool initialized = false;
-    constexpr static const char* ROOT_FOLDER = "/storage";
+    bool initialized = false;
+    constexpr const char* ROOT_FOLDER = "/storage";
 
     Error Init()
     {

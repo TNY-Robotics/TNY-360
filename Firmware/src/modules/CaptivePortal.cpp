@@ -8,9 +8,9 @@
 
 namespace CaptivePortal
 {
-    static char* index_file_content = nullptr; // Will hold the content of index.html
+    char* index_file_content = nullptr; // Will hold the content of index.html
 
-    static esp_err_t captive_portal_handler(httpd_req_t *req)
+    esp_err_t captive_portal_handler(httpd_req_t *req)
     {
         httpd_resp_set_type(req, "text/html");
         if (index_file_content)
@@ -23,7 +23,7 @@ namespace CaptivePortal
         return ESP_OK;
     }
 
-    static esp_err_t api_connect_handler(httpd_req_t *req)
+    esp_err_t api_connect_handler(httpd_req_t *req)
     {
         // NOTE : Those malloc should be freed after use, but since we are going to restart the ESP32, it's not a big deal.
         char* ssid = (char*) malloc(64 * sizeof(char));

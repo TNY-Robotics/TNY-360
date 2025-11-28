@@ -13,7 +13,7 @@ namespace Protocol
         HandlerCallback callback;
     } Handler;
 
-    static Handler handlers[] = {
+    Handler handlers[] = {
         // ping command
         { 0x00, 0, [](const Request& req) {
             // Simply echo back the same payload

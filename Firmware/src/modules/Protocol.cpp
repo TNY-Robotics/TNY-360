@@ -10,7 +10,7 @@ namespace Protocol
         HandleResponseCallback callback;
     } PendingCall;
 
-    static PendingCall pending_calls[PROTOCOL_MAX_PENDING_CALLS] = {0};
+    PendingCall pending_calls[PROTOCOL_MAX_PENDING_CALLS] = {0};
 
     Error Handle(const Request& req, HandleResponseCallback callback)
     {

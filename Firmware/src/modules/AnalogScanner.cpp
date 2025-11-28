@@ -19,7 +19,7 @@ namespace AnalogScanner
     int last_raw_values[static_cast<uint8_t>(Id::Count)] = {0.0f};        // last raw value read by the scan task
     float last_calibrated_values[static_cast<uint8_t>(Id::Count)] = {0.0f}; // last calibrated value read by the scan task
 
-    void readingTask(void *pvParameters)
+    void update_task(void *pvParameters)
     {
         TickType_t start_tick = xTaskGetTickCount();
         TickType_t end_tick = xTaskGetTickCount();
@@ -46,7 +46,7 @@ namespace AnalogScanner
         }
     }
 
-    static Error select(uint8_t index)
+    Error select(uint8_t index)
     {
         if (gpio_set_level(SCANNER_SLCT_PIN1, (index & 0b0001) >> 0) != ESP_OK ||
             gpio_set_level(SCANNER_SLCT_PIN2, (index & 0b0010) >> 1) != ESP_OK ||
@@ -59,7 +59,7 @@ namespace AnalogScanner
         return Error::Ok;
     }
 
-    static Error Init()
+    Error Init()
     {
         if (initialized)
             return Error::Ok;
@@ -105,10 +105,10 @@ namespace AnalogScanner
             return Error::Unknown;
         }
 
-        // launch reading task
-        if (xTaskCreate(readingTask, "AnalogScannerReading", 2048, nullptr, 5, nullptr) != pdPASS)
+        // launch update task
+        if (xTaskCreate(update_task, "AnalogScanner::update_task", 2048, nullptr, 5, nullptr) != pdPASS)
         {
-            Log::Add(Log::Level::Error, "AnalogScanner: Failed to create reading task");
+            Log::Add(Log::Level::Error, "AnalogScanner: Failed to create update task");
             return Error::Unknown;
         }
 
@@ -116,7 +116,7 @@ namespace AnalogScanner
         return Error::Ok;
     }
 
-    static Error Calibrate(Id id, float raw_min, float raw_max, float real_min, float real_max)
+    Error Calibrate(Id id, float raw_min, float raw_max, float real_min, float real_max)
     {
         uint8_t index = static_cast<uint8_t>(id);
         min_raw_values[index] = raw_min;
@@ -127,7 +127,7 @@ namespace AnalogScanner
         return Error::Ok;
     }
 
-    static Error SaveCalibration()
+    Error SaveCalibration()
     {
         if (!nvsHandle)
             return Error::Unknown;
@@ -144,13 +144,13 @@ namespace AnalogScanner
         return Error::Ok;
     }
 
-    static Error GetValue(Id id, float *outValue)
+    Error GetValue(Id id, float *outValue)
     {
         *outValue = last_calibrated_values[static_cast<uint8_t>(id)];
         return Error::Ok;
     }
 
-    static Error GetValues(float *outValues)
+    Error GetValues(float *outValues)
     {
         for (int i = 0; i < static_cast<int>(Id::Count); i++)
         {
@@ -159,7 +159,7 @@ namespace AnalogScanner
         return Error::Ok;
     }
 
-    static Error GetValues(const Id *ids, float *outValues, uint8_t count)
+    Error GetValues(const Id *ids, float *outValues, uint8_t count)
     {
         for (int i = 0; i < count; i++)
         {
@@ -168,13 +168,13 @@ namespace AnalogScanner
         return Error::Ok;
     }
 
-    static Error GetRawValue(Id id, int *outRawValue)
+    Error GetRawValue(Id id, int *outRawValue)
     {
         *outRawValue = last_raw_values[static_cast<uint8_t>(id)];
         return Error::Ok;
     }
 
-    static Error GetRawValues(int *outRawValues)
+    Error GetRawValues(int *outRawValues)
     {
         for (int i = 0; i < static_cast<int>(Id::Count); i++)
         {
@@ -183,7 +183,7 @@ namespace AnalogScanner
         return Error::Ok;
     }
 
-    static Error GetRawValues(const Id *ids, int *outRawValues, uint8_t count)
+    Error GetRawValues(const Id *ids, int *outRawValues, uint8_t count)
     {
         for (int i = 0; i < count; i++)
         {

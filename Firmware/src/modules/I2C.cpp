@@ -4,7 +4,7 @@
 
 namespace I2C
 {
-    static Error Init()
+    Error Init()
     {
         i2c_master_bus_config_t config = {
             .i2c_port = I2C_NUM_0,

@@ -12,7 +12,7 @@ namespace WebSocket
         httpd_req_t* req;
     } PendingRequests;
 
-    static PendingRequests pending_requests[PROTOCOL_MAX_PENDING_CALLS] = {0};
+    PendingRequests pending_requests[PROTOCOL_MAX_PENDING_CALLS] = {0};
 
     Error FindPendingRequest(uint16_t id, httpd_req_t** out_req)
     {

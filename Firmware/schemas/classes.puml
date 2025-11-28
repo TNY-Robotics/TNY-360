@@ -3,25 +3,25 @@ title Class Diagram TNY360 firmware
 
 class Log {
     + enum Level { Debug, Info, Warning, Error }
-    + static void Add(Level level, const char* format, ...)
+    + void Add(Level level, const char* format, ...)
 }
 
 class WiFi {
-    +static void Init();
-    +static bool Connect(const char* ssid, const char* password);
-    +static void Disconnect();
-    +static bool IsConnected();
-    +static const char* GetIP();
-    +static const char* GetMAC();
-    +static void StartAP(const char* ssid, const char* password);
-    +static void StopAP();
-    +static bool IsAPStarted();
+    +void Init();
+    +bool Connect(const char* ssid, const char* password);
+    +void Disconnect();
+    +bool IsConnected();
+    +const char* GetIP();
+    +const char* GetMAC();
+    +void StartAP(const char* ssid, const char* password);
+    +void StopAP();
+    +bool IsAPStarted();
 }
 
 class NVS {
-    +static void Init();
-    +static NVSHandle* Open(const char* namespace);
-    +static void Close(NVSHandle* handle);
+    +void Init();
+    +NVSHandle* Open(const char* namespace);
+    +void Close(NVSHandle* handle);
 }
 WiFi -left- NVS : uses >
 
@@ -33,114 +33,114 @@ class NVSHandle {
 NVS "1" -- "0..*" NVSHandle : manages >
 
 class WebServer {
-    +static Error Init()
-    +static Error Start()
-    +static Error Stop()
-    +static bool IsRunning()
+    +Error Init()
+    +Error Start()
+    +Error Stop()
+    +bool IsRunning()
 }
 WebServer .down. WiFi
 
 class WebSocket {
-    +static Error Init()
-    +static Error Attach()
+    +Error Init()
+    +Error Attach()
 }
 WebSocket -- WebServer : uses >
 
 class CaptivePortal {
-    +static Error Init()
-    +static Error Attach()
+    +Error Init()
+    +Error Attach()
 }
 CaptivePortal -- WebServer : uses >
 
 class DNSServer {
-    +static Error Init()
-    +static Error Start(port)
-    +static Error Stop()
-    +static bool IsRunning()
+    +Error Init()
+    +Error Start(port)
+    +Error Stop()
+    +bool IsRunning()
 }
 DNSServer .down. WiFi
 
 class ProtocolHandlers {
-    - static Handler handlers[]
+    - Handler handlers[]
 }
 
 class Protocol {
-    - static PendingCall pendingCalls[]
-    + static Error Handle(Request req, Callback cb)
-    + static void Resolve(Response res)
+    - PendingCall pendingCalls[]
+    + Error Handle(Request req, Callback cb)
+    + void Resolve(Response res)
 }
 Protocol -- ProtocolHandlers : uses >
 
 class LED {
-    + static Error SetColor(Id id, Color color)
-    + static Error SetColor(Id id, Color color, float duration_s)
-    + static Error SetColors(Color[] colors)
-    + static Error SetColors(Color[] colors, float[] durations_s)
-    + static Error SetColors(Id[] ids, Color[] colors, uint8_t count)
-    + static Error SetColors(Id[] ids, Color[] colors, float[] durations_s, uint8_t count)
-    + static Error GetColor(Id id, Color* outColor)
-    + static Error GetColors(Color[]* outColors)
-    + static Error GetColors(Id[] ids, Color[]* outColors, uint8_t count)
+    + Error SetColor(Id id, Color color)
+    + Error SetColor(Id id, Color color, float duration_s)
+    + Error SetColors(Color[] colors)
+    + Error SetColors(Color[] colors, float[] durations_s)
+    + Error SetColors(Id[] ids, Color[] colors, uint8_t count)
+    + Error SetColors(Id[] ids, Color[] colors, float[] durations_s, uint8_t count)
+    + Error GetColor(Id id, Color* outColor)
+    + Error GetColors(Color[]* outColors)
+    + Error GetColors(Id[] ids, Color[]* outColors, uint8_t count)
 }
 
 class AnalogScanner {
-    + static Error Init()
-    + static Error Calibrate(Id id, float raw_min, float raw_max, float real_min, float real_max)
-    + static Error GetValue(Id id, float* outValue)
-    + static Error GetValues(float[]* outValues)
-    + static Error GetValues(Id[] ids, float[]* outValues)
-    + static Error GetRawValue(Id id, int* outRawValue)
-    + static Error GetRawValues(int[]* outRawValues)
-    + static Error GetRawValues(Id[] ids, int[]* outRawValues)
+    + Error Init()
+    + Error Calibrate(Id id, float raw_min, float raw_max, float real_min, float real_max)
+    + Error GetValue(Id id, float* outValue)
+    + Error GetValues(float[]* outValues)
+    + Error GetValues(Id[] ids, float[]* outValues)
+    + Error GetRawValue(Id id, int* outRawValue)
+    + Error GetRawValues(int[]* outRawValues)
+    + Error GetRawValues(Id[] ids, int[]* outRawValues)
 }
 
 class Motor {
-    + static Error Init()
-    + static Error SetAngle(Id id, float angle)
-    + static Error SetAngle(Id id, float angle, float duration_s)
-    + static Error SetAngles(float[] angles)
-    + static Error SetAngles(float[] angles, float[] durations_s)
-    + static Error SetAngles(Id[] ids, float[] angles)
-    + static Error SetAngles(Id[] ids, float[] angles, float[] durations_s)
-    + static Error SetForce(Id id, ForceLevel force)
-    + static Error SetForces(ForceLevel[] forces)
-    + static Error SetForces(Id[] ids, ForceLevel[] forces)
-    + static Error GetForce(Id id, ForceLevel* outForce)
-    + static Error GetForces(ForceLevel[]* outForces)
-    + static Error GetForces(Id[] ids, ForceLevel[]* outForces)
-    + static Error GetTargetAngle(Id id, float* outAngle)
-    + static Error GetTargetAngles(float[]* outAngles)
-    + static Error GetTargetAngles(Id[] ids, float[]* outAngles)
-    + static Error GetCurrentAngle(Id id, float* outAngle)
-    + static Error GetCurrentAngles(float[]* outAngles)
-    + static Error GetCurrentAngles(Id[] ids, float[]* outAngles)
+    + Error Init()
+    + Error SetAngle(Id id, float angle)
+    + Error SetAngle(Id id, float angle, float duration_s)
+    + Error SetAngles(float[] angles)
+    + Error SetAngles(float[] angles, float[] durations_s)
+    + Error SetAngles(Id[] ids, float[] angles)
+    + Error SetAngles(Id[] ids, float[] angles, float[] durations_s)
+    + Error SetForce(Id id, ForceLevel force)
+    + Error SetForces(ForceLevel[] forces)
+    + Error SetForces(Id[] ids, ForceLevel[] forces)
+    + Error GetForce(Id id, ForceLevel* outForce)
+    + Error GetForces(ForceLevel[]* outForces)
+    + Error GetForces(Id[] ids, ForceLevel[]* outForces)
+    + Error GetTargetAngle(Id id, float* outAngle)
+    + Error GetTargetAngles(float[]* outAngles)
+    + Error GetTargetAngles(Id[] ids, float[]* outAngles)
+    + Error GetCurrentAngle(Id id, float* outAngle)
+    + Error GetCurrentAngles(float[]* outAngles)
+    + Error GetCurrentAngles(Id[] ids, float[]* outAngles)
 }
 Motor "1" -- "1" AnalogScanner : uses >
 
 class Pressure {
-    + static Error Init()
-    + static Error Calibrate(Callback onDone)
-    + static Error GetPressure(Id id, float* outPressure)
-    + static Error GetPressures(float[]* outPressures)
-    + static Error GetPressures(Id[] ids, float[]* outPressures)
+    + Error Init()
+    + Error Calibrate(Callback onDone)
+    + Error GetPressure(Id id, float* outPressure)
+    + Error GetPressures(float[]* outPressures)
+    + Error GetPressures(Id[] ids, float[]* outPressures)
 }
 Pressure "1" -- "1" AnalogScanner : uses >
 
 class IMU {
-    + static Error Init()
-    + static Error Calibrate(Callback onDone)
-    + static Error GetTemperature(float* outTemperature)
-    + static Error GetOrientation(Quaternion* outOrientation)
-    + static Error GetAngularVelocity(Vector3* outAngularVelocity)
-    + static Error GetLinearAcceleration(Vector3* outLinearAcceleration)
+    + Error Init()
+    + Error Calibrate(Callback onDone)
+    + Error GetTemperature(float* outTemperature)
+    + Error GetOrientation(Quaternion* outOrientation)
+    + Error GetAngularVelocity(Vector3* outAngularVelocity)
+    + Error GetLinearAcceleration(Vector3* outLinearAcceleration)
 }
 
 class Power {
-    + static Error Init()
-    + static Error GetBatteryLevel(float* outLevel)
-    + static Error IsCharging(bool* outIsCharging)
-    + static Error GetVoltage(float* outVoltage)
-    + static Error GetCurrent(float* outCurrent)
+    + Error Init()
+    + Error GetBatteryLevel(float* outLevel)
+    + Error IsCharging(bool* outIsCharging)
+    + Error GetVoltage(float* outVoltage)
+    + Error GetCurrent(float* outCurrent)
 }
 
 class Note {
@@ -148,8 +148,8 @@ class Note {
     + Tone tone
     + int octave
     + float frequency_hz
-    + static Note FromTone(Tone tone, int octave)
-    + static Note FromFrequency(float frequency_hz)
+    + Note FromTone(Tone tone, int octave)
+    + Note FromFrequency(float frequency_hz)
 }
 
 class Partition {
@@ -159,21 +159,21 @@ class Partition {
 Partition "1" -- "*" Note : contains >
 
 class Sound {
-    + static Error Init()
-    + static Error Play(Note[] notes, float[] durations_s)
-    + static Error Play(Note note, float duration_s)
-    + static Error Play(Partition partition)
-    + static Error Stop()
-    + static bool IsPlaying()
+    + Error Init()
+    + Error Play(Note[] notes, float[] durations_s)
+    + Error Play(Note note, float duration_s)
+    + Error Play(Partition partition)
+    + Error Stop()
+    + bool IsPlaying()
 }
 Sound "1" -- "0..*" Partition : plays >
 
 class I2C {
-    + static Error Init()
+    + Error Init()
 }
 
 class GPIO {
-    + static Error Init()
+    + Error Init()
 }
 
 @enduml

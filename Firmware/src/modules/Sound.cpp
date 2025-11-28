@@ -2,10 +2,10 @@
 
 namespace Sound
 {
-    static bool initialized = false;
-    static float volume = 1.0f; // Volume level (0.0 to 1.0)
+    bool initialized = false;
+    float volume = 1.0f; // Volume level (0.0 to 1.0)
 
-    static Error Init()
+    Error Init()
     {
         if (initialized) return Error::Ok;
 
@@ -15,32 +15,32 @@ namespace Sound
         return Error::Ok; // TODO
     }
 
-    static Error Play(const Note notes[], const float durations_s[], uint8_t count)
+    Error Play(const Note notes[], const float durations_s[], uint8_t count)
     {
         return Error::Ok; // TODO
     }
 
-    static Error Play(Note note, float duration_s)
+    Error Play(Note note, float duration_s)
     {
         return Error::Ok; // TODO
     }
 
-    static Error Play(const Partition& partition)
+    Error Play(const Partition& partition)
     {
         return Play(partition.notes, partition.durations_s, partition.count);
     }
 
-    static Error Stop()
+    Error Stop()
     {
         return Error::Ok; // TODO
     }
 
-    static bool IsPlaying()
+    bool IsPlaying()
     {
         return false; // TODO
     }
 
-    static Error SetVolume(uint8_t volume)
+    Error SetVolume(uint8_t volume)
     {
         return Error::Ok; // TODO
     }

@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <driver/gpio.h>
 
 /** COMPILATION FLAGS **/
 #define DEBUG_MODE 1  // 1 to enable debug logs, 0 to disable
@@ -61,8 +62,16 @@ constexpr gpio_num_t SCANNER_SLCT_PIN4 = GPIO_NUM_42;
 // Analog scanner update interval in milliseconds
 constexpr uint16_t SCANNER_UPDT_INT_MS = 20; // ms
 
+
 /** IMU **/
+// I2C address for the IMU (MPU6050)
+constexpr uint8_t IMU_I2C_ADDR = 0x68;
+// I2C clock speed for IMU communication
+constexpr uint32_t IMU_I2C_CLOCK = 100000; // 100kHz, could be up to 400kHz but i'm not 100% confident in the wiring
+// IMU update interval in milliseconds
 constexpr uint16_t IMU_UPDT_INT_MS = 20; // ms
+// number of samples to gather for calibration
+constexpr uint16_t IMU_NB_CALIB_SAMPLES = 100;
 
 
 /** Motors **/
