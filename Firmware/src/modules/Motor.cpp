@@ -1,6 +1,7 @@
 #include <freertos/FreeRTOS.h>
 #include "modules/Motor.hpp"
 #include "modules/AnalogScanner.hpp"
+#include "modules/Log.hpp"
 #include "config.hpp"
 #include "pca9685.h"
 
@@ -10,47 +11,48 @@ namespace Motor
 
     bool initialized = false;
 
-    float freq_min[NB_MOTORS] = {
+    float freq_min[static_cast<uint8_t>(Id::Count)] = {
         190, 100, 120, 0,
         150, 100, 130, 0,
         250, 100, 105, 0,
         240, 105, 130, 0};
-    float freq_range[NB_MOTORS] = {
+    float freq_range[static_cast<uint8_t>(Id::Count)] = {
         230, 410, 350, 1,
         220, 415, 345, 1,
         225, 420, 350, 1,
         215, 420, 350, 1};
-    float angle_min[NB_MOTORS] = {
+    float angle_min[static_cast<uint8_t>(Id::Count)] = {
         45, 90, 135, 0,
         -45, -90, 0, 0,
         -45, 90, 135, 0,
         45, -90, 0, 0};
-    float angle_range[NB_MOTORS] = {
+    float angle_range[static_cast<uint8_t>(Id::Count)] = {
         -90, -180, -135, 1,
         90, 180, 135, 1,
         90, -180, -135, 1,
         -90, 180, 135, 1};
 
-    float last_motor_freq[NB_MOTORS] = { // for smooth transition with duration
+    float last_motor_freq[static_cast<uint8_t>(Id::Count)] = { // for smooth transition with duration
         0, 0, 0, 0,
         0, 0, 0, 0,
         0, 0, 0, 0,
         0, 0, 0, 0};
-    float target_motor_freq[NB_MOTORS] = { // all deactivated by default
+    float target_motor_freq[static_cast<uint8_t>(Id::Count)] = { // all deactivated by default
         0, 0, 0, 0,
         0, 0, 0, 0,
         0, 0, 0, 0,
         0, 0, 0, 0};
-    float motor_adder[NB_MOTORS] = { // value to add to last_motor_freq to match movement duration
+    float motor_adder[static_cast<uint8_t>(Id::Count)] = { // value to add to last_motor_freq to match movement duration
         0, 0, 0, 0,
         0, 0, 0, 0,
         0, 0, 0, 0,
         0, 0, 0, 0};
-    uint8_t motor_force_countdown[NB_MOTORS] = { // force divider for each motor (1 is full force, 5 is force 1/5 of the time)
+    uint8_t motor_force_countdown[static_cast<uint8_t>(Id::Count)] = { // force divider for each motor (1 is full force, 5 is force 1/5 of the time)
         0, 0, 0, 0,
         0, 0, 0, 0,
         0, 0, 0, 0,
         0, 0, 0, 0};
+
     inline AnalogScanner::Id castId(Id id)
     {
         return static_cast<AnalogScanner::Id>(static_cast<uint8_t>(id) + static_cast<uint8_t>(AnalogScanner::Id::Shoulder_FL));
@@ -58,11 +60,17 @@ namespace Motor
 
     Error Init()
     {
-        return Error::Ok;
+        if (initialized) return Error::Ok;
+
+        // initialisation
+
+        initialized = true;
+        return Error::Ok; // TODO
     }
 
     Error SetAngle(Id id, float angle)
     {
+        Log::Add(Log::Level::Debug, "Setting motor angle: %d -> %f", static_cast<int>(id), angle);
         return Error::Ok; // TODO
     }
 

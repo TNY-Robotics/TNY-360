@@ -4,7 +4,8 @@
 
 namespace I2C
 {
-    i2c_master_bus_handle_t handle = nullptr;
+    // I2C master bus handle, available to other modules for their own use
+    static i2c_master_bus_handle_t handle;
 
     /**
      * @brief Initializes the I2C module.

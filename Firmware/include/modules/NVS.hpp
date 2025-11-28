@@ -23,8 +23,8 @@ namespace NVS
 
         Error get(const char* key, void* out_value, size_t length)
         {
-            size_t length = length;
-            return get(key, out_value, &length);
+            size_t l = length;
+            return get(key, out_value, &l);
         }
 
         virtual Error get(const char* key, void* out_value, size_t* length) = 0;

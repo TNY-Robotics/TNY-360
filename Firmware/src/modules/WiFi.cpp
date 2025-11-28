@@ -38,8 +38,6 @@ namespace WiFi
     void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
     {
-        Log::Add(Log::Level::Debug, "WiFi Event: base=%s, id=%d", event_base, event_id);
-
         if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START)
         {
             Log::Add(Log::Level::Debug, "STA started, attempting to connect");
@@ -72,7 +70,7 @@ namespace WiFi
             connected = true;
             ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
             snprintf(ip_address, sizeof(ip_address), IPSTR, IP2STR(&event->ip_info.ip));
-            Log::Add(Log::Level::Debug, "WiFi connected, IP obtained");
+            Log::Add(Log::Level::Debug, "WiFi connected, IP obtained (%s)", ip_address);
 
             // store the connected SSID and password in NVS
             if (nvs_handle) {
@@ -261,9 +259,19 @@ namespace WiFi
             Log::Add(Log::Level::Error, "WiFi set config STA failed");
             if (cb_catch) cb_catch(Error::Unknown);
         }
+        if (esp_wifi_set_protocol(WIFI_IF_STA, WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G) != ESP_OK) // limit to older protocols for stability
+        {
+            Log::Add(Log::Level::Error, "WiFi set protocol failed");
+            if (cb_catch) cb_catch(Error::Unknown);
+        }
         if (esp_wifi_start() != ESP_OK)
         {
             Log::Add(Log::Level::Error, "WiFi start failed");
+            if (cb_catch) cb_catch(Error::Unknown);
+        }
+        if (esp_wifi_set_max_tx_power(78) != ESP_OK) // set max TX power to ensure strong signal
+        {
+            Log::Add(Log::Level::Error, "WiFi set max TX power failed");
             if (cb_catch) cb_catch(Error::Unknown);
         }
 

@@ -40,7 +40,7 @@ namespace Protocol
                 return Error::Ok;
             }
         }
-
+        
         return Error::NotFound; // No matching handler found
     }
 
@@ -51,7 +51,7 @@ namespace Protocol
             if (pending_calls[i].id == res.id && pending_calls[i].callback != nullptr) {
                 pending_calls[i].callback(res);
                 
-                pending_calls[i].id = 0;
+                pending_calls[i].id = 0; // Clear the pending call
                 pending_calls[i].callback = nullptr;
                 return Error::Ok;
             }

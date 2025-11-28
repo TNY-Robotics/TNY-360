@@ -8,3 +8,6 @@ CONFIG_BT_NIMBLE_50_FEATURE_SUPPORT=n
 
 # fix for long headers on android requests to captive portal
 CONFIG_HTTPD_MAX_REQ_HDR_LEN=1024
+
+# Increase FreeRTOS scheduler update rate
+CONFIG_FREERTOS_HZ=1000

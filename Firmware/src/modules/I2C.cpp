@@ -13,6 +13,7 @@ namespace I2C
             .clk_source = I2C_CLK_SRC_DEFAULT,
             .glitch_ignore_cnt = 7,
             .intr_priority = 0,
+            .trans_queue_depth = 0, // no async transactions
             .flags = {
                 .enable_internal_pullup = true,
                 .allow_pd = false

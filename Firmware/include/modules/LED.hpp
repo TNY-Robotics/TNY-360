@@ -14,6 +14,8 @@ namespace LED
     
     using Id = uint8_t; // LED identifier type
 
+    static constexpr Id LED_COUNT = 4; // Number of LEDs in the strip
+
     /**
      * @brief Initializes the LED module.
      * @return Error code indicating success or failure.

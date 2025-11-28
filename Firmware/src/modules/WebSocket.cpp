@@ -2,7 +2,8 @@
 #include "modules/Log.hpp"
 #include "modules/Protocol.hpp"
 #include "modules/WebServer.hpp"
-#include "esp_http_server.h"
+#include <esp_http_server.h>
+#include <esp_wifi.h>
 
 namespace WebSocket
 {
@@ -12,7 +13,8 @@ namespace WebSocket
         httpd_req_t* req;
     } PendingRequests;
 
-    PendingRequests pending_requests[PROTOCOL_MAX_PENDING_CALLS] = {0};
+    static PendingRequests pending_requests[PROTOCOL_MAX_PENDING_CALLS];
+    static uint8_t nb_connected_clients = 0;
 
     Error FindPendingRequest(uint16_t id, httpd_req_t** out_req)
     {
@@ -133,16 +135,34 @@ namespace WebSocket
     void on_connected(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
     {
         Log::Add(Log::Level::Debug, "WebSocket client connected");
+        nb_connected_clients++;
+        if (nb_connected_clients == 1) {
+            // disable power save mode when at least one client is connected
+            Log::Add(Log::Level::Debug, "First client connected, disabling power save mode");
+            esp_wifi_set_ps(WIFI_PS_NONE);
+        }
     }
 
     void on_disconnected(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
     {
         Log::Add(Log::Level::Debug, "WebSocket client disconnected");
+        if (nb_connected_clients > 0) {
+            nb_connected_clients--;
+        }
+        if (nb_connected_clients == 0) {
+            // enable power save mode when no clients are connected
+            Log::Add(Log::Level::Debug, "No clients connected, enabling power save mode");
+            esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
+        }
     }
 
     Error Init()
     {
-        // nothing to do here
+        // clean pending requests list (to avoid garbage values)
+        for (uint8_t i = 0; i < PROTOCOL_MAX_PENDING_CALLS; ++i) {
+            pending_requests[i].id = 0;
+            pending_requests[i].req = nullptr;
+        }
         return Error::Ok;
     }
 

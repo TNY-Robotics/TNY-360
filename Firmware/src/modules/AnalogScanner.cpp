@@ -12,12 +12,25 @@ namespace AnalogScanner
     NVS::Handle *nvsHandle = nullptr;
     adc_oneshot_unit_handle_t adc_handle = nullptr;
 
-    int min_raw_values[static_cast<uint8_t>(Id::Count)] = {0.0f};         // raw min value, for calibration
-    int max_raw_values[static_cast<uint8_t>(Id::Count)] = {0.0f};         // raw max value, for calibration
-    float min_calibrated_values[static_cast<uint8_t>(Id::Count)] = {0.0f};  // calibrated min value, for calibration
-    float max_calibrated_values[static_cast<uint8_t>(Id::Count)] = {0.0f};  // calibrated max value, for calibration
-    int last_raw_values[static_cast<uint8_t>(Id::Count)] = {0.0f};        // last raw value read by the scan task
-    float last_calibrated_values[static_cast<uint8_t>(Id::Count)] = {0.0f}; // last calibrated value read by the scan task
+    int min_raw_values[static_cast<uint8_t>(Id::Count)] = { 0 };         // raw min value, for calibration
+    int max_raw_values[static_cast<uint8_t>(Id::Count)] = { 0 };         // raw max value, for calibration
+    float min_calibrated_values[static_cast<uint8_t>(Id::Count)] = { 0.0f };  // calibrated min value, for calibration
+    float max_calibrated_values[static_cast<uint8_t>(Id::Count)] = { 0.0f };  // calibrated max value, for calibration
+    int last_raw_values[static_cast<uint8_t>(Id::Count)] = { 0 };        // last raw value read by the scan task
+    float last_calibrated_values[static_cast<uint8_t>(Id::Count)] = { 0.0f }; // last calibrated value read by the scan task
+    
+    Error select(uint8_t index)
+    {
+        if (gpio_set_level(SCANNER_SLCT_PIN1, (index & 0b0001) >> 0) != ESP_OK ||
+            gpio_set_level(SCANNER_SLCT_PIN2, (index & 0b0010) >> 1) != ESP_OK ||
+            gpio_set_level(SCANNER_SLCT_PIN3, (index & 0b0100) >> 2) != ESP_OK ||
+            gpio_set_level(SCANNER_SLCT_PIN4, (index & 0b1000) >> 3) != ESP_OK)
+        {
+            Log::Add(Log::Level::Error, "AnalogScanner: Failed to select index with GPIO");
+            return Error::Unknown;
+        }
+        return Error::Ok;
+    }
 
     void update_task(void *pvParameters)
     {
@@ -44,19 +57,6 @@ namespace AnalogScanner
             end_tick = xTaskGetTickCount();
             vTaskDelay(pdMS_TO_TICKS(SCANNER_UPDT_INT_MS) - (end_tick - start_tick));
         }
-    }
-
-    Error select(uint8_t index)
-    {
-        if (gpio_set_level(SCANNER_SLCT_PIN1, (index & 0b0001) >> 0) != ESP_OK ||
-            gpio_set_level(SCANNER_SLCT_PIN2, (index & 0b0010) >> 1) != ESP_OK ||
-            gpio_set_level(SCANNER_SLCT_PIN3, (index & 0b0100) >> 2) != ESP_OK ||
-            gpio_set_level(SCANNER_SLCT_PIN4, (index & 0b1000) >> 3) != ESP_OK)
-        {
-            Log::Add(Log::Level::Error, "AnalogScanner: Failed to select index with GPIO");
-            return Error::Unknown;
-        }
-        return Error::Ok;
     }
 
     Error Init()
@@ -87,7 +87,9 @@ namespace AnalogScanner
         // Create adc oneshot handle
         adc_oneshot_unit_init_cfg_t init_config = {
             .unit_id = ADC_UNIT_1,
-            .ulp_mode = ADC_ULP_MODE_DISABLE};
+            .clk_src = ADC_RTC_CLK_SRC_DEFAULT,
+            .ulp_mode = ADC_ULP_MODE_DISABLE,
+        };
         if (adc_oneshot_new_unit(&init_config, &adc_handle) != ESP_OK)
         {
             Log::Add(Log::Level::Error, "AnalogScanner: Failed to create ADC oneshot handle");

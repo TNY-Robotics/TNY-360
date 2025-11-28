@@ -11,18 +11,18 @@ namespace Motor
     };
     enum class Id: uint8_t {
         Shoulder_FL = 0,
-        Shoulder_FR,
-        Shoulder_BL,
-        Shoulder_BR,
-        Leg_FL,
-        Leg_FR,
-        Leg_BL,
-        Leg_BR,
-        Knee_FL,
-        Knee_FR,
-        Knee_BL,
-        Knee_BR,
-        Count
+        Shoulder_FR = 4,
+        Shoulder_BL = 8,
+        Shoulder_BR = 12,
+        Leg_FL = 1,
+        Leg_FR = 5,
+        Leg_BL = 9,
+        Leg_BR = 13,
+        Knee_FL = 2,
+        Knee_FR = 6,
+        Knee_BL = 10,
+        Knee_BR = 14,
+        Count = 16
     };
 
     /**

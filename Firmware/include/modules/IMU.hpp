@@ -37,14 +37,14 @@ namespace IMU
      * @param outAngularVelocity Pointer to store the angular velocity as a Vector3.
      * @return Error code indicating success or type of failure.
      */
-    Error GetAngularVelocity(Vector3* outAngularVelocity);
+    Error GetAngularVelocity(Vec3f* outAngularVelocity);
 
     /**
      * @brief Retrieves the current linear acceleration from the IMU.
      * @param outLinearAcceleration Pointer to store the linear acceleration as a Vector3.
      * @return Error code indicating success or type of failure.
      */
-    Error GetLinearAcceleration(Vector3* outLinearAcceleration);
+    Error GetLinearAcceleration(Vec3f* outLinearAcceleration);
 
     /**
      * @brief Checks if the IMU is currently calibrating.
