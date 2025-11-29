@@ -205,32 +205,24 @@ namespace LED
 #if DEBUG_MODE == 1
         return; // skip in debug mode to avoid blocking
 #endif
-
-        Log::Add(Log::Level::Error, "LED LoopErrorCode called with code: 0x%02X", errCode);
-
         // turn everything off first
-        Log::Add(Log::Level::Info, "LED LoopErrorCode: Turning off all LEDs");
         for (Id i = 0; i < LED_COUNT; ++i) {
             SetColor(i, {0, 0, 0}, 0.1f);
         }
 
         while (1)
         {
-            Log::Add(Log::Level::Info, "LED LoopErrorCode: All off");
             // turn off first led and wait for 2 seconds
             vTaskDelay(pdMS_TO_TICKS(2000));
             
-            Log::Add(Log::Level::Info, "LED LoopErrorCode: First LED on");
             // turn first led on during 2 seconds (start of error code display)
             SetColor(0, {255, 0, 0}, 0.1f);
             vTaskDelay(pdMS_TO_TICKS(2000));
 
-            Log::Add(Log::Level::Info, "LED LoopErrorCode: First LED off");
             // turn off first led for 500ms before displaying error code
             SetColor(0, {0, 0, 0}, 0.1f);
             vTaskDelay(pdMS_TO_TICKS(500));
 
-            Log::Add(Log::Level::Info, "LED LoopErrorCode: Displaying error code 0x%02X", errCode);
             // Show error code in red blinks (500ms per byte)
             for (uint8_t i = 0; i < 8; ++i) {
                 if (errCode & (1 << (7 - i))) {
