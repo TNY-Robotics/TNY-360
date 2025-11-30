@@ -1,3 +1,5 @@
+#pragma once
+
 /**
  * 8x8 monochrome bitmap fonts for rendering
  * Author: Daniel Hepper <daniel@hepper.net>

@@ -49,22 +49,6 @@ void app_main()
         Log::Add(Log::Level::Info, "Button Module initialized");
     }
 
-    // FIXME : temporary button callbacks for testing
-    Button::SetCallbacks({
-        .onPressed = {
-            []() { Log::Add(Log::Level::Info, "Right button pressed"); },
-            []() { Log::Add(Log::Level::Info, "Left button pressed"); }
-        },
-        .onReleased = {
-            []() { Log::Add(Log::Level::Info, "Right button released"); },
-            []() { Log::Add(Log::Level::Info, "Left button released"); }
-        },
-        .onLongPressed = {
-            []() { Log::Add(Log::Level::Info, "Right button long pressed"); },
-            []() { Log::Add(Log::Level::Info, "Left button long pressed"); }
-        }
-    });
-
     // Initialize NVS
     Log::Add(Log::Level::Info, "Initializing NVS...");
     if (Error err = NVS::Init(); err != Error::Ok)

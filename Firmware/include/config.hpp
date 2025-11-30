@@ -87,3 +87,10 @@ constexpr uint32_t MOTOR_DRIVER_I2C_CLOCK = 100000; // 100kHz, could be up to 40
 // PWM frequency for the motor driver (standard servo frequency)
 constexpr uint16_t MOTOR_DRIVER_PWM_FREQUENCY_HZ = 50; // 50Hz
 // NOTE : Internal robot motor update is driven by the main timer at 50Hz
+
+
+/** Menu **/
+// List item shift by default
+constexpr uint8_t MENU_LIST_ITEM_DEFAULT_SHIFT = 4;
+// List item shift when selected
+constexpr uint8_t MENU_LIST_ITEM_SELECTED_SHIFT = 8;

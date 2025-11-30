@@ -11,13 +11,15 @@ namespace Button
 
     CallbackSet callbacks = { {nullptr, nullptr}, {nullptr, nullptr}, {nullptr, nullptr} };
 
+    bool initialized = false;
+
     void update_task(void* pvParams)
     {
         while (true)
         {
             bool btn_states_now[2] = {
-                (bool) gpio_get_level(BTN_RIGHT_PIN),
                 (bool) gpio_get_level(BTN_LEFT_PIN),
+                (bool) gpio_get_level(BTN_RIGHT_PIN),
             };
             
             for (int i = 0; i < 2; i++)
@@ -55,6 +57,8 @@ namespace Button
 
     Error Init()
     {
+        if (initialized) return Error::Ok;
+
         gpio_config_t io_conf;
         io_conf.intr_type = GPIO_INTR_DISABLE;
         io_conf.mode = GPIO_MODE_INPUT;
@@ -73,6 +77,8 @@ namespace Button
             Log::Add(Log::Level::Error, "Buttons: Failed to create Buttons update task");
             return Error::Unknown;
         }
+
+        initialized = true;
 
         return Error::Ok;
     }

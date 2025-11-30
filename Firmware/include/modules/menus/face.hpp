@@ -36,6 +36,7 @@ protected:
     virtual void onNext() override;
     virtual void onPrev() override;
 
+    virtual void onCreate() override;
     virtual void onRender() override;
     virtual void onUpdate() override;
 
