@@ -13,6 +13,7 @@
 #include "modules/Power.hpp"
 #include "modules/LED.hpp"
 #include "modules/Timer.hpp"
+#include "modules/Button.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,84 +24,145 @@ void app_main()
     
     // Initialize LED Module
     Log::Add(Log::Level::Info, "Initializing LED Module...");
-    if (Error err = LED::Init(); err != Error::Ok) {
+    if (Error err = LED::Init(); err != Error::Ok)
+    {
         Log::Add(Log::Level::Error, "LED Module Init failed with error: %d", static_cast<uint8_t>(err));
-    } else {
+    }
+    else
+    {
         Log::Add(Log::Level::Info, "LED Module initialized");
     }
 
     LED::SetColor(0, {64, 32, 0}, 0.2f); // Set LED 0 to low orange as startup indicator
 
+    // Initialize Button Module
+    Log::Add(Log::Level::Info, "Initializing Button Module...");
+    if (Error err = Button::Init(); err != Error::Ok)
+    {
+        Log::Add(Log::Level::Error, "Button Module Init failed with error: %d", static_cast<uint8_t>(err));
+        LED::LoopErrorCode(0x15); // 0b00010101
+    }
+    else
+    {
+        Log::Add(Log::Level::Info, "Button Module initialized");
+    }
+
+    // FIXME : temporary button callbacks for testing
+    Button::SetCallbacks({
+        .onPressed = {
+            []() { Log::Add(Log::Level::Info, "Right button pressed"); },
+            []() { Log::Add(Log::Level::Info, "Left button pressed"); }
+        },
+        .onReleased = {
+            []() { Log::Add(Log::Level::Info, "Right button released"); },
+            []() { Log::Add(Log::Level::Info, "Left button released"); }
+        },
+        .onLongPressed = {
+            []() { Log::Add(Log::Level::Info, "Right button long pressed"); },
+            []() { Log::Add(Log::Level::Info, "Left button long pressed"); }
+        }
+    });
+
     // Initialize NVS
     Log::Add(Log::Level::Info, "Initializing NVS...");
-    if (Error err = NVS::Init(); err != Error::Ok) {
+    if (Error err = NVS::Init(); err != Error::Ok)
+    {
         Log::Add(Log::Level::Error, "NVS Init failed with error: %d", static_cast<uint8_t>(err));
         LED::LoopErrorCode(0xaa); // 0b10101010
-    } else {
+    }
+    else
+    {
         Log::Add(Log::Level::Info, "NVS initialized");
     }
 
     // Initialize Analog Scanner
     Log::Add(Log::Level::Info, "Initializing Analog Scanner...");
-    if (Error err = AnalogScanner::Init(); err != Error::Ok) {
+    if (Error err = AnalogScanner::Init(); err != Error::Ok)
+    {
         Log::Add(Log::Level::Error, "Analog Scanner Init failed with error: %d", static_cast<uint8_t>(err));
         LED::LoopErrorCode(0x33); // 0b001100110011
-    } else {
+    }
+    else
+    {
         Log::Add(Log::Level::Info, "Analog Scanner initialized");
     }
 
     // Initialize Pressure Sensor
     Log::Add(Log::Level::Info, "Initializing Pressure Sensor...");
-    if (Error err = Pressure::Init(); err != Error::Ok) {
+    if (Error err = Pressure::Init(); err != Error::Ok)
+    {
         Log::Add(Log::Level::Error, "Pressure Sensor Init failed with error: %d", static_cast<uint8_t>(err));
         LED::LoopErrorCode(0x0f); // 0b00001111
-    } else {
+    }
+    else
+    {
         Log::Add(Log::Level::Info, "Pressure Sensor initialized");
     }
 
     // Initialize Sound Module
     Log::Add(Log::Level::Info, "Initializing Sound Module...");
-    if (Error err = Sound::Init(); err != Error::Ok) {
+    if (Error err = Sound::Init(); err != Error::Ok)
+    {
         Log::Add(Log::Level::Error, "Sound Module Init failed with error: %d", static_cast<uint8_t>(err));
         LED::LoopErrorCode(0xf0); // 0b11110000
-    } else {
+    }
+    else
+    {
         Log::Add(Log::Level::Info, "Sound Module initialized");
     }
 
     // Initialize I2C
     Log::Add(Log::Level::Info, "Initializing I2C...");
-    if (Error err = I2C::Init(); err != Error::Ok) {
+    if (Error err = I2C::Init(); err != Error::Ok)
+    {
         Log::Add(Log::Level::Error, "I2C Init failed with error: %d", static_cast<uint8_t>(err));
         LED::LoopErrorCode(0xe7); // 0b11100111
-    } else {
+    }
+    else
+    {
         Log::Add(Log::Level::Info, "I2C initialized");
+    }
+
+    // Initialize Screen Module
+    // TODO
+
+    // Initialize Motor Control
+    Log::Add(Log::Level::Info, "Initializing Motor Control...");
+    bool MotorInitialized = false;
+    if (Error err = Motor::Init(); err != Error::Ok)
+    {
+        Log::Add(Log::Level::Error, "Motor Control Init failed with error: %d", static_cast<uint8_t>(err));
+        LED::LoopErrorCode(0x57); // 0b01010111
+    }
+    else
+    {
+        Log::Add(Log::Level::Info, "Motor Control initialized");
+        MotorInitialized = true;
     }
 
     // Initialize IMU
     Log::Add(Log::Level::Info, "Initializing IMU...");
-    if (Error err = IMU::Init(); err != Error::Ok) {
+    bool IMUInitialized = false;
+    if (Error err = IMU::Init(); err != Error::Ok)
+    {
         Log::Add(Log::Level::Error, "IMU Init failed with error: %d", static_cast<uint8_t>(err));
         LED::LoopErrorCode(0xac); // 0b10101100
-    } else {
-        Log::Add(Log::Level::Info, "IMU initialized");
     }
-
-
-    // Initialize Motor Control
-    Log::Add(Log::Level::Info, "Initializing Motor Control...");
-    if (Error err = Motor::Init(); err != Error::Ok) {
-        Log::Add(Log::Level::Error, "Motor Control Init failed with error: %d", static_cast<uint8_t>(err));
-        LED::LoopErrorCode(0x57); // 0b01010111
-    } else {
-        Log::Add(Log::Level::Info, "Motor Control initialized");
+    else
+    {
+        Log::Add(Log::Level::Info, "IMU initialized");
+        IMUInitialized = true;
     }
 
     // Initialize Power Management
     Log::Add(Log::Level::Info, "Initializing Power Management...");
-    if (Error err = Power::Init(); err != Error::Ok) {
+    if (Error err = Power::Init(); err != Error::Ok)
+    {
         Log::Add(Log::Level::Error, "Power Management Init failed with error: %d", static_cast<uint8_t>(err));
         LED::LoopErrorCode(0x39); // 0b00111001
-    } else {
+    }
+    else
+    {
         Log::Add(Log::Level::Info, "Power Management initialized");
     }
     
@@ -137,18 +199,25 @@ void app_main()
             }
         );
     }
-    else {
+    else
+    {
         Log::Add(Log::Level::Error, "Wi-Fi Init failed with error: %d", static_cast<uint8_t>(err));
         LED::LoopErrorCode(0x4e); // 0b01001110
     }
 
     // Initialize Main Timer (starts main lifecycle tasks like IMU updates, motor control, etc.)
-    Log::Add(Log::Level::Info, "Initializing Main Timer...");
-    if (Error err = Timer::Init(); err != Error::Ok) {
-        Log::Add(Log::Level::Error, "Main Timer Init failed with error: %d", static_cast<uint8_t>(err));
-        LED::LoopErrorCode(0x69); // 0b01101001
-    } else {
-        Log::Add(Log::Level::Info, "Main Timer initialized");
+    if (MotorInitialized && IMUInitialized)
+    {
+        Log::Add(Log::Level::Info, "Initializing Main Timer...");
+        if (Error err = Timer::Init(); err != Error::Ok)
+        {
+            Log::Add(Log::Level::Error, "Main Timer Init failed with error: %d", static_cast<uint8_t>(err));
+            LED::LoopErrorCode(0x69); // 0b01101001
+        }
+        else
+        {
+            Log::Add(Log::Level::Info, "Main Timer initialized");
+        }
     }
 
     LED::SetColor(0, {0, 64, 0}, 0.2f); // Set LED 0 to low green to indicate ready state

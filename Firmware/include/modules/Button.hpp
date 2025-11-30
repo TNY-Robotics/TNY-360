@@ -1,7 +1,7 @@
 #pragma once
 #include "utils.hpp"
 
-namespace Buttons
+namespace Button
 {
     using Callback = void(*)();
 
