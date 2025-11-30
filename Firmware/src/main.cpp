@@ -14,6 +14,8 @@
 #include "modules/LED.hpp"
 #include "modules/Timer.hpp"
 #include "modules/Button.hpp"
+#include "modules/Screen.hpp"
+#include "modules/Menus.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -123,8 +125,26 @@ void app_main()
         Log::Add(Log::Level::Info, "I2C initialized");
     }
 
-    // Initialize Screen Module
-    // TODO
+    // FIXME : temporary test to list I2C Devices
+    {
+        Log::Add(Log::Level::Info, "Scanning primary I2C bus for devices...");
+        for (uint8_t addr = 1; addr < 127; addr++)
+        {
+            if (I2C::ProbeAddress(I2C::handle_primary, addr) == Error::Ok)
+            {
+                Log::Add(Log::Level::Info, "Found I2C device at address 0x%02x", addr);
+            }
+        }
+
+        Log::Add(Log::Level::Info, "Scanning secondary I2C bus for devices...");
+        for (uint8_t addr = 1; addr < 127; addr++)
+        {
+            if (I2C::ProbeAddress(I2C::handle_secondary, addr) == Error::Ok)
+            {
+                Log::Add(Log::Level::Info, "Found I2C device at address 0x%02x", addr);
+            }
+        }
+    }
 
     // Initialize Motor Control
     Log::Add(Log::Level::Info, "Initializing Motor Control...");
@@ -152,6 +172,30 @@ void app_main()
     {
         Log::Add(Log::Level::Info, "IMU initialized");
         IMUInitialized = true;
+    }
+
+    // Initialize Screen Module
+    Log::Add(Log::Level::Info, "Initializing Screen Module...");
+    if (Error err = Screen::Init(); err != Error::Ok)
+    {
+        Log::Add(Log::Level::Error, "Screen Module Init failed with error: %d", static_cast<uint8_t>(err));
+        LED::LoopErrorCode(0x3c); // 0b00111100
+    }
+    else
+    {
+        Log::Add(Log::Level::Info, "Screen Module initialized");
+    }
+
+    // Initialize Menus system
+    Log::Add(Log::Level::Info, "Initializing Menus System...");
+    if (Error err = Menus::Init(); err != Error::Ok)
+    {
+        Log::Add(Log::Level::Error, "Menus System Init failed with error: %d", static_cast<uint8_t>(err));
+        LED::LoopErrorCode(0x2a); // 0b00101010
+    }
+    else
+    {
+        Log::Add(Log::Level::Info, "Menus System initialized");
     }
 
     // Initialize Power Management

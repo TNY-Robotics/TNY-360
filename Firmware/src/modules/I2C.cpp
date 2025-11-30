@@ -4,6 +4,9 @@
 
 namespace I2C
 {
+    i2c_master_bus_handle_t handle_primary = nullptr;
+    i2c_master_bus_handle_t handle_secondary = nullptr;
+
     Error Init()
     {
         // First setup the primary I2C bus
@@ -50,6 +53,16 @@ namespace I2C
             return Error::Unknown;
         }
 
-        return Error::Ok;        
+        return Error::Ok;
+    }
+
+    Error ProbeAddress(i2c_master_bus_handle_t handle, uint8_t address)
+    {
+        esp_err_t err = i2c_master_probe(handle, address, 100);
+        if (err == ESP_OK)
+        {
+            return Error::Ok;
+        }
+        return Error::NotFound;
     }
 }

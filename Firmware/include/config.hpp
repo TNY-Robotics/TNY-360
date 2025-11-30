@@ -48,8 +48,8 @@ constexpr gpio_num_t I2C_SECONDARY_SCL_GPIO_NUM = GPIO_NUM_45;
 
 
 /** Buttons **/
-constexpr gpio_num_t BTN_LEFT_PIN = GPIO_NUM_32;
-constexpr gpio_num_t BTN_RIGHT_PIN = GPIO_NUM_33;
+constexpr gpio_num_t BTN_LEFT_PIN = GPIO_NUM_10;
+constexpr gpio_num_t BTN_RIGHT_PIN = GPIO_NUM_11;
 constexpr uint16_t BTN_LONG_PRESS_MS = 500; // ms
 // Buttons polling interval in milliseconds
 constexpr uint16_t BTN_POLL_INT_MS = 50; // ms
