@@ -246,11 +246,47 @@ void app_main()
         {
             Log::Add(Log::Level::Info, "Main Timer initialized");
         }
+    } else
+    {
+        Log::Add(Log::Level::Warning, "Main Timer initialization skipped due to previous errors.");
     }
 
     LED::SetColor(0, {0, 64, 0}, 0.2f); // Set LED 0 to low green to indicate ready state
 
     Log::Add(Log::Level::Info, "Robot initialization complete.");
+
+    Sound::SetVolume(0.2f);
+    Sound::Play(Sound::note(Sound::Freq::C_5, 0.05f));
+    Sound::Play(Sound::pause(0.04f));
+    Sound::Play(Sound::note(Sound::Freq::C_5, 0.05f));
+    Sound::Play(Sound::pause(0.02f));
+    Sound::Play(Sound::note(Sound::Freq::A_5, 0.05f));
+
+    // Other sounds below for testing purposes
+    
+    // Sound::Play(Sound::note(Sound::Freq::E_4, 0.05f));
+    // Sound::Play(Sound::pause(0.02f));
+    // Sound::Play(Sound::note(Sound::Freq::F_4, 0.05f));
+    // Sound::Play(Sound::pause(0.02f));
+    // Sound::Play(Sound::note(Sound::Freq::A_4, 0.05f));
+    // Sound::Play(Sound::pause(0.02f));
+    // Sound::Play(Sound::note(Sound::Freq::B_4, 0.05f));
+    // Sound::Play(Sound::pause(0.02f));
+    // Sound::Play(Sound::note(Sound::Freq::A_4, 0.05f));
+    // Sound::Play(Sound::pause(0.02f));
+    // Sound::Play(Sound::note(Sound::Freq::B_4, 0.05f));
+    
+    // Sound::Play(Sound::note(Sound::Freq::A_4, 0.05f));
+    // Sound::Play(Sound::pause(0.02f));
+    // Sound::Play(Sound::note(Sound::Freq::E_4, 0.05f));
+    // Sound::Play(Sound::pause(0.02f));
+    // Sound::Play(Sound::note(Sound::Freq::F_4, 0.05f));
+    // Sound::Play(Sound::pause(0.02f));
+    // Sound::Play(Sound::note(Sound::Freq::A_4, 0.05f));
+    // Sound::Play(Sound::pause(0.02f));
+    // Sound::Play(Sound::note(Sound::Freq::B_4, 0.05f));
+    // Sound::Play(Sound::pause(0.02f));
+    // Sound::Play(Sound::note(Sound::Freq::C_4, 0.05f));
 }
 #ifdef __cplusplus
 }
