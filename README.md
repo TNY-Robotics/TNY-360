@@ -13,6 +13,8 @@ You can learn more about TNY-360 and find assembly instructions, wiring diagrams
 - Uses TNY Robotics drivers for common sensors and PWM controllers:
     - MPU6050 driver: https://github.com/TNY-Robotics/mpu6050-esp-idf
     - PCA9685 driver: https://github.com/TNY-Robotics/pca9685-esp-idf
+    - SH1106 driver: https://github.com/TNY-Robotics/sh1106-esp-idf
+    - INA226 driver: https://github.com/TNY-Robotics/ina226-esp-idf
 
 ## Repository layout
 - `CAD/` — FreeCAD project and all 3D models
@@ -60,6 +62,8 @@ Notes:
 This project uses driver libraries maintained by TNY Robotics:
 - MPU6050 (IMU): https://github.com/TNY-Robotics/mpu6050-esp-idf
 - PCA9685 (PWM): https://github.com/TNY-Robotics/pca9685-esp-idf
+- SH1106 (OLED): https://github.com/TNY-Robotics/sh1106-esp-idf
+- INA226 (Current/Power): https://github.com/TNY-Robotics/ina226-esp-idf
 
 Drivers are included as git submodules under `Firmware/components/`. If they are not present locally, initialize or add them:
 
@@ -90,3 +94,5 @@ See the [LICENSE](./LICENSE) file, or the [Creative Commons](https://creativecom
 ## Authors
 
 This repository is maintained by the TNY Robotics team - https://tny-robotics.com.
+
+If you have any questions or suggestions, feel free to open an issue or contact us at [contact@tny-robotics.com](mailto:contact@tny-robotics.com).
