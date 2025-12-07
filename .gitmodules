@@ -1,6 +1,3 @@
-[submodule "ESP32/components/sh1106-esp-idf"]
-	path = ESP32/components/sh1106-esp-idf
-	url = https://github.com/TNY-Robotics/sh1106-esp-idf.git
 [submodule "Firmware/components/sh1106"]
 	path = Firmware/components/sh1106
 	url = https://github.com/TNY-Robotics/sh1106-esp-idf.git
