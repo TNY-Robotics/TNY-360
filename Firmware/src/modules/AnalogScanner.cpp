@@ -5,19 +5,43 @@
 #include "modules/Log.hpp"
 #include "modules/NVS.hpp"
 #include "config.hpp"
+#include <vector>
+#include <algorithm>
 
 namespace AnalogScanner
 {
     static bool initialized = false;
     static NVS::Handle *nvsHandle = nullptr;
     static adc_oneshot_unit_handle_t adc_handle = nullptr;
-
-    int min_raw_values[static_cast<uint8_t>(Id::Count)] = { 0 };         // raw min value, for calibration
-    int max_raw_values[static_cast<uint8_t>(Id::Count)] = { 0 };         // raw max value, for calibration
-    float min_calibrated_values[static_cast<uint8_t>(Id::Count)] = { 0.0f };  // calibrated min value, for calibration
-    float max_calibrated_values[static_cast<uint8_t>(Id::Count)] = { 0.0f };  // calibrated max value, for calibration
-    int last_raw_values[static_cast<uint8_t>(Id::Count)] = { 0 };        // last raw value read by the scan task
-    float last_calibrated_values[static_cast<uint8_t>(Id::Count)] = { 0.0f }; // last calibrated value read by the scan task
+    static adc_cali_handle_t cali_handle = nullptr;
+    // fsr, shoulder, elbow, leg
+    // br, bl, fl, fr
+    int min_raw_values[static_cast<uint8_t>(Id::Count)] = {
+        0, 214, 214, 214,
+        0, 214, 214, 214,
+        0, 214, 214, 214,
+        0, 214, 214, 214
+    }; // raw min value, for calibration (mV)
+    int max_raw_values[static_cast<uint8_t>(Id::Count)] = {
+        0, 3084, 3084, 3084,
+        0, 3084, 3084, 3084,
+        0, 3084, 3084, 3084,
+        0, 3084, 3084, 3084
+    }; // raw max value, for calibration (mV)
+    float min_calibrated_values[static_cast<uint8_t>(Id::Count)] = {
+        0.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f
+    };  // calibrated min value, for calibration (real unit)
+    float max_calibrated_values[static_cast<uint8_t>(Id::Count)] = {
+        0.0f, 180.0f, 180.0f, 180.0f,
+        0.0f, 180.0f, 180.0f, 180.0f,
+        0.0f, 180.0f, 180.0f, 180.0f,
+        0.0f, 180.0f, 180.0f, 180.0f
+    };  // calibrated max value, for calibration (real unit)
+    int last_raw_values[static_cast<uint8_t>(Id::Count)] = { 0 };             // last raw value read by the scan task (mV)
+    float last_calibrated_values[static_cast<uint8_t>(Id::Count)] = { 0.0f }; // last calibrated value read by the scan task (real unit)
 
     static uint8_t update_current_channel = 0;
     
@@ -81,7 +105,15 @@ namespace AnalogScanner
             Log::Add(Log::Level::Error, "AnalogScanner: Failed to configure ADC oneshot channel");
             return Error::Unknown;
         }
-        // FIXME : Should check if above configuration is valid (voltages, attenuation, etc.)
+
+        // configure calibration handle
+        adc_cali_curve_fitting_config_t cali_config = {
+            .unit_id = ADC_UNIT_1,
+            .chan = ADC_CHANNEL_1,
+            .atten = ADC_ATTEN_DB_12,
+            .bitwidth = ADC_BITWIDTH_DEFAULT,
+        };
+        adc_cali_create_scheme_curve_fitting(&cali_config, &cali_handle);
 
         // select initial channel
         select(update_current_channel); // 0
@@ -168,11 +200,27 @@ namespace AnalogScanner
 
     void _update_task(void *pvParams)
     {
-        if (adc_oneshot_read(adc_handle, ADC_CHANNEL_1, &last_raw_values[update_current_channel]) != ESP_OK)
+        // sample multiple times to stabilize reading
+        constexpr int NB_SAMPLES = 9;
+        int raw_samples[NB_SAMPLES] = { 0 };
+        for (int i = 0; i < NB_SAMPLES; i++)
         {
-            Log::Add(Log::Level::Error, "AnalogScanner: Failed to read ADC value");
-            // TODO : should we continue or break here?
+            int raw_value;
+            if (adc_oneshot_read(adc_handle, ADC_CHANNEL_1, &raw_value) != ESP_OK)
+            {
+                Log::Add(Log::Level::Error, "AnalogScanner: Failed to read ADC value");
+                // TODO : should we continue or break here?
+            }
+            raw_samples[i] = raw_value;
         }
+
+        std::sort(raw_samples, raw_samples + NB_SAMPLES);
+        int raw_value_median = raw_samples[NB_SAMPLES / 2];
+
+        // map raw value to mV
+        adc_cali_raw_to_voltage(cali_handle, raw_value_median, (int*)&last_raw_values[update_current_channel]);
+
+        // map to calibrated value
         last_calibrated_values[update_current_channel] = map<float>(
             last_raw_values[update_current_channel], min_raw_values[update_current_channel],
             max_raw_values[update_current_channel], min_calibrated_values[update_current_channel],

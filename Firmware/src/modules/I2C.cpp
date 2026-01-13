@@ -7,8 +7,12 @@ namespace I2C
     i2c_master_bus_handle_t handle_primary = nullptr;
     i2c_master_bus_handle_t handle_secondary = nullptr;
 
+    static bool initialized = false;
+
     Error Init()
     {
+        if (initialized) return Error::Ok;
+
         // First setup the primary I2C bus
         i2c_master_bus_config_t primary_config = {
             .i2c_port = I2C_NUM_0,
@@ -52,6 +56,8 @@ namespace I2C
             Log::Add(Log::Level::Error, "I2C: Failed to initialize secondary I2C bus");
             return Error::Unknown;
         }
+
+        initialized = true;
 
         return Error::Ok;
     }

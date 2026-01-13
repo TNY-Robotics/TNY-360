@@ -26,6 +26,7 @@ namespace WebServer
         httpd_config_t config = HTTPD_DEFAULT_CONFIG();
         config.server_port = port;
         config.max_uri_handlers = 8;
+        config.ctrl_port = port + 1;
         
         if (httpd_start(&server, &config) != ESP_OK)
         {

@@ -65,12 +65,6 @@ namespace WebSocket
         if (ret == ESP_OK) {
             ws_pkt.payload[ws_pkt.len] = 0;  // Null-terminate pour éviter les erreurs
 
-            char hex_str[WEBSOCKET_MAX_MSG_SIZE * 3 + 1] = {0}; // Each byte: "XX " + null terminator
-            size_t pos = 0;
-            for (size_t i = 0; i < ws_pkt.len && pos < sizeof(hex_str) - 4; ++i) {
-                pos += snprintf(hex_str + pos, sizeof(hex_str) - pos, "%02X ", ws_pkt.payload[i]);
-            }
-
             Protocol::Request req_pkt;
             req_pkt.id = (ws_pkt.payload[0] << 8) | ws_pkt.payload[1];
             req_pkt.cmd = ws_pkt.payload[2];
@@ -124,6 +118,12 @@ namespace WebSocket
 
             if (err != Error::Ok) {
                 Log::Add(Log::Level::Error, "Protocol::Handle error: %d", static_cast<uint8_t>(err));
+                char hex_str[WEBSOCKET_MAX_MSG_SIZE * 3 + 1] = {0}; // Each byte: "XX " + null terminator
+                size_t pos = 0;
+                for (size_t i = 0; i < ws_pkt.len && pos < sizeof(hex_str) - 4; ++i) {
+                    pos += snprintf(hex_str + pos, sizeof(hex_str) - pos, "%02X ", ws_pkt.payload[i]);
+                }
+                Log::Add(Log::Level::Debug, "Request command: 0x%02X, length: %d, payload (hex): %s", req_pkt.cmd, req_pkt.len, hex_str);
                 ret = ESP_FAIL;
             }
         }

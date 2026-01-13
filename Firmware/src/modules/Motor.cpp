@@ -13,25 +13,25 @@ namespace Motor
     bool initialized = false;
 
     float freq_min[static_cast<uint8_t>(Id::Count)] = {
-        190, 100, 120, 0,
-        150, 100, 130, 0,
-        250, 100, 105, 0,
-        240, 105, 130, 0};
+        102, 102, 102, 102,
+        102, 102, 102, 102,
+        102, 102, 102, 102,
+        102, 102, 102, 102};
     float freq_max[static_cast<uint8_t>(Id::Count)] = {
-        330, 510, 450, 0,
-        320, 515, 445, 0,
-        425, 520, 450, 0,
-        415, 520, 450, 0};
+        512, 512, 512, 512,
+        512, 512, 512, 512,
+        512, 512, 512, 512,
+        512, 512, 512, 512};
     float angle_min[static_cast<uint8_t>(Id::Count)] = {
-        45, 90, 135, 0,
-        -45, -90, 0, 0,
-        -45, 90, 135, 0,
-        45, -90, 0, 0};
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0};
     float angle_max[static_cast<uint8_t>(Id::Count)] = {
-        -45, -90, 0, 0,
-        45, 90, 135, 0,
-        45, -90, 0, 0,
-        -45, 90, 135, 0};
+        180, 180, 180, 180,
+        180, 180, 180, 180,
+        180, 180, 180, 180,
+        180, 180, 180, 180};
 
     float last_motor_freq[static_cast<uint8_t>(Id::Count)] = { // for smooth transition with duration
         0, 0, 0, 0,
@@ -131,7 +131,7 @@ namespace Motor
 
         uint8_t id_idx = static_cast<uint8_t>(id);
 
-        if (angle > angle_max[id_idx] || angle < angle_min[id_idx])
+        if (angle > std::max(angle_min[id_idx], angle_max[id_idx]) || angle < std::min(angle_min[id_idx], angle_max[id_idx]))
             return Error::InvalidParameters;
 
         uint16_t freq = map(angle, angle_min[id_idx], angle_max[id_idx], freq_min[id_idx], freq_max[id_idx]);
@@ -143,12 +143,15 @@ namespace Motor
 
     Error SetAngle(Id id, float angle, float duration_s)
     {
+        if (duration_s <= 0.0f)
+            return SetAngle(id, angle);
+
         if (id >= Id::Count)
             return Error::InvalidParameters;
 
         uint8_t id_idx = static_cast<uint8_t>(id);
 
-        if (angle > angle_max[id_idx] || angle < angle_min[id_idx])
+        if (angle > std::max(angle_min[id_idx], angle_max[id_idx]) || angle < std::min(angle_min[id_idx], angle_max[id_idx]))
             return Error::InvalidParameters;
 
         uint16_t freq = map(angle, angle_min[id_idx], angle_max[id_idx], freq_min[id_idx], freq_max[id_idx]);
@@ -191,6 +194,29 @@ namespace Motor
         {
             SetAngle(ids[i], angles[i], durations_s[i]);
         }
+        return Error::Ok;
+    }
+
+    // DEBUG PURPOSES ONLY
+    Error SetPWM(Id id, uint16_t pwm_value)
+    {
+        if (id >= Id::Count)
+            return Error::InvalidParameters;
+
+        // reset motor control variables
+        uint8_t id_idx = static_cast<uint8_t>(id);
+        target_motor_freq[id_idx] = 0;
+        last_motor_freq[id_idx] = 0;
+        motor_adder[id_idx] = 0;
+        motor_force_countdown[id_idx] = 0;
+
+        // set pwm directly
+        if (pca9685_set_pwm(pca_handle, id_idx, pwm_value) != ESP_OK)
+        {
+            Log::Add(Log::Level::Error, "Motor: Failed to set PWM for motor %d", id_idx);
+            return Error::Unknown;
+        }
+
         return Error::Ok;
     }
 

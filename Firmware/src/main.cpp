@@ -35,7 +35,7 @@ void app_main()
         Log::Add(Log::Level::Info, "LED Module initialized");
     }
 
-    LED::SetColor(0, {64, 32, 0}, 0.2f); // Set LED 0 to low orange as startup indicator
+    LED::SetColor(0, {32, 16, 0}, 0.2f); // Set LED 0 to low orange as startup indicator
 
     // Initialize Button Module
     Log::Add(Log::Level::Info, "Initializing Button Module...");
@@ -107,27 +107,6 @@ void app_main()
     else
     {
         Log::Add(Log::Level::Info, "I2C initialized");
-    }
-
-    // FIXME : temporary test to list I2C Devices
-    {
-        Log::Add(Log::Level::Info, "Scanning primary I2C bus for devices...");
-        for (uint8_t addr = 1; addr < 127; addr++)
-        {
-            if (I2C::ProbeAddress(I2C::handle_primary, addr) == Error::Ok)
-            {
-                Log::Add(Log::Level::Info, "Found I2C device at address 0x%02x", addr);
-            }
-        }
-
-        Log::Add(Log::Level::Info, "Scanning secondary I2C bus for devices...");
-        for (uint8_t addr = 1; addr < 127; addr++)
-        {
-            if (I2C::ProbeAddress(I2C::handle_secondary, addr) == Error::Ok)
-            {
-                Log::Add(Log::Level::Info, "Found I2C device at address 0x%02x", addr);
-            }
-        }
     }
 
     // Initialize Motor Control
@@ -251,7 +230,7 @@ void app_main()
         Log::Add(Log::Level::Warning, "Main Timer initialization skipped due to previous errors.");
     }
 
-    LED::SetColor(0, {0, 64, 0}, 0.2f); // Set LED 0 to low green to indicate ready state
+    LED::SetColor(0, {0, 8, 0}, 0.2f); // Set LED 0 to low green to indicate ready state
 
     Log::Add(Log::Level::Info, "Robot initialization complete.");
 
@@ -261,32 +240,6 @@ void app_main()
     Sound::Play(Sound::note(Sound::Freq::C_5, 0.05f));
     Sound::Play(Sound::pause(0.02f));
     Sound::Play(Sound::note(Sound::Freq::A_5, 0.05f));
-
-    // Other sounds below for testing purposes
-    
-    // Sound::Play(Sound::note(Sound::Freq::E_4, 0.05f));
-    // Sound::Play(Sound::pause(0.02f));
-    // Sound::Play(Sound::note(Sound::Freq::F_4, 0.05f));
-    // Sound::Play(Sound::pause(0.02f));
-    // Sound::Play(Sound::note(Sound::Freq::A_4, 0.05f));
-    // Sound::Play(Sound::pause(0.02f));
-    // Sound::Play(Sound::note(Sound::Freq::B_4, 0.05f));
-    // Sound::Play(Sound::pause(0.02f));
-    // Sound::Play(Sound::note(Sound::Freq::A_4, 0.05f));
-    // Sound::Play(Sound::pause(0.02f));
-    // Sound::Play(Sound::note(Sound::Freq::B_4, 0.05f));
-    
-    // Sound::Play(Sound::note(Sound::Freq::A_4, 0.05f));
-    // Sound::Play(Sound::pause(0.02f));
-    // Sound::Play(Sound::note(Sound::Freq::E_4, 0.05f));
-    // Sound::Play(Sound::pause(0.02f));
-    // Sound::Play(Sound::note(Sound::Freq::F_4, 0.05f));
-    // Sound::Play(Sound::pause(0.02f));
-    // Sound::Play(Sound::note(Sound::Freq::A_4, 0.05f));
-    // Sound::Play(Sound::pause(0.02f));
-    // Sound::Play(Sound::note(Sound::Freq::B_4, 0.05f));
-    // Sound::Play(Sound::pause(0.02f));
-    // Sound::Play(Sound::note(Sound::Freq::C_4, 0.05f));
 }
 #ifdef __cplusplus
 }

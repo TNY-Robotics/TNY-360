@@ -3,6 +3,7 @@
 #include "modules/Button.hpp"
 #include "modules/menus/face.hpp"
 #include "modules/menus/list.hpp"
+#include "modules/menus/i2c.hpp"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <cmath>
@@ -165,20 +166,17 @@ namespace Menus
         0b01000010,
         0b00111100,
     });
-    // MenuList* bluetooth_menu = new MenuList("Bluetooth", network_menu);
-    // MenuList* wifi_menu = new MenuList("Wi-Fi", network_menu);
-    // MenuList* imu_menu = new MenuList("IMU", tests_menu);
-    // WifiStatusMenu* wifi_status_menu = new WifiStatusMenu(wifi_menu);
-    // WifiConnectMenu* wifi_connect_menu = new WifiConnectMenu(wifi_menu);
-    // WifiDisconnectMenu* wifi_disconnect_menu = new WifiDisconnectMenu(wifi_menu);
-    // GyroMenu* gyro_menu = new GyroMenu(imu_menu);
-    // AcceMenu* acce_menu = new AcceMenu(imu_menu);
-    // TempMenu* temp_menu = new TempMenu(imu_menu);
-    // IMUCalibMenu* imu_calib_menu = new IMUCalibMenu(imu_menu);
-    // PressureMenu* pressure_menu = new PressureMenu(tests_menu);
-    // MotorMenu* motor_menu = new MotorMenu(tests_menu);
-    // I2CMenu* i2c_menu = new I2CMenu(tests_menu);
-    // PowerMenu* power_menu = new PowerMenu(tests_menu);
+
+    MenuI2C* i2c_menu = new MenuI2C("I2C Scan", tests_menu, (uint8_t[8]){
+        0b00001110,
+        0b00010001,
+        0b00000001,
+        0b00110010,
+        0b01001100,
+        0b10000000,
+        0b10001000,
+        0b01110000,
+    });
 
     Menu* main_menu_childs[] = {
         settings_menu,
@@ -186,31 +184,9 @@ namespace Menus
         tests_menu,
         about_menu
     };
-    // Menu* settings_menu_childs[] = {
-    //     new FactoryResetMenu(settings_menu)
-    // };
-    // Menu* network_menu_childs[] = {
-    //     bluetooth_menu,
-    //     wifi_menu
-    // };
-    // Menu* wifi_menu_childs[] = {
-    //     wifi_status_menu,
-    //     wifi_connect_menu,
-    //     wifi_disconnect_menu
-    // };
-    // Menu* test_menu_childs[] = {
-    //     imu_menu,
-    //     pressure_menu,
-    //     motor_menu,
-    //     i2c_menu,
-    //     power_menu
-    // };
-    // Menu* imu_menu_childs[] = {
-    //     gyro_menu,
-    //     acce_menu,
-    //     temp_menu,
-    //     imu_calib_menu
-    // };
+    Menu* test_menu_childs[] = {
+        i2c_menu,
+    };
 
     void update_task(void* pvParams)
     {
@@ -231,11 +207,7 @@ namespace Menus
     {
         face_menu->setMainMenu(main_menu);
         main_menu->setItems(main_menu_childs, sizeof(main_menu_childs)/sizeof(Menu*));
-        // settings_menu->setItems(settings_menu_childs, 1);
-        // network_menu->setItems(network_menu_childs, 2);
-        // wifi_menu->setItems(wifi_menu_childs, 3);
-        // tests_menu->setItems(test_menu_childs, 5);
-        // imu_menu->setItems(imu_menu_childs, 4);
+        tests_menu->setItems(test_menu_childs, sizeof(test_menu_childs)/sizeof(Menu*));
         SetCurrentMenu(face_menu);
 
         // setup button callbacks

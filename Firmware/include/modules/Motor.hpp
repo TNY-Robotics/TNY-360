@@ -80,6 +80,9 @@ namespace Motor
     */
     Error SetAngles(const Id* ids, const float* angles, const float* durations_s, uint8_t count);
 
+    // DEBUG PURPOSES ONLY
+    Error SetPWM(Id id, uint16_t pwm_value);
+
     /**
     * @brief Sets the force level for a motor.
     * @param id Motor identifier.

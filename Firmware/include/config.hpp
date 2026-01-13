@@ -3,7 +3,7 @@
 #include <driver/gpio.h>
 
 /** COMPILATION FLAGS **/
-#define DEBUG_MODE 1  // 1 to enable debug logs and behaviors, 0 to disable
+#define DEBUG_MODE 0  // 1 to enable debug logs and behaviors, 0 to disable
 
 
 /** LOGGING **/
