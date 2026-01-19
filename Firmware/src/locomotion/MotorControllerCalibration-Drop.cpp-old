@@ -1,0 +1,449 @@
+#include "locomotion/MotorController.hpp"
+#include "common/Log.hpp"
+#include <cmath>
+
+constexpr const char* TAG = "MtrCtrl-Calib";
+
+Error MotorController::detect_position_feedback_noise(AnalogDriver::Value* out_noise_level_mV)
+{
+    constexpr uint8_t CALIB_NOISE_NB_SAMPLES = 30; // Number of samples to gather for noise detection
+    constexpr uint16_t CALIB_NOISE_SAMPLE_DELAY_MS = 100; // Delay between noise samples in ms
+    
+    // Gather samples
+    AnalogDriver::Value noise_samples[CALIB_NOISE_NB_SAMPLES];
+    for (uint8_t i = 0; i < CALIB_NOISE_NB_SAMPLES; i++)
+    {
+        if (Error err = AnalogDriver::GetVoltage(analog_channel, &noise_samples[i]); err != Error::None)
+        {
+            Log::Add(Log::Level::Error, TAG, "Failed to read analog voltage during calibration");
+            calibration_state = UNCALIBRATED;
+            return err;
+        }
+        vTaskDelay(pdMS_TO_TICKS(CALIB_NOISE_SAMPLE_DELAY_MS));
+    }
+
+    // Calculate noise (simple min/max difference for now)
+    // TODO : improve with standard deviation or other method
+    AnalogDriver::Value noise_min = noise_samples[0];
+    AnalogDriver::Value noise_max = noise_samples[0];
+    for (uint8_t i = 1; i < CALIB_NOISE_NB_SAMPLES; i++)
+    {
+        if (noise_samples[i] < noise_min) noise_min = noise_samples[i];
+        if (noise_samples[i] > noise_max) noise_max = noise_samples[i];
+    }
+    *out_noise_level_mV = noise_max - noise_min;
+
+    return Error::None;
+}
+
+Error MotorController::detect_servo_pwm_deadband(MotorDriver::Value default_position, AnalogDriver::Value feedback_noise_level_mV, MotorDriver::Value* out_deadband_pwm)
+{
+    constexpr MotorDriver::Value CALIB_DEADBAND_TEST_PWM_INCREMENT = 1; // PWM increment for deadband detection
+    constexpr uint16_t CALIB_DEADBAND_TEST_DELAY_MS = 200; // Delay after changing PWM to allow motor to move
+    constexpr MotorDriver::Value CALIB_DEADBAND_MAX_TEST_RANGE = 50; // Maximum PWM range to test for deadband    
+    constexpr uint8_t CALIB_DEADBAND_SAMPLES = 9; // Number of samples to determine deadband
+
+    // Set servo to default position 
+    if (Error err = MotorDriver::SetPWM(motor_channel, default_position); err != Error::None)
+    {
+        Log::Add(Log::Level::Error, TAG, "Failed to set motor PWM during calibration");
+        calibration_state = UNCALIBRATED;
+        return err;
+    }
+    vTaskDelay(pdMS_TO_TICKS(1000)); // wait for motor to settle
+
+    // Measure default position voltage
+    AnalogDriver::Value default_voltage = 0;
+    if (Error err = AnalogDriver::GetVoltage(analog_channel, &default_voltage); err != Error::None)
+    {
+        Log::Add(Log::Level::Error, TAG, "Failed to read analog voltage during calibration");
+        calibration_state = UNCALIBRATED;
+        return err;
+    }
+
+    MotorDriver::Value current_pwm = default_position;
+    AnalogDriver::Value current_voltage = default_voltage;
+    MotorDriver::Value pwm_deadbands[CALIB_DEADBAND_SAMPLES];
+    for (uint8_t sample_idx = 0; sample_idx < CALIB_DEADBAND_SAMPLES; sample_idx++)
+    {       
+        MotorDriver::Value base_pwm = current_pwm;
+        AnalogDriver::Value base_voltage = current_voltage;
+        while (std::abs(current_voltage - base_voltage) < feedback_noise_level_mV)
+        {
+            current_pwm += CALIB_DEADBAND_TEST_PWM_INCREMENT;
+            if (Error err = MotorDriver::SetPWM(motor_channel, current_pwm); err != Error::None)
+            {
+                Log::Add(Log::Level::Error, TAG, "Failed to set motor PWM during calibration");
+                calibration_state = UNCALIBRATED;
+                return err;
+            }
+            vTaskDelay(pdMS_TO_TICKS(CALIB_DEADBAND_TEST_DELAY_MS));
+            if (Error err = AnalogDriver::GetVoltage(analog_channel, &current_voltage); err != Error::None)
+            {
+                Log::Add(Log::Level::Error, TAG, "Failed to read analog voltage during calibration");
+                calibration_state = UNCALIBRATED;
+                return err;
+            }
+            if (current_pwm - base_pwm > CALIB_DEADBAND_MAX_TEST_RANGE)
+            {
+                Log::Add(Log::Level::Warning, TAG, "Failed to detect deadband within maximum test range");
+                *out_deadband_pwm = 0;
+                return Error::HardwareFailure;
+            }
+        }
+        MotorDriver::Value deadband = current_pwm - base_pwm;
+        pwm_deadbands[sample_idx] = deadband;
+    }
+
+    // Use the maximum deadband from samples
+    int deadband_max = 0;
+    for (uint8_t i = 0; i < CALIB_DEADBAND_SAMPLES; i++)
+    {
+        if (pwm_deadbands[i] > deadband_max)
+        {
+            deadband_max = pwm_deadbands[i];
+        }
+    }
+    *out_deadband_pwm = static_cast<MotorDriver::Value>(deadband_max);
+
+    return Error::None;
+}
+
+
+Error MotorController::run_calibration_sequence()
+{
+    constexpr uint16_t CALIB_SAFEGUARD_PWM_MIN = 70; // absolute minimum PWM to avoid breaking the motor
+    constexpr uint16_t CALIB_SAFEGUARD_PWM_MAX = 560; // absolute maximum PWM to avoid breaking the motor
+    constexpr uint16_t CALIB_MOVE_DELAY_MS = 100; // Delay after moving motor to allow it to settle
+    constexpr AnalogDriver::Value CALIB_FEEDBACK_NOISE_ERR_THRESHOLD_MV = 100; // Maximum acceptable noise level in mV
+    constexpr MotorDriver::Value CALIB_DEADBAND_ERR_THRESHOLD_PWM_MIN = 2; // Minimum acceptable deadband in PWM units
+    constexpr MotorDriver::Value CALIB_DEADBAND_ERR_THRESHOLD_PWM_MAX = 20; // Maximum acceptable deadband in PWM units
+
+    Log::Add(Log::Level::Info, TAG, "Motor calibration sequence started");
+    calibration_state = CALIBRATING;
+
+
+    ///=== Moving motor to center position ===///
+    // NOTE : assuming duty cycle of 1.5ms at 50Hz
+    Log::Add(Log::Level::Info, TAG, "Moving motor to center position ...");
+    MotorDriver::Value center_pwm = static_cast<MotorDriver::Value>( (4096 * 1.5f) / 20 );
+    if (Error err = MotorDriver::SetPWM(motor_channel, center_pwm); err != Error::None)
+    {
+        Log::Add(Log::Level::Error, TAG, "Failed to set motor PWM, aborting calibration. Error: %d", static_cast<uint8_t>(err));
+        calibration_state = UNCALIBRATED;
+        return err;
+    }
+
+
+    ///=== Wait 1 second for motor to settle ===///
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+
+    ///=== Detect position feedback noise level ===///
+    Log::Add(Log::Level::Info, TAG, "Detecting position feedback noise level ...");
+    AnalogDriver::Value feedback_noise = 0;
+    // if (Error err = detect_position_feedback_noise(&feedback_noise); err != Error::None)
+    // {
+    //     Log::Add(Log::Level::Error, TAG, "Failed to detect position feedback noise, aborting calibration. Error: %d", static_cast<uint8_t>(err));
+    //     calibration_state = UNCALIBRATED;
+    //     return err;
+    // }
+    // if (feedback_noise > CALIB_FEEDBACK_NOISE_ERR_THRESHOLD_MV)
+    // {
+    //     Log::Add(Log::Level::Error, TAG, "Position feedback noise too high (%d mV), aborting calibration.", feedback_noise);
+    //     calibration_state = UNCALIBRATED;
+    //     return Error::HardwareFailure;
+    // }
+    feedback_noise = 6; // NOTE : temporary hardcode for testing
+    Log::Add(Log::Level::Info, TAG, "Position feedback noise level: %d mV", feedback_noise);
+    calibration_data.feedback_noise = feedback_noise;
+
+
+    ///=== Detect servo pwm deadband ===///
+    Log::Add(Log::Level::Info, TAG, "Detecting servo PWM deadband ...");
+    MotorDriver::Value servo_deadband;
+    // if (Error err = detect_servo_pwm_deadband(center_pwm, feedback_noise, &servo_deadband); err != Error::None)
+    // {
+    //     Log::Add(Log::Level::Error, TAG, "Failed to detect servo PWM deadband, aborting calibration. Error: %d", static_cast<uint8_t>(err));
+    //     calibration_state = UNCALIBRATED;
+    //     return err;
+    // }
+    // if (servo_deadband < CALIB_DEADBAND_ERR_THRESHOLD_PWM_MIN)
+    // {
+    //     Log::Add(Log::Level::Error, TAG, "Detected servo PWM deadband too small (%d), aborting calibration.", servo_deadband);
+    //     calibration_state = UNCALIBRATED;
+    //     return Error::HardwareFailure;
+    // }
+    // if (servo_deadband > CALIB_DEADBAND_ERR_THRESHOLD_PWM_MAX)
+    // {
+    //     Log::Add(Log::Level::Error, TAG, "Detected servo PWM deadband too large (%d), aborting calibration.", servo_deadband);
+    //     calibration_state = UNCALIBRATED;
+    //     return Error::HardwareFailure;
+    // }
+    servo_deadband = 4; // NOTE : temporary hardcode for testing
+    Log::Add(Log::Level::Info, TAG, "Servo PWM deadband: %d", servo_deadband);
+    calibration_data.pwm_deadband = servo_deadband;
+
+
+    ///=== Move to maximum position ===///
+    Log::Add(Log::Level::Info, TAG, "Detecting maximum servo limit ...");
+    {
+        // center servo and wait a bit
+        MotorDriver::Value current_pwm = center_pwm;
+        if (Error err = MotorDriver::SetPWM(motor_channel, center_pwm); err != Error::None)
+        {
+            Log::Add(Log::Level::Error, TAG, "Failed to set motor PWM, aborting calibration. Error: %d", static_cast<uint8_t>(err));
+            calibration_state = UNCALIBRATED;
+            return err;
+        }
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        // Read the voltage at center position
+        AnalogDriver::Value current_voltage = 0;
+        if (Error err = AnalogDriver::GetVoltage(analog_channel, &current_voltage); err != Error::None)
+        {
+            Log::Add(Log::Level::Error, TAG, "Failed to read analog voltage during calibration");
+            calibration_state = UNCALIBRATED;
+            return err;
+        }
+        
+        // Move towards maximum at deadband step, until stall is detected
+        bool has_stalled = false;
+        AnalogDriver::Value last_voltage = 0;
+        AnalogDriver::Value voltage_gap = 0;
+        AnalogDriver::Value voltage_gap_average = 0;
+        AnalogDriver::Value previous_gaps[3] = {0};
+        AnalogDriver::Value previous_drops[3] = {0};
+        while (!has_stalled)
+        {
+            current_pwm += servo_deadband;
+            if (current_pwm > CALIB_SAFEGUARD_PWM_MAX)
+            {
+                Log::Add(Log::Level::Warning, TAG, "Reached maximum safeguard PWM limit during calibration");
+                break;
+            }
+            if (Error err = MotorDriver::SetPWM(motor_channel, current_pwm); err != Error::None)
+            {
+                Log::Add(Log::Level::Error, TAG, "Failed to set motor PWM during calibration. Error: %d", static_cast<uint8_t>(err));
+                calibration_state = UNCALIBRATED;
+                return err;
+            }
+            vTaskDelay(pdMS_TO_TICKS(CALIB_MOVE_DELAY_MS));
+
+            last_voltage = current_voltage;
+            if (Error err = AnalogDriver::GetVoltage(analog_channel, &current_voltage); err != Error::None)
+            {
+                Log::Add(Log::Level::Error, TAG, "Failed to read analog voltage during calibration");
+                calibration_state = UNCALIBRATED;
+                return err;
+            }
+            voltage_gap = std::abs(current_voltage - last_voltage);
+            if (voltage_gap_average == 0) voltage_gap_average = voltage_gap; // init on first run
+            AnalogDriver::Value voltage_drop = std::abs(voltage_gap - voltage_gap_average);
+
+            // Update previous gaps and drops
+            previous_drops[2] = previous_drops[1];
+            previous_drops[1] = previous_drops[0];
+            previous_drops[0] = voltage_drop;
+            previous_gaps[2] = previous_gaps[1];
+            previous_gaps[1] = previous_gaps[0];
+            previous_gaps[0] = voltage_gap;
+            
+            bool stall_detected_noise = false;
+            bool stall_detected_drop = false;
+            bool stall_detected_spikes = false;
+
+            if (voltage_gap < feedback_noise)
+            {
+                stall_detected_noise = true;
+            }
+
+            if (voltage_drop > feedback_noise)
+            {
+                if (voltage_gap < voltage_gap_average)
+                {
+                    stall_detected_drop = true;
+                }
+            }
+
+            AnalogDriver::Value drop_from_0_to_1 = previous_drops[1] - previous_drops[0];
+            AnalogDriver::Value drop_from_2_to_1 = previous_drops[1] - previous_drops[2];
+            AnalogDriver::Value gap_from_0_to_1 = previous_gaps[1] - previous_gaps[0];
+            AnalogDriver::Value gap_from_2_to_1 = previous_gaps[1] - previous_gaps[2];
+            // A stall can be detected when gap drops at the same time as drop increases
+            bool gap_decreasing = (gap_from_0_to_1 < -feedback_noise) && (gap_from_2_to_1 < -feedback_noise);
+            bool drop_increasing = (drop_from_0_to_1 > feedback_noise) && (drop_from_2_to_1 > feedback_noise);
+            if (gap_decreasing && drop_increasing)
+            {
+                stall_detected_spikes = true;
+            }
+
+            Log::Add(Log::Level::Debug, TAG, "Current PWM: %d, Voltage: %d mV, Voltage Gap Average: %d, Current Voltage Gap: %d, Voltage Drop: %d", current_pwm, current_voltage, voltage_gap_average, voltage_gap, voltage_drop);
+
+            Log::Add(Log::Level::Debug, TAG, "Stall detectors (noise | drop | spikes) : %s | %s | %s", stall_detected_noise ? "0": "-", stall_detected_drop ? "0": "-", stall_detected_spikes ? "0": "-");
+
+            // Update average voltage gap (simple moving average)
+            voltage_gap_average = (voltage_gap_average + voltage_gap) / 2;
+
+            int nb_detectors_triggered = stall_detected_noise + stall_detected_drop + stall_detected_spikes;
+            if (nb_detectors_triggered >= 2)
+            {
+                has_stalled = true;
+            }
+        }
+
+        if (!has_stalled)
+        {
+            Log::Add(Log::Level::Warning, TAG, "Did not detect maximum position stall, aborting calibration.");
+            calibration_state = UNCALIBRATED;
+            return Error::HardwareFailure;
+        }
+
+        Log::Add(Log::Level::Info, TAG, "Maximum position detected at PWM %d, Voltage %d mV", current_pwm, current_voltage);
+        calibration_data.max_pwm = current_pwm;
+        calibration_data.max_voltage = current_voltage;
+    }
+
+
+    ///=== Move to minimum position ===///
+    Log::Add(Log::Level::Info, TAG, "Detecting minimum servo limit ...");
+    {
+        // center servo and wait a bit
+        MotorDriver::Value current_pwm = center_pwm;
+        if (Error err = MotorDriver::SetPWM(motor_channel, center_pwm); err != Error::None)
+        {
+            Log::Add(Log::Level::Error, TAG, "Failed to set motor PWM, aborting calibration. Error: %d", static_cast<uint8_t>(err));
+            calibration_state = UNCALIBRATED;
+            return err;
+        }
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        // Read the voltage at center position
+        AnalogDriver::Value current_voltage = 0;
+        if (Error err = AnalogDriver::GetVoltage(analog_channel, &current_voltage); err != Error::None)
+        {
+            Log::Add(Log::Level::Error, TAG, "Failed to read analog voltage during calibration");
+            calibration_state = UNCALIBRATED;
+            return err;
+        }
+
+        // Move towards maximum at deadband step, until stall is detected
+        bool has_stalled = false;
+        AnalogDriver::Value last_voltage = 0;
+        AnalogDriver::Value voltage_gap = 0;
+        AnalogDriver::Value voltage_gap_average = 0;
+        AnalogDriver::Value previous_gaps[3] = {0};
+        AnalogDriver::Value previous_drops[3] = {0};
+        while (!has_stalled)
+        {
+            current_pwm -= servo_deadband;
+            if (current_pwm < CALIB_SAFEGUARD_PWM_MIN)
+            {
+                Log::Add(Log::Level::Warning, TAG, "Reached minimum safeguard PWM limit during calibration");
+                break;
+            }
+            if (Error err = MotorDriver::SetPWM(motor_channel, current_pwm); err != Error::None)
+            {
+                Log::Add(Log::Level::Error, TAG, "Failed to set motor PWM during calibration");
+                calibration_state = UNCALIBRATED;
+                return err;
+            }
+            vTaskDelay(pdMS_TO_TICKS(CALIB_MOVE_DELAY_MS));
+
+            last_voltage = current_voltage;
+            if (Error err = AnalogDriver::GetVoltage(analog_channel, &current_voltage); err != Error::None)
+            {
+                Log::Add(Log::Level::Error, TAG, "Failed to read analog voltage during calibration");
+                calibration_state = UNCALIBRATED;
+                return err;
+            }
+            voltage_gap = std::abs(current_voltage - last_voltage);
+            if (voltage_gap_average == 0) voltage_gap_average = voltage_gap; // init on first run
+            AnalogDriver::Value voltage_drop = std::abs(voltage_gap - voltage_gap_average);
+
+            // Update previous gaps and drops
+            previous_drops[2] = previous_drops[1];
+            previous_drops[1] = previous_drops[0];
+            previous_drops[0] = voltage_drop;
+            previous_gaps[2] = previous_gaps[1];
+            previous_gaps[1] = previous_gaps[0];
+            previous_gaps[0] = voltage_gap;
+            
+            bool stall_detected_noise = false;
+            bool stall_detected_drop = false;
+            bool stall_detected_spikes = false;
+
+            if (voltage_gap < feedback_noise)
+            {
+                stall_detected_noise = true;
+            }
+
+            if (voltage_drop > feedback_noise)
+            {
+                if (voltage_gap < voltage_gap_average)
+                {
+                    stall_detected_drop = true;
+                }
+            }
+
+            AnalogDriver::Value drop_from_0_to_1 = previous_drops[1] - previous_drops[0];
+            AnalogDriver::Value drop_from_2_to_1 = previous_drops[1] - previous_drops[2];
+            AnalogDriver::Value gap_from_0_to_1 = previous_gaps[1] - previous_gaps[0];
+            AnalogDriver::Value gap_from_2_to_1 = previous_gaps[1] - previous_gaps[2];
+            // A stall can be detected when gap drops at the same time as drop increases
+            bool gap_decreasing = (gap_from_0_to_1 < -feedback_noise) && (gap_from_2_to_1 < -feedback_noise);
+            bool drop_increasing = (drop_from_0_to_1 > feedback_noise) && (drop_from_2_to_1 > feedback_noise);
+            if (gap_decreasing && drop_increasing)
+            {
+                stall_detected_spikes = true;
+            }
+
+            Log::Add(Log::Level::Debug, TAG, "Current PWM: %d, Voltage: %d mV, Voltage Gap Average: %d, Current Voltage Gap: %d, Voltage Drop: %d", current_pwm, current_voltage, voltage_gap_average, voltage_gap, voltage_drop);
+
+            Log::Add(Log::Level::Debug, TAG, "Stall detectors (noise | drop | spikes)  : %s | %s | %s", stall_detected_noise ? "0": "-", stall_detected_drop ? "0": "-", stall_detected_spikes ? "0": "-");
+
+            // Update average voltage gap (simple moving average)
+            voltage_gap_average = (voltage_gap_average + voltage_gap) / 2;
+            
+            int nb_detectors_triggered = stall_detected_noise + stall_detected_drop + stall_detected_spikes;
+            if (nb_detectors_triggered >= 2)
+            {
+                has_stalled = true;
+            }
+        }
+
+        if (!has_stalled)
+        {
+            Log::Add(Log::Level::Warning, TAG, "Did not detect minimum position stall, aborting calibration.");
+            calibration_state = UNCALIBRATED;
+            return Error::HardwareFailure;
+        }
+
+        Log::Add(Log::Level::Info, TAG, "Minimum position detected at PWM %d, Voltage %d mV", current_pwm, current_voltage);
+        calibration_data.min_pwm = current_pwm;
+        calibration_data.min_voltage = current_voltage;
+    }
+
+    // Go back to center position
+    Log::Add(Log::Level::Info, TAG, "Moving motor back to center position ...");
+    if (Error err = MotorDriver::SetPWM(motor_channel, center_pwm); err != Error::None)
+    {
+        Log::Add(Log::Level::Error, TAG, "Failed to set motor PWM, aborting calibration. Error: %d", static_cast<uint8_t>(err));
+        calibration_state = UNCALIBRATED;
+        return err;
+    }
+    vTaskDelay(pdMS_TO_TICKS(500));
+
+    // Save calibration data to NVS
+    Log::Add(Log::Level::Info, TAG, "Saving calibration data to NVS ...");
+    if (Error err = nvshandle_ptr->set("calib_data", calibration_data); err != Error::None)
+    {
+        Log::Add(Log::Level::Error, TAG, "Failed to save calibration data to NVS, aborting calibration. Error: %d", static_cast<uint8_t>(err));
+        calibration_state = UNCALIBRATED;
+        return err;
+    }
+    Log::Add(Log::Level::Info, TAG, "Saved calibration data");
+
+    calibration_state = CALIBRATED;
+    return Error::None;
+}

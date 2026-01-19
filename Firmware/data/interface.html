@@ -3,491 +3,429 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>TNY 360 Web Interface</title>
 </head>
 <body>
-    <h1>Control Panel</h1>
-    <script>
-        const voltages_data = [];
+    <div>
+        <form action="/api/connect" method="POST">
+            <input type="text" name="ssid" placeholder="SSID">
+            <input type="password" name="password" placeholder="Password">
+            <button type="submit">Connect</button>
+        </form>
+    </div>
+    <hr>
+    <h1>Motor control</h1>
+    <div id="motors-container">
+        <script>
+            const container = document.getElementById('motors-container');
+            const numberOfMotors = 12;
+            const angleBounds = [
+                [-45, 45],
+                [-135, 45],
+                [0, 135],
+                [-45, 45],
+                [-135, 45],
+                [0, 135],
+                [-45, 45],
+                [-135, 45],
+                [0, 135],
+                [-45, 45],
+                [-135, 45],
+                [0, 135],
+            ];
+            const names = [
+                "Hip Roll FL",
+                "Hip Pitch FL",
+                "Knee Pitch FL",
+                "Hip Roll FR",
+                "Hip Pitch FR",
+                "Knee Pitch FR",
+                "Hip Roll BL",
+                "Hip Pitch BL",
+                "Knee Pitch BL",
+                "Hip Roll BR",
+                "Hip Pitch BR",
+                "Knee Pitch BR",
+            ];
 
-        window.onload = function() {
-            console.log("Interface loaded");
+            for (let i = 0; i < numberOfMotors; i++) {
+                const motorDiv = document.createElement('div');
+                motorDiv.style.marginBottom = '10px';
+                motorDiv.style.border = '1px solid #ccc';
+                motorDiv.style.padding = '10px';
+
+                const label = document.createElement('strong');
+                label.textContent = `Motor ${names[i]}: `;
+                motorDiv.appendChild(label);
+
+                const sliderText = document.createElement('span');
+
+                // Slider
+                const slider = document.createElement('input');
+                slider.type = 'range';
+                slider.min = angleBounds[i][0].toString();
+                slider.max = angleBounds[i][1].toString();
+                slider.step = '1';
+                slider.value = ((angleBounds[i][0] + angleBounds[i][1]) / 2).toString();
+                slider.style.width = '1200px';
+                slider.oninput = function() {
+                    fetch('/api/position', {
+                        method: 'POST',
+                        body: `${i},${parseInt(this.value)}`
+                    });
+                    sliderText.textContent = ` ${this.value}° `;
+                };
+                sliderText.textContent = ` ${slider.value}° `;
+                motorDiv.appendChild(slider);
+                motorDiv.appendChild(sliderText);
+
+                // Enable/Disable Button
+                const EnableButton = document.createElement('button');
+                EnableButton.textContent = 'Enable';
+                let isEnabled = false;
+                EnableButton.onclick = function() {
+                    isEnabled = !isEnabled;
+                    EnableButton.textContent = isEnabled ? 'Disable' : 'Enable';
+                    fetch('/api/enable', {
+                        method: 'POST',
+                        body: `${i},${isEnabled ? 1 : 0}`
+                    });
+                };
+                motorDiv.appendChild(EnableButton);
+
+                // Calibrate Button
+                const CalibrateButton = document.createElement('button');
+                CalibrateButton.textContent = 'Calibrate';
+                CalibrateButton.onclick = function() {
+                    fetch('/api/calibrate', {
+                        method: 'POST',
+                        body: `${i}`
+                    });
+                };
+                motorDiv.appendChild(CalibrateButton);
+
+                const feedBackText = document.createElement("span");
+                feedBackText.id = `motor-feedback-${i}`;
+                motorDiv.appendChild(feedBackText);
+
+                container.appendChild(motorDiv);
+            }
+
             setInterval(() => {
-                fetch('/api/voltage').then(async response => {
-                    const voltages = (await response.text()).split(',').map(x => Number(parseInt(x) / 1000).toFixed(3));
-                    voltages_data.push(voltages);
-                    if (voltages_data.length > 100) {
-                        voltages_data.shift();
-                    }
-                    voltages.forEach((voltage, index) => {
-                        const lastElements = Array.from(voltages_data, v => v[index]).slice(-10);
-                        const minValue = Math.min(...lastElements);
-                        const maxValue = Math.max(...lastElements);
-                        const noise = maxValue - minValue;
-                        const voltageElement = document.getElementById(`voltages-${index + 2}`);
-                        if (voltageElement) voltageElement.innerText = `(${noise.toFixed(3)} V) ${voltage} V`;
-                        else console.warn(`Element voltages-${index + 2} not found`);
+                fetch('/api/feedback')
+                .then(response => response.text())
+                .then(data => {
+                    const feedbacks = data.split(',');
+                    feedbacks.forEach((value, index) => {
+                        const feedbackElement = document.getElementById(`motor-feedback-${index}`);
+                        if (feedbackElement) {
+                            feedbackElement.textContent = ` | Feedback: ${value}°`;
+                        }
                     });
                 });
-                setTimeout(() => {
-                    fetch('/api/angle').then(async response => {
-                        const angles = (await response.text()).split(',').map(x => parseInt(x));
-                        console.log("Received angles:", angles);
-                        angles.forEach((angle, index) => {
-                            const angleElement = document.getElementById(`angle-${index}`);
-                            if (angleElement) angleElement.value = angle;
-                            else console.warn(`Element angle-${index} not found`);
+            }, 500);
+        </script>
+    </div>
+    <hr>
+    <h1>IK</h1>
+    <div id="ik-container">
+        <script>
+            const ikContainer = document.getElementById('ik-container');
+            const legs = ['FL', 'FR', 'BL', 'BR'];
+            legs.forEach((leg, index) => {
+                const legDiv = document.createElement('div');
+                legDiv.style.marginBottom = '10px';
 
-                            const angleValElement = document.getElementById(`angle-val-${index}`);
-                            if (angleValElement) angleValElement.innerText = angle;
-                            else console.warn(`Element angle-val-${index} not found`);
+                const label = document.createElement('strong');
+                label.textContent = `Leg ${leg}: `;
+                legDiv.appendChild(label);
+
+                const ranges = {
+                    'X': [-100, 100],
+                    'Y': [-100, 100],
+                    'Z': [-200, 0]
+                };
+
+                ['X', 'Y', 'Z'].forEach(axis => {
+                    const inputDiv = document.createElement('div');
+                    inputDiv.style.display = 'inline-block';
+                    inputDiv.style.marginRight = '20px';
+                    const span = document.createElement('span');
+                    span.textContent = `${axis}: `;
+                    const input = document.createElement('input');
+                    input.id = `ik-input-${leg}-${axis}`;
+                    input.type = 'range';
+                    input.min = (ranges[axis][0]).toString();
+                    input.max = (ranges[axis][1]).toString();
+                    input.value = '0';
+                    input.step = '1';
+                    input.placeholder = `${axis}`;
+                    input.style.width = '300px';
+                    const result = document.createElement('span');
+                    result.id = `ik-result-${leg}-${axis}`;
+                    result.style.marginLeft = '6px';
+                    input.oninput = function() {
+                        result.textContent = ` ${this.value} `;
+                        const x = legDiv.querySelector('input[id="ik-input-' + leg + '-X"]').value || 0;
+                        const y = legDiv.querySelector('input[id="ik-input-' + leg + '-Y"]').value || 0;
+                        const z = legDiv.querySelector('input[id="ik-input-' + leg + '-Z"]').value || 0;
+                        fetch('/api/ik', {
+                            method: 'POST',
+                            body: `${index},${x},${y},${z}`
                         });
+                    };
+                    result.textContent = ` ${input.value} `;
+                    inputDiv.appendChild(span);
+                    inputDiv.appendChild(input);
+                    inputDiv.appendChild(result);
+                    legDiv.appendChild(inputDiv);
+                });
+
+                ikContainer.appendChild(legDiv);
+            });
+        </script>
+    </div>
+    <hr>
+    <h1>Body Posture</h1>
+    <div id="body-container">
+        <script>
+                    const bodyContainer = document.getElementById('body-container');
+                    const axes = [
+                        { id: 'RotX', name: 'Rotation X (Roll)', min: -45, max: 45, val: 0 },
+                        { id: 'RotY', name: 'Rotation Y (Pitch)', min: -45, max: 45, val: 0 },
+                        { id: 'RotZ', name: 'Rotation Z (Yaw)',   min: -45, max: 45, val: 0 },
+                        { id: 'PosX', name: 'Position X',         min: -100, max: 100, val: 0 },
+                        { id: 'PosY', name: 'Position Y',         min: -100, max: 100, val: 0 },
+                        { id: 'PosZ', name: 'Position Z',         min: 0,    max: 200, val: 100 } // Default slightly up
+                    ];
+
+                    axes.forEach(axis => {
+                        const div = document.createElement('div');
+                        div.style.marginBottom = '10px';
+
+                        const label = document.createElement('strong');
+                        label.textContent = `${axis.name}: `;
+                        div.appendChild(label);
+
+                        const input = document.createElement('input');
+                        input.id = `body-${axis.id}`;
+                        input.type = 'range';
+                        input.min = axis.min.toString();
+                        input.max = axis.max.toString();
+                        input.value = axis.val.toString();
+                        input.step = '1';
+                        input.style.width = '300px';
+                        
+                        const valDisplay = document.createElement('span');
+                        valDisplay.style.marginLeft = '10px';
+                        valDisplay.textContent = input.value;
+
+                        input.oninput = function() {
+                            valDisplay.textContent = this.value;
+                            
+                            // Gather all current values
+                            const rx = document.getElementById('body-RotX').value;
+                            const ry = document.getElementById('body-RotY').value;
+                            const rz = document.getElementById('body-RotZ').value;
+                            const px = document.getElementById('body-PosX').value;
+                            const py = document.getElementById('body-PosY').value;
+                            const pz = document.getElementById('body-PosZ').value;
+
+                            // Send to API: rotx,roty,rotz,posx,posy,posz
+                            // Matches: sscanf(buf, "%f,%f,%f,%f,%f,%f", &rotx, &roty, &rotz, &posx, &posy, &posz)
+                            fetch('/api/body', {
+                                method: 'POST',
+                                body: `${rx},${ry},${rz},${px},${py},${pz}`
+                            });
+                        };
+
+                        div.appendChild(input);
+                        div.appendChild(valDisplay);
+                        bodyContainer.appendChild(div);
                     });
-                }, 100);
-            }, 200);
-        };
-
-        function onValueChange(index, position, force) {
-            // Function body is intentionally empty
-            console.log(`Motor ${index} - Position: ${position}, Force: ${force}`);
-            fetch(`/api/motor`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'text/plain'
-                },
-                body: `${index},${position},${force}`
-            });
-        }
-
-        function handleInput(index) {
-            const pos = document.getElementById(`pos-${index}`)?.value;
-            const force = document.getElementById(`force-${index}`)?.value;
-            // Update display values
-            document.getElementById(`pos-val-${index}`).innerText = pos;
-            document.getElementById(`force-val-${index}`).innerText = force;
-            
-            onValueChange(index, pos, force);
-        }
-
-        function handlePWMInput(index) {
-            const pwm = document.getElementById(`pwm-${index}`)?.value;
-            document.getElementById(`pwm-val-${index}`).innerText = pwm;
-            
-            fetch(`/api/motor_pwm`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'text/plain'
-                },
-                body: `${index},${pwm}`
-            });
-        }
-    </script>
-    <table border="1" cellpadding="5" cellspacing="0">
-        <thead>
-            <tr>
-                <th>Broche</th>
-                <th>Position (0-180)</th>
-                <th>Force (0-4)</th>
-                <th>PWM (0-800)</th>
-                <th>Retour (0-180)</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Motor 1 -->
-            <tr>
-                <td>Motor LEG FR</td>
-                <td>
-                    <input type="range" id="pos-2" min="0" max="180" value="90" oninput="handleInput(2)">
-                    <span id="pos-val-2">90</span>
-                </td>
-                <td>
-                    <input type="range" id="force-2" min="0" max="4" value="0" oninput="handleInput(2)">
-                    <span id="force-val-2">0</span>
-                </td>
-                <td>
-                    <input type="range" id="pwm-2" min="0" max="800" value="300" oninput="handlePWMInput(2)">
-                    <span id="pwm-val-2">300</span>
-                </td>
-                <td>
-                    <input type="range" id="angle-15" min="0" max="180" value="90" disabled>
-                    <span id="angle-val-15">90</span>
-                </td>
-            </tr>
-            <!-- Motor 2 -->
-            <tr>
-                <td>Motor ELBOW FR</td>
-                <td>
-                    <input type="range" id="pos-3" min="0" max="180" value="90" oninput="handleInput(3)">
-                    <span id="pos-val-3">90</span>
-                </td>
-                <td>
-                    <input type="range" id="force-3" min="0" max="4" value="0" oninput="handleInput(3)">
-                    <span id="force-val-3">0</span>
-                </td>
-                <td>
-                    <input type="range" id="pwm-3" min="0" max="800" value="300" oninput="handlePWMInput(3)">
-                    <span id="pwm-val-3">300</span>
-                </td>
-                <td>
-                    <input type="range" id="angle-14" min="0" max="180" value="90" disabled>
-                    <span id="angle-val-14">90</span>
-                </td>
-            </tr>
-            <!-- Motor 3 -->
-            <tr>
-                <td>Motor SHOULDER FR</td>
-                <td>
-                    <input type="range" id="pos-4" min="0" max="180" value="90" oninput="handleInput(4)">
-                    <span id="pos-val-4">90</span>
-                </td>
-                <td>
-                    <input type="range" id="force-4" min="0" max="4" value="0" oninput="handleInput(4)">
-                    <span id="force-val-4">0</span>
-                </td>
-                <td>
-                    <input type="range" id="pwm-4" min="0" max="800" value="300" oninput="handlePWMInput(4)">
-                    <span id="pwm-val-4">300</span>
-                </td>
-                <td>
-                    <input type="range" id="angle-13" min="0" max="180" value="90" disabled>
-                    <span id="angle-val-13">90</span>
-                </td>
-            </tr>
-            <!-- Motor 4 -->
-            <tr>
-                <td>Motor LEG FL</td>
-                <td>
-                    <input type="range" id="pos-5" min="0" max="180" value="90" oninput="handleInput(5)">
-                    <span id="pos-val-5">90</span>
-                </td>
-                <td>
-                    <input type="range" id="force-5" min="0" max="4" value="0" oninput="handleInput(5)">
-                    <span id="force-val-5">0</span>
-                </td>
-                <td>
-                    <input type="range" id="pwm-5" min="0" max="800" value="300" oninput="handlePWMInput(5)">
-                    <span id="pwm-val-5">300</span>
-                </td>
-                <td>
-                    <input type="range" id="angle-11" min="0" max="180" value="90" disabled>
-                    <span id="angle-val-11">90</span>
-                </td>
-            </tr>
-            <!-- Motor 5 -->
-            <tr>
-                <td>Motor ELBOW FL</td>
-                <td>
-                    <input type="range" id="pos-6" min="0" max="180" value="90" oninput="handleInput(6)">
-                    <span id="pos-val-6">90</span>
-                </td>
-                <td>
-                    <input type="range" id="force-6" min="0" max="4" value="0" oninput="handleInput(6)">
-                    <span id="force-val-6">0</span>
-                </td>
-                <td>
-                    <input type="range" id="pwm-6" min="0" max="800" value="300" oninput="handlePWMInput(6)">
-                    <span id="pwm-val-6">300</span>
-                </td>
-                <td>
-                    <input type="range" id="angle-10" min="0" max="180" value="90" disabled>
-                    <span id="angle-val-10">90</span>
-                </td>
-            </tr>
-            <!-- Motor 6 -->
-            <tr>
-                <td>Motor SHOULDER FL</td>
-                <td>
-                    <input type="range" id="pos-7" min="0" max="180" value="90" oninput="handleInput(7)">
-                    <span id="pos-val-7">90</span>
-                </td>
-                <td>
-                    <input type="range" id="force-7" min="0" max="4" value="0" oninput="handleInput(7)">
-                    <span id="force-val-7">0</span>
-                </td>
-                <td>
-                    <input type="range" id="pwm-7" min="0" max="800" value="300" oninput="handlePWMInput(7)">
-                    <span id="pwm-val-7">300</span>
-                </td>
-                <td>
-                    <input type="range" id="angle-9" min="0" max="180" value="90" disabled>
-                    <span id="angle-val-9">90</span>
-                </td>
-            </tr>
-            <!-- Motor 7 -->
-            <tr>
-                <td>Motor LEG BL</td>
-                <td>
-                    <input type="range" id="pos-8" min="0" max="180" value="90" oninput="handleInput(8)">
-                    <span id="pos-val-8">90</span>
-                </td>
-                <td>
-                    <input type="range" id="force-8" min="0" max="4" value="0" oninput="handleInput(8)">
-                    <span id="force-val-8">0</span>
-                </td>
-                <td>
-                    <input type="range" id="pwm-8" min="0" max="800" value="300" oninput="handlePWMInput(8)">
-                    <span id="pwm-val-8">300</span>
-                </td>
-                <td>
-                    <input type="range" id="angle-7" min="0" max="180" value="90" disabled>
-                    <span id="angle-val-7">90</span>
-                </td>
-            </tr>
-            <!-- Motor 8 -->
-            <tr>
-                <td>Motor ELBOW BL</td>
-                <td>
-                    <input type="range" id="pos-9" min="0" max="180" value="90" oninput="handleInput(9)">
-                    <span id="pos-val-9">90</span>
-                </td>
-                <td>
-                    <input type="range" id="force-9" min="0" max="4" value="0" oninput="handleInput(9)">
-                    <span id="force-val-9">0</span>
-                </td>
-                <td>
-                    <input type="range" id="pwm-9" min="0" max="800" value="300" oninput="handlePWMInput(9)">
-                    <span id="pwm-val-9">300</span>
-                </td>
-                <td>
-                    <input type="range" id="angle-6" min="0" max="180" value="90" disabled>
-                    <span id="angle-val-6">90</span>
-                </td>
-            </tr>
-            <!-- Motor 9 -->
-            <tr>
-                <td>Motor SHOULDER BL</td>
-                <td>
-                    <input type="range" id="pos-10" min="0" max="180" value="90" oninput="handleInput(10)">
-                    <span id="pos-val-10">90</span>
-                </td>
-                <td>
-                    <input type="range" id="force-10" min="0" max="4" value="0" oninput="handleInput(10)">
-                    <span id="force-val-10">0</span>
-                </td>
-                <td>
-                    <input type="range" id="pwm-10" min="0" max="800" value="300" oninput="handlePWMInput(10)">
-                    <span id="pwm-val-10">300</span>
-                </td>
-                <td>
-                    <input type="range" id="angle-5" min="0" max="180" value="90" disabled>
-                    <span id="angle-val-5">90</span>
-                </td>
-            </tr>
-            <!-- Motor 10 -->
-            <tr>
-                <td>Motor LEG BR</td>
-                <td>
-                    <input type="range" id="pos-11" min="0" max="180" value="90" oninput="handleInput(11)">
-                    <span id="pos-val-11">90</span>
-                </td>
-                <td>
-                    <input type="range" id="force-11" min="0" max="4" value="0" oninput="handleInput(11)">
-                    <span id="force-val-11">0</span>
-                </td>
-                <td>
-                    <input type="range" id="pwm-11" min="0" max="800" value="300" oninput="handlePWMInput(11)">
-                    <span id="pwm-val-11">300</span>
-                </td>
-                <td>
-                    <input type="range" id="angle-3" min="0" max="180" value="90" disabled>
-                    <span id="angle-val-3">90</span>
-                </td>
-            </tr>
-            <!-- Motor 11 -->
-            <tr>
-                <td>Motor ELBOW BR</td>
-                <td>
-                    <input type="range" id="pos-12" min="0" max="180" value="90" oninput="handleInput(12)">
-                    <span id="pos-val-12">90</span>
-                </td>
-                <td>
-                    <input type="range" id="force-12" min="0" max="4" value="0" oninput="handleInput(12)">
-                    <span id="force-val-12">0</span>
-                </td>
-                <td>
-                    <input type="range" id="pwm-12" min="0" max="800" value="300" oninput="handlePWMInput(12)">
-                    <span id="pwm-val-12">300</span>
-                </td>
-                <td>
-                    <input type="range" id="angle-2" min="0" max="180" value="90" disabled>
-                    <span id="angle-val-2">90</span>
-                </td>
-            </tr>
-            <!-- Motor 12 -->
-            <tr>
-                <td>Motor SHOULDER BR</td>
-                <td>
-                    <input type="range" id="pos-13" min="0" max="180" value="90" oninput="handleInput(13)">
-                    <span id="pos-val-13">90</span>
-                </td>
-                <td>
-                    <input type="range" id="force-13" min="0" max="4" value="0" oninput="handleInput(13)">
-                    <span id="force-val-13">0</span>
-                </td>
-                <td>
-                    <input type="range" id="pwm-13" min="0" max="800" value="300" oninput="handlePWMInput(13)">
-                    <span id="pwm-val-13">300</span>
-                </td>
-                <td>
-                    <input type="range" id="angle-1" min="0" max="180" value="90" disabled>
-                    <span id="angle-val-1">90</span>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <br>
+                </script>
+    </div>
+    <hr>
     <h1>Voltages</h1>
-    <!-- Load Chart.js from CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <table border="1" cellpadding="5" cellspacing="0">
-        <thead>
-            <tr>
-                <th>Component \ Limb</th>
-                <th>Back Right (BR)</th>
-                <th>Back Left (BL)</th>
-                <th>Front Left (FL)</th>
-                <th>Front Right (FR)</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <th>Shoulder</th>
-                <td style="position: relative;">
-                    <div id="voltages-3" style="position: absolute; top: 2px; right: 2px;">Wait...</div>
-                    <canvas id="chart-3" width="300" height="100"></canvas>
-                </td>
-                <td style="position: relative;">
-                    <div id="voltages-7" style="position: absolute; top: 2px; right: 2px;">Wait...</div>
-                    <canvas id="chart-7" width="300" height="100"></canvas>
-                </td>
-                <td style="position: relative;">
-                    <div id="voltages-11" style="position: absolute; top: 2px; right: 2px;">Wait...</div>
-                    <canvas id="chart-11" width="300" height="100"></canvas>
-                </td>
-                <td style="position: relative;">
-                    <div id="voltages-15" style="position: absolute; top: 2px; right: 2px;">Wait...</div>
-                    <canvas id="chart-15" width="300" height="100"></canvas>
-                </td>
-            </tr>
-            <tr>
-                <th>Leg</th>
-                <td style="position: relative;">
-                    <div id="voltages-5" style="position: absolute; top: 2px; right: 2px;">Wait...</div>
-                    <canvas id="chart-5" width="300" height="100"></canvas>
-                </td>
-                <td style="position: relative;">
-                    <div id="voltages-9" style="position: absolute; top: 2px; right: 2px;">Wait...</div>
-                    <canvas id="chart-9" width="300" height="100"></canvas>
-                </td>
-                <td style="position: relative;">
-                    <div id="voltages-13" style="position: absolute; top: 2px; right: 2px;">Wait...</div>
-                    <canvas id="chart-13" width="300" height="100"></canvas>
-                </td>
-                <td style="position: relative;">
-                    <div id="voltages-17" style="position: absolute; top: 2px; right: 2px;">Wait...</div>
-                    <canvas id="chart-17" width="300" height="100"></canvas>
-                </td>
-            </tr>
-            <tr>
-                <th>Elbow</th>
-                <td style="position: relative;">
-                    <div id="voltages-4" style="position: absolute; top: 2px; right: 2px;">Wait...</div>
-                    <canvas id="chart-4" width="300" height="100"></canvas>
-                </td>
-                <td style="position: relative;">
-                    <div id="voltages-8" style="position: absolute; top: 2px; right: 2px;">Wait...</div>
-                    <canvas id="chart-8" width="300" height="100"></canvas>
-                </td>
-                <td style="position: relative;">
-                    <div id="voltages-12" style="position: absolute; top: 2px; right: 2px;">Wait...</div>
-                    <canvas id="chart-12" width="300" height="100"></canvas>
-                </td>
-                <td style="position: relative;">
-                    <div id="voltages-16" style="position: absolute; top: 2px; right: 2px;">Wait...</div>
-                    <canvas id="chart-16" width="300" height="100"></canvas>
-                </td>
-            </tr>
-            <tr>
-                <th>FSR Sensor</th>
-                <td style="position: relative;">
-                    <div id="voltages-2" style="position: absolute; top: 2px; right: 2px;">Wait...</div>
-                    <canvas id="chart-2" width="300" height="100"></canvas>
-                </td>
-                <td style="position: relative;">
-                    <div id="voltages-6" style="position: absolute; top: 2px; right: 2px;">Wait...</div>
-                    <canvas id="chart-6" width="300" height="100"></canvas>
-                </td>
-                <td style="position: relative;">
-                    <div id="voltages-10" style="position: absolute; top: 2px; right: 2px;">Wait...</div>
-                    <canvas id="chart-10" width="300" height="100"></canvas>
-                </td>
-                <td style="position: relative;">
-                    <div id="voltages-14" style="position: absolute; top: 2px; right: 2px;">Wait...</div>
-                    <canvas id="chart-14" width="300" height="100"></canvas>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <script>
-        const charts = {};
-        
-        function initCharts() {
-            for (let i = 2; i <= 17; i++) {
+    <div id="voltages-container">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            const voltagesContainer = document.getElementById('voltages-container');
+
+            // --- 1. Dynamic CSS Styles ---
+            const style = document.createElement('style');
+            style.textContent = `
+                .chart-wrapper {
+                    position: relative;
+                    height: 200px;
+                    width: 450px;
+                }
+                .overlay-val {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    background: rgba(255, 255, 255, 0.7);
+                    padding: 2px 5px;
+                    font-weight: bold;
+                    font-size: 0.8em;
+                }
+                .voltage-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    border: 1px solid black;
+                }
+                .voltage-table th, .voltage-table td {
+                    border: 1px solid black;
+                }
+            `;
+            voltagesContainer.appendChild(style);
+
+            // --- 2. Build the Table Structure ---
+            const table = document.createElement('table');
+            table.className = 'voltage-table';
+
+            // Table Head
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            ['Part', 'FL', 'FR', 'BL', 'BR'].forEach(text => {
+                const th = document.createElement('th');
+                th.textContent = text;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Table Body
+            const tbody = document.createElement('tbody');
+            const rowsConfig = [
+                { label: 'Hip Roll',   startIndex: 0 },
+                { label: 'Hip Pitch',  startIndex: 1 },
+                { label: 'Knee Pitch', startIndex: 2 },
+                { label: 'Paw FSR',    startIndex: 12 } // 12, 13, 14, 15
+            ];
+
+            // Helper to create chart cell
+            function createChartCell(chartIndex) {
+                const td = document.createElement('td');
+                
+                const wrapper = document.createElement('div');
+                wrapper.className = 'chart-wrapper';
+
+                const canvas = document.createElement('canvas');
+                canvas.id = `chart-${chartIndex}`;
+                
+                const span = document.createElement('span');
+                span.id = `val-${chartIndex}`;
+                span.className = 'overlay-val';
+                span.textContent = '0V';
+
+                wrapper.appendChild(canvas);
+                wrapper.appendChild(span);
+                td.appendChild(wrapper);
+                return td;
+            }
+
+            rowsConfig.forEach(rowInfo => {
+                const tr = document.createElement('tr');
+                
+                // Label Cell
+                const labelTd = document.createElement('td');
+                const strong = document.createElement('strong');
+                strong.textContent = rowInfo.label;
+                labelTd.appendChild(strong);
+                tr.appendChild(labelTd);
+
+                if (rowInfo.label === 'Paw FSR') {
+                     // The FSRs are linear 12, 13, 14, 15
+                     for (let i = 0; i < 4; i++) {
+                        tr.appendChild(createChartCell(rowInfo.startIndex + i));
+                     }
+                } else {
+                    // The Motors are interleaved
+                    // Hip Roll  : 0, 3, 6, 9
+                    // Hip Pitch : 1, 4, 7, 10
+                    // Knee Pitch: 2, 5, 8, 11
+                    for (let i = 0; i < 4; i++) {
+                        tr.appendChild(createChartCell(rowInfo.startIndex + (i * 3)));
+                    }
+                }
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+            voltagesContainer.appendChild(table);
+
+            // --- 3. Initialize Chart Logic ---
+            // Note: The logic inside specific cells (0,3,6,9 etc) aligns with the manual table 
+            // layout provided in the original code, assuming the chart-IDs map 1-to-1.
+
+            const numCharts = 16;
+            const maxDataPoints = 50;
+            const charts = [];
+
+            // Initialize charts
+            for (let i = 0; i < numCharts; i++) {
                 const ctx = document.getElementById(`chart-${i}`).getContext('2d');
-                charts[i] = new Chart(ctx, {
+                const chart = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: Array(100).fill(''),
+                        labels: Array(maxDataPoints).fill(''),
                         datasets: [{
-                            data: Array(100).fill(0),
+                            label: 'Voltage (V)',
+                            data: Array(maxDataPoints).fill(0),
                             borderColor: 'blue',
                             borderWidth: 1,
-                            radius: 0
+                            pointRadius: 0,
+                            fill: true,
+                            tension: 0.1
                         }]
                     },
                     options: {
-                        responsive: false,
-                        plugins: { legend: { display: false } },
                         scales: {
                             x: { display: false },
-                            y: { 
-                                display: true, // Display graduations
-                                min: 0,        // Fix Bounds
-                                max: 3.3 
+                            y: {
+                                min: 0,
+                                max: 3.3,
+                                ticks: { display: true }
                             }
                         },
+                        plugins: { legend: { display: false } },
+                        responsive: true,
+                        maintainAspectRatio: false,
                         animation: false
                     }
                 });
+                charts.push(chart);
             }
-        }
 
-        function updateCharts(all_voltages_history) {
-           if (!charts[2]) initCharts(); 
+            setInterval(() => {
+                fetch('/api/voltages', { method: 'GET' })
+                .then(response => response.text())
+                .then(data => {
+                    // Expected format: "mv1,mv2,mv3,..." (e.g. "3300,1200,0,500...")
+                    if(!data) return;
+                    const voltagesMv = data.split(',');
+                    voltagesMv.forEach((mvStr, index) => {
+                        if (index < charts.length) {
+                            const voltageV = parseInt(mvStr) / 1000.0;
+                            const chart = charts[index];
 
-           // Transpose data: voltage_data is [time][pin], we need [pin][time]
-           const historyLength = all_voltages_history.length;
-           for (let pinOffset = 0; pinOffset < 16; pinOffset++) {
-               const pinIndex = pinOffset + 2;
-               const pinData = [];
-               for(let t=0; t<historyLength; t++) {
-                   pinData.push(all_voltages_history[t][pinOffset]); 
-               }
-               
-               if (charts[pinIndex]) {
-                   charts[pinIndex].data.datasets[0].data = pinData;
-                   charts[pinIndex].data.labels = Array(pinData.length).fill('');
-                   charts[pinIndex].update();
-               }
-           }
-        }
-        
-        // Poll for updates in the global variable
-        setInterval(() => {
-             if(typeof voltages_data !== 'undefined' && voltages_data.length > 0) {
-                 updateCharts(voltages_data);
-             }
-        }, 100);
-    </script>
+                            // Update text overlay
+                            const valElem = document.getElementById(`val-${index}`);
+                            if (valElem) valElem.textContent = voltageV.toFixed(2) + 'V';
+
+                            // Update chart data
+                            const dataset = chart.data.datasets[0].data;
+                            dataset.push(voltageV);
+                            if (dataset.length > maxDataPoints) {
+                                dataset.shift();
+                            }
+                            chart.update();
+                        }
+                    });
+                })
+                .catch(err => console.error('Error fetching voltages:', err));
+            }, 200);
+        </script>
+    </div>
 </body>
 </html>
