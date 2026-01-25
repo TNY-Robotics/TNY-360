@@ -77,6 +77,7 @@ jobs:
           
           # Firmware
           curl -X POST -H "Authorization: Bearer $API_KEY" \
+               -F "model=tny-360" \
                -F "version=${{ github.ref_name }}" \
                -F "type=firmware" \
                -F "file=@release_artifacts/firmware_${{ github.ref_name }}.bin" \
@@ -84,6 +85,7 @@ jobs:
           
           # Filesystem
           curl -X POST -H "Authorization: Bearer $API_KEY" \
+               -F "model=tny-360" \
                -F "version=${{ github.ref_name }}" \
                -F "type=filesystem" \
                -F "file=@release_artifacts/filesystem_${{ github.ref_name }}.bin" \
