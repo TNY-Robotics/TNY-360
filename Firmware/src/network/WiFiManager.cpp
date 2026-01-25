@@ -352,7 +352,7 @@ void WiFiManager::on_ap_connected()
     xTaskCreate([](void* param) {
         Robot::GetInstance().getUpdateManager().checkForUpdates();
         vTaskDelete(nullptr);
-    }, "UpdateCheckTask", 8192, nullptr, tskIDLE_PRIORITY + 1, nullptr);
+    }, "UpdateCheckTask", 4096*4, nullptr, tskIDLE_PRIORITY + 1, nullptr);
 }
 
 void WiFiManager::on_ap_disconnected()

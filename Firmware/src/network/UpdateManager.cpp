@@ -32,6 +32,7 @@ Error UpdateManager::init()
     }
 
     // Check if firmware needs to be verified on this boot
+    Log::Add(Log::Level::Info, TAG, "Checking if firmware verification is needed...");
     const esp_partition_t* running = esp_ota_get_running_partition();
     esp_ota_img_states_t ota_state;
     if (esp_ota_get_state_partition(running, &ota_state) != ESP_OK)
@@ -43,9 +44,11 @@ Error UpdateManager::init()
         return Error::Unknown;
     }
 
+    Log::Add(Log::Level::Debug, TAG, "OTA info: partition label=%s, type=%d, subtype=%d, state=%d", running->label, running->type, running->subtype, static_cast<uint32_t>(ota_state));
+
     if (ota_state == ESP_OTA_IMG_PENDING_VERIFY)
     {
-        Log::Add(Log::Level::Info, TAG, "Verifying firmware update from last boot...");
+        Log::Add(Log::Level::Info, TAG, "Firmware verification is needed.");
 
         // Here you would add code to verify the firmware update.
         // For simplicity, we assume it's always successful.
@@ -58,17 +61,16 @@ Error UpdateManager::init()
             return err;
         }
         
-        Log::Add(Log::Level::Info, TAG, "Firmware verified successfully. Marking as valid.");
+        Log::Add(Log::Level::Info, TAG, "No error during diagnostics, marking firmware as valid.");
         esp_ota_mark_app_valid_cancel_rollback();
 
-        Log::Add(Log::Level::Info, TAG, "Launching filesystem update");
-
-        if (Error err = downloadAndApplyFilesystemUpdate(); err != Error::None)
-        {
-            Log::Add(Log::Level::Error, TAG, "Failed to apply pending filesystem update: %d", static_cast<int>(err));
-            return err;
-        }
-    } 
+        isFilesystemUpdatePending = true; // mark filesystem update as pending
+        // so we download the new one once connected to AP (checkForUpdate method)
+    }
+    else
+    {
+        Log::Add(Log::Level::Info, TAG, "No firmware verification needed on this boot.");
+    }
 
     return Error::None;
 }
@@ -103,6 +105,39 @@ Error UpdateManager::checkForUpdates()
 {
     Log::Add(Log::Level::Debug, TAG, "Checking for updates...");
 
+    // check the current filesystem version, if older than firmware version, download it
+
+    if (isFilesystemUpdatePending)
+    {
+        Log::Add(Log::Level::Info, TAG, "Detected pending filesystem update, getting filesystem update URL from NVS.");
+        if (Error err = nvsHandle_ptr->get("fs_updt_url", filesystemDownloadUrl); err == Error::None)
+        {
+            if (Error err = downloadAndApplyFilesystemUpdate(); err != Error::None)
+            {
+                Log::Add(Log::Level::Error, TAG, "Failed to apply pending filesystem update: %d", static_cast<int>(err));
+                return err;
+            }
+
+            // remove fs_updt_url key to indicate update is done
+            if (Error err = nvsHandle_ptr->erase("fs_updt_url"); err != Error::None && err != Error::NotFound)
+            {
+                Log::Add(Log::Level::Error, TAG, "Failed to clear filesystem update URL from NVS: %s", ErrorToString(err));
+                return err;
+            }
+            isFilesystemUpdatePending = false;
+            
+            Log::Add(Log::Level::Info, TAG, "Rebooting in 3 seconds to apply filesystem update...");
+            vTaskDelay(pdMS_TO_TICKS(3000));
+            esp_restart();
+        }
+        else
+        {
+            isFilesystemUpdatePending = false;
+            Log::Add(Log::Level::Info, TAG, "Couldn't get filesystem update URL from NVS: %d", static_cast<int>(err));
+        }
+    }
+
+    Log::Add(Log::Level::Info, TAG, "Contacting update server at %s", OTA_FIRMWARE_LATEST_URL);
     esp_http_client_config_t config = {};
     config.url = OTA_FIRMWARE_LATEST_URL;
     config.cert_pem = (char *)root_ca_pem_start;
@@ -225,10 +260,17 @@ Error UpdateManager::downloadAndApplyFilesystemUpdate()
         return Error::NotFound;
     }
 
+    Log::Add(Log::Level::Debug, TAG, "Found storage partition at address 0x%X, size %d bytes.", part->address, part->size);
     esp_http_client_config_t config = {};
     config.url = filesystemDownloadUrl;
     config.cert_pem = (char *)root_ca_pem_start;
     esp_http_client_handle_t client = esp_http_client_init(&config);
+
+    if (!client) {
+        Log::Add(Log::Level::Error, TAG, "Failed to initialize HTTP client for filesystem update.");
+        return Error::Unknown;
+    }
+    Log::Add(Log::Level::Debug, TAG, "HTTP client initialized for filesystem update.");
 
     // Open HTTP connection
     esp_err_t err = esp_http_client_open(client, 0);
@@ -237,6 +279,8 @@ Error UpdateManager::downloadAndApplyFilesystemUpdate()
         esp_http_client_cleanup(client);
         return Error::Unreachable;
     }
+    
+    Log::Add(Log::Level::Debug, TAG, "HTTP connection opened for filesystem update.");
 
     // Get filesystem size
     int content_len = esp_http_client_fetch_headers(client);
@@ -246,6 +290,8 @@ Error UpdateManager::downloadAndApplyFilesystemUpdate()
         return Error::OutOfBounds;
     }
 
+    Log::Add(Log::Level::Debug, TAG, "Filesystem update size: %d bytes.", content_len);
+
     // Erase partition
     err = esp_partition_erase_range(part, 0, part->size);
     if (err != ESP_OK) {
@@ -253,6 +299,8 @@ Error UpdateManager::downloadAndApplyFilesystemUpdate()
         esp_http_client_cleanup(client);
         return Error::HardwareFailure;
     }
+
+    Log::Add(Log::Level::Debug, TAG, "Storage partition erased successfully.");
 
     // Download and write filesystem data
     char buffer[OTA_UPDATE_FILESYSTEM_BUFFER_SIZE];
@@ -290,11 +338,8 @@ Error UpdateManager::downloadAndApplyFilesystemUpdate()
         return Error::SoftwareFailure;
     }
     
+    Log::Add(Log::Level::Debug, TAG, "Cleaning up HTTP client after filesystem update.");
     esp_http_client_cleanup(client);
-
-    Log::Add(Log::Level::Info, TAG, "Rebooting in 3 seconds to apply filesystem update...");
-    vTaskDelay(pdMS_TO_TICKS(3000));
-    esp_restart();
     return Error::None;
 }
 
@@ -304,5 +349,6 @@ Error UpdateManager::verifyFirmware()
 
     // TODO : Implement actual diagnostics here
 
+    Log::Add(Log::Level::Info, TAG, "Firmware diagnostics completed successfully.");
     return Error::None;
 }

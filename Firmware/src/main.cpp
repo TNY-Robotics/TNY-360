@@ -14,7 +14,7 @@ extern "C" {
 #endif
 void app_main()
 {
-    Log::Add(Log::Level::Info, TAG, "Starting robot (FIRMWARE_VERSION=%s) ...", FIRMWARE_VERSION);
+    Log::Add(Log::Level::Info, TAG, "\n\n====>> Starting robot (FIRMWARE_VERSION=%s) ...", FIRMWARE_VERSION);
 
     if (Error err = robot.init(); err != Error::None)
     {
@@ -44,7 +44,7 @@ void app_main()
     Log::Add(Log::Level::Info, TAG, "Robot is operational.");
 
     // Test audio with sinwave
-    robot.getAudioManager().getMixer().addSoundProvider(new SineProvider());
+    // robot.getAudioManager().getMixer().addSoundProvider(new SineProvider());
 
     // Test audio with sound file
     // WavProvider wav;
