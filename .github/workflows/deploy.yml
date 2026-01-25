@@ -51,6 +51,11 @@ jobs:
       - name: Build LittleFS Image
         run: pio run -e $PIO_ENV --target buildfs
 
+      - name: Debug List Files
+        run: |
+          echo "Listing build output files:"
+          ls -l .pio/build/$PIO_ENV/
+
       # firmware.bin -> firmware_v1.0.0.bin
       - name: Prepare Artifacts
         run: |
