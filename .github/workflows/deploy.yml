@@ -6,7 +6,7 @@ on:
       - 'v*' # Triggers on version tags like v1.0.0
 
 env:
-  PIO_ENV: Freenove_ESP32-S3_WROOM_N16R8
+  PIO_ENV: tny-360
 
 jobs:
   build-and-release:
