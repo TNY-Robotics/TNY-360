@@ -11,6 +11,9 @@ env:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Firmware
     permissions:
       contents: write
 
