@@ -1,0 +1,87 @@
+name: Deploy Robot Firmware
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers on version tags like v1.0.0
+
+env:
+  PIO_ENV: Freenove_ESP32-S3_WROOM_N16R8
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v3
+        with:
+          path: ~/.platformio
+          key: ${{ runner.os }}-platformio-${{ hashFiles('**/platformio.ini') }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install PlatformIO
+        run: |
+          python -m pip install --upgrade pip
+          pip install platformio
+
+      - name: Build Firmware
+        run: pio run -e $PIO_ENV
+        
+      - name: Build LittleFS Image
+        run: pio run -e $PIO_ENV --target buildfs
+
+      # firmware.bin -> firmware_v1.0.0.bin
+      - name: Prepare Artifacts
+        run: |
+          mkdir release_artifacts
+          
+          cp .pio/build/$PIO_ENV/firmware.bin release_artifacts/firmware_${{ github.ref_name }}.bin
+          
+          cp .pio/build/$PIO_ENV/littlefs.bin release_artifacts/filesystem_${{ github.ref_name }}.bin
+          
+          echo "Files prepared for release:"
+          ls -l release_artifacts/
+
+      # Github Release
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: release_artifacts/*
+
+      # Send to TNY Robotics API (for automatic robot OTA updates)
+      - name: Upload to TNY Robotics API
+        env:
+          API_URL: "https://api.tny-robotics.com/firmware/release"
+          API_KEY: ${{ secrets.TNY_ROBOTICS_API_KEY }}
+        run: |
+          echo "Uploading to API..."
+          
+          # Firmware
+          curl -X POST -H "Authorization: Bearer $API_KEY" \
+               -F "version=${{ github.ref_name }}" \
+               -F "type=firmware" \
+               -F "file=@release_artifacts/firmware_${{ github.ref_name }}.bin" \
+               $API_URL
+          
+          # Filesystem
+          curl -X POST -H "Authorization: Bearer $API_KEY" \
+               -F "version=${{ github.ref_name }}" \
+               -F "type=filesystem" \
+               -F "file=@release_artifacts/filesystem_${{ github.ref_name }}.bin" \
+               $API_URL
