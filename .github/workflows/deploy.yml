@@ -11,6 +11,7 @@ env:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
+    environment: Deploy workflows
     defaults:
       run:
         working-directory: ./Firmware
@@ -60,10 +61,18 @@ jobs:
       - name: Prepare Artifacts
         run: |
           mkdir release_artifacts
+          BUILD_DIR=.pio/build/$PIO_ENV
+          OUT_DIR=release_artifacts
           
-          cp .pio/build/$PIO_ENV/firmware.bin release_artifacts/firmware_${{ github.ref_name }}.bin
+          # Update files
+          cp $BUILD_DIR/firmware.bin $OUT_DIR/firmware_${{ github.ref_name }}.bin
+          # Gestion du nom variable LittleFS (storage.bin ou littlefs.bin)
+          cp $BUILD_DIR/littlefs.bin $OUT_DIR/filesystem_${{ github.ref_name }}.bin
           
-          cp .pio/build/$PIO_ENV/littlefs.bin release_artifacts/filesystem_${{ github.ref_name }}.bin
+          # Factory files 
+          cp $BUILD_DIR/bootloader.bin $OUT_DIR/bootloader.bin
+          cp $BUILD_DIR/partitions.bin $OUT_DIR/partitions.bin
+          cp $BUILD_DIR/ota_data_initial.bin $OUT_DIR/boot_app0.bin
           
           echo "Files prepared for release:"
           ls -l release_artifacts/
@@ -73,7 +82,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: release_artifacts/*
+          files: |
+            release_artifacts/*.bin
+            release_artifacts/*.zip
 
       # Send to TNY Robotics API (for automatic robot OTA updates)
       - name: Upload to TNY Robotics API
