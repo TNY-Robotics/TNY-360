@@ -66,7 +66,6 @@ jobs:
           
           # Update files
           cp $BUILD_DIR/firmware.bin $OUT_DIR/firmware_${{ github.ref_name }}.bin
-          # Gestion du nom variable LittleFS (storage.bin ou littlefs.bin)
           cp $BUILD_DIR/littlefs.bin $OUT_DIR/filesystem_${{ github.ref_name }}.bin
           
           # Factory files 
@@ -79,7 +78,7 @@ jobs:
 
       # Github Release
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
