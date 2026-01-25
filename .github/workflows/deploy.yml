@@ -83,8 +83,11 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            release_artifacts/*.bin
-            release_artifacts/*.zip
+            release_artifacts/firmware_${{ github.ref_name }}.bin
+            release_artifacts/filesystem_${{ github.ref_name }}.bin
+            release_artifacts/bootloader.bin
+            release_artifacts/partitions.bin
+            release_artifacts/boot_app0.bin
 
       # Send to TNY Robotics API (for automatic robot OTA updates)
       - name: Upload to TNY Robotics API
