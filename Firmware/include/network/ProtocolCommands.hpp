@@ -97,7 +97,8 @@ CommandHandler handlers[] = {
         }
 
         float current_angle_rad;
-        if (Error err = joint->getPosition(current_angle_rad); err != Error::None)
+        // if (Error err = joint->getPosition(current_angle_rad); err != Error::None)
+        if (Error err = joint->getFeedback(current_angle_rad); err != Error::None) // FIXME : Kalman estimation is broken
         {
             resolve(Protocol::Response(req.id, false));
             return;
@@ -394,6 +395,46 @@ CommandHandler handlers[] = {
 
         Transformf target_posture(position, Quatf::FromEulerAngles(rotation));
         Error err = Robot::GetInstance().getBody().setPosture(target_posture);
+        if (err != Error::None)
+        {
+            Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to set body posture: %s", ErrorToString(err));
+        }
+        resolve(Protocol::Response(req.id, (err == Error::None)));
+    }},
+    
+    // set feet position
+    { 0x66, sizeof(uint8_t) + sizeof(float)*3, [](const Protocol::Request& req, CallbackResolver resolve) {
+        BinaryReader reader(req.payload, req.len);
+
+        uint8_t leg_index;
+        if (Error err = reader.read<uint8_t>(leg_index); err != Error::None)
+        {
+            Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to read leg index");
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        Vec3f position;
+        if (Error err = reader.read<float>(position.x); err != Error::None)
+        {
+            Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to read body posture position x");
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+        if (Error err = reader.read<float>(position.y); err != Error::None)
+        {
+            Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to read body posture position y");
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+        if (Error err = reader.read<float>(position.z); err != Error::None)
+        {
+            Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to read body posture position z");
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        Error err = Robot::GetInstance().getBody().setFeetPosition(static_cast<Body::LegIndex>(leg_index), position);
         if (err != Error::None)
         {
             Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to set body posture: %s", ErrorToString(err));

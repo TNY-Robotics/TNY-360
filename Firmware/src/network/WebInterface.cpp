@@ -204,6 +204,15 @@ esp_err_t WebInterface::api_calibrate_handler(httpd_req_t *req)
     // Retrieve the ID (the number before the comma)
     int id = atoi(buf);
 
+    if (id == 12) {
+        Log::Add(Log::Level::Info, TAG, "Starting full body calibration");
+        Robot::GetInstance().getBody().startCalibration();
+        // respond
+        httpd_resp_set_type(req, "text/plain");
+        httpd_resp_send(req, "ok", HTTPD_RESP_USE_STRLEN);
+        return ESP_OK;
+    }
+
     Joint* legs[12] = {
         &Robot::GetInstance().getBody().getFrontLeftLeg().getHipRoll(),
         &Robot::GetInstance().getBody().getFrontLeftLeg().getHipPitch(),

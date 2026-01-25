@@ -17,6 +17,8 @@ public:
      */
     static Joint* GetJoint(MotorDriver::Channel motor_channel);
 
+    Joint();
+
     Joint(MotorController motor_controller, float min_angle_rad = 0.f, float max_angle_rad = TWO_PI, bool inverted = false);
 
     /**

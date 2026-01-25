@@ -8,6 +8,8 @@ class Leg
 public:
     constexpr static const char* TAG = "Leg";
 
+    Leg();
+
     Leg(Joint hip_roll, Joint hip_pitch, Joint knee_pitch, bool y_inverted = false);
 
     /**

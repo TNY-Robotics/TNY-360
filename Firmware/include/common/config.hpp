@@ -5,13 +5,23 @@
 /** COMPILATION FLAGS **/
 #define DEBUG_MODE 1  // 1 to enable debug logs and behaviors, 0 to disable
 
+/** OTA SETUP **/
+constexpr const char* OTA_FIRMWARE_LATEST_URL = "https://api.tny-robotics.com/firmware/latest";
+constexpr int OTA_UPDATE_TIMEOUT_MS = 5000;
+constexpr int OTA_UPDATE_FILESYSTEM_BUFFER_SIZE = 4096; // in bytes
+constexpr const char* OTA_ROBOT_MODEL = "tny-360";
 
 /** PHYSICAL INFORMATIONS **/
 constexpr int LEG_THIGH_LENGTH_MM = 100; // in mm
 constexpr int LEG_CALF_LENGTH_MM = 100; // in mm
-constexpr int HIP_OFFSET_MM = 35; // in mm
+constexpr int HIP_OFFSET_MM = 30; // in mm
 constexpr int HIP_POS_X_MM = 75; // in mm
 constexpr int HIP_POS_Y_MM = 50; // in mm
+
+/** DEFAULT POSE INFORMATIONS **/
+constexpr float DEFAULT_BODY_HEIGHT_MM = 150.0f; // in mm, from ground level
+constexpr float DEFAULT_FEET_SPREAD_Y_MM = 80.0f; // in mm, from body center 
+constexpr float DEFAULT_FEET_SPREAD_X_MM = 75.0f; // in mm, from body center
 
 
 /** LOGGING **/
@@ -76,10 +86,15 @@ constexpr float CONTROL_LOOP_DT_S = 1.0f / CONTROL_LOOP_FREQ_HZ;
 
 /** Analog scanner **/
 // GPIO pins for the 4-bit multiplexer select lines
-constexpr gpio_num_t SCANNER_SLCT_PIN1 = GPIO_NUM_39;
-constexpr gpio_num_t SCANNER_SLCT_PIN2 = GPIO_NUM_40;
-constexpr gpio_num_t SCANNER_SLCT_PIN3 = GPIO_NUM_41;
-constexpr gpio_num_t SCANNER_SLCT_PIN4 = GPIO_NUM_42;
+// constexpr gpio_num_t SCANNER_SLCT_PIN1 = GPIO_NUM_39;
+// constexpr gpio_num_t SCANNER_SLCT_PIN2 = GPIO_NUM_40;
+// constexpr gpio_num_t SCANNER_SLCT_PIN3 = GPIO_NUM_41;
+// constexpr gpio_num_t SCANNER_SLCT_PIN4 = GPIO_NUM_42;
+// NOTE : Actually I'm dumb and reversed the pin between the analog card and the brain card ...
+constexpr gpio_num_t SCANNER_SLCT_PIN1 = GPIO_NUM_42;
+constexpr gpio_num_t SCANNER_SLCT_PIN2 = GPIO_NUM_41;
+constexpr gpio_num_t SCANNER_SLCT_PIN3 = GPIO_NUM_40;
+constexpr gpio_num_t SCANNER_SLCT_PIN4 = GPIO_NUM_39;
 
 
 /** IMU **/
@@ -111,3 +126,8 @@ constexpr uint8_t MENU_LIST_ITEM_DEFAULT_SHIFT = 4;
 // List item shift when selected
 constexpr uint8_t MENU_LIST_ITEM_SELECTED_SHIFT = 8;
 
+
+/** Speaker **/
+constexpr gpio_num_t SPEAKER_GPIO_NUM = GPIO_NUM_1;
+constexpr int SPEAKER_SAMPLE_RATE_HZ = 44100; // in Hz
+constexpr size_t SPEAKER_NB_AUDIO_PROVIDERS = 4; // number of stacked audio providers

@@ -1,6 +1,8 @@
 #include "locomotion/Leg.hpp"
 #include "common/Log.hpp"
 
+Leg::Leg() {}
+
 Leg::Leg(Joint hip_roll, Joint hip_pitch, Joint knee_pitch, bool y_inverted)
     : hip_roll(hip_roll), hip_pitch(hip_pitch), knee_pitch(knee_pitch), y_inverted(y_inverted)
 {

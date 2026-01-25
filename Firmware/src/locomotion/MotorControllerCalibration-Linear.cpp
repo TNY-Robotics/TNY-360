@@ -588,7 +588,7 @@ Error MotorController::run_calibration_sequence()
     // And we progressively move back until we detect a voltage change beyond a threshold.
     // This will mean we are out of the stall, and we can record that position as the min/max position.
 
-    constexpr float CALIB_REFINEMENT_NOISE_THRESHOLD_STD_MULTIPLIER = 0.5f; // Multiplier for standard deviation to determine voltage change threshold during refinement
+    constexpr float CALIB_REFINEMENT_NOISE_THRESHOLD_STD_MULTIPLIER = 0.2f; // Multiplier for standard deviation to determine voltage change threshold during refinement
     constexpr MotorDriver::Value CALIB_REFINEMENT_INCREMENT_PWM = 2; // PWM increment for refinement
     constexpr int CALIB_REFINEMENT_NB_SAMPLES = 5; // Number of samples to average during refinement
 
@@ -602,7 +602,7 @@ Error MotorController::run_calibration_sequence()
             abort_calibration();
             return err;
         }
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(1500));
 
         // Now we should be at the minimum.
         // Start the main loop, looking for the voltage and going forward until it changes.
@@ -653,7 +653,7 @@ Error MotorController::run_calibration_sequence()
             abort_calibration();
             return err;
         }
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(1500));
 
         // Now we should be at the maximum.
         // Start the main loop, looking for the voltage and going backward until it changes.

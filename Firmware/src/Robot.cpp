@@ -1,4 +1,5 @@
 #include "Robot.hpp"
+#include "common/Log.hpp"
 
 Robot* Robot::instance = nullptr;
 
@@ -10,6 +11,11 @@ Robot::Robot()
 Error Robot::init()
 {
     Error err;
+
+    if ((err = update_manager.init()) != Error::None)
+    {
+        return err;
+    }
 
     if ((err = body.init()) != Error::None)
     {
@@ -26,9 +32,14 @@ Error Robot::init()
         return err;
     }
 
+    if ((err = audio_manager.init()) != Error::None)
+    {
+        return err;
+    }
+
     // THIS DELAY IS IMPORTANT!
     // allow some time for systems to stabilize before enabling motors and everything
-    vTaskDelay(pdMS_TO_TICKS(200));
+    vTaskDelay(pdMS_TO_TICKS(500));
 
     return Error::None;
 }
@@ -48,6 +59,11 @@ Error Robot::deinit()
     }
 
     if ((err = timer.deinit()) != Error::None)
+    {
+        return err;
+    }
+
+    if ((err = audio_manager.deinit()) != Error::None)
     {
         return err;
     }

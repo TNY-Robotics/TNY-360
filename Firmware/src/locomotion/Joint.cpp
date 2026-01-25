@@ -13,6 +13,8 @@ Joint* Joint::GetJoint(MotorDriver::Channel motor_channel)
     return joints[motor_channel];
 }
 
+Joint::Joint() {}
+
 Joint::Joint(MotorController motor_controller, float min_angle_rad, float max_angle_rad, bool inverted)
     : motor_controller(motor_controller), min_angle_rad(min_angle_rad), max_angle_rad(max_angle_rad),
       inverted(inverted), velocity_rad_s(MAX_VELOCITY_RAD_S)

@@ -189,61 +189,72 @@
     <h1>Body Posture</h1>
     <div id="body-container">
         <script>
-                    const bodyContainer = document.getElementById('body-container');
-                    const axes = [
-                        { id: 'RotX', name: 'Rotation X (Roll)', min: -45, max: 45, val: 0 },
-                        { id: 'RotY', name: 'Rotation Y (Pitch)', min: -45, max: 45, val: 0 },
-                        { id: 'RotZ', name: 'Rotation Z (Yaw)',   min: -45, max: 45, val: 0 },
-                        { id: 'PosX', name: 'Position X',         min: -100, max: 100, val: 0 },
-                        { id: 'PosY', name: 'Position Y',         min: -100, max: 100, val: 0 },
-                        { id: 'PosZ', name: 'Position Z',         min: 0,    max: 200, val: 100 } // Default slightly up
-                    ];
+            const bodyContainer = document.getElementById('body-container');
+            const axes = [
+                { id: 'RotX', name: 'Rotation X (Roll)', min: -45, max: 45, val: 0 },
+                { id: 'RotY', name: 'Rotation Y (Pitch)', min: -45, max: 45, val: 0 },
+                { id: 'RotZ', name: 'Rotation Z (Yaw)',   min: -45, max: 45, val: 0 },
+                { id: 'PosX', name: 'Position X',         min: -100, max: 100, val: 0 },
+                { id: 'PosY', name: 'Position Y',         min: -100, max: 100, val: 0 },
+                { id: 'PosZ', name: 'Position Z',         min: 0,    max: 200, val: 100 } // Default slightly up
+            ];
 
-                    axes.forEach(axis => {
-                        const div = document.createElement('div');
-                        div.style.marginBottom = '10px';
+            axes.forEach(axis => {
+                const div = document.createElement('div');
+                div.style.marginBottom = '10px';
 
-                        const label = document.createElement('strong');
-                        label.textContent = `${axis.name}: `;
-                        div.appendChild(label);
+                const label = document.createElement('strong');
+                label.textContent = `${axis.name}: `;
+                div.appendChild(label);
 
-                        const input = document.createElement('input');
-                        input.id = `body-${axis.id}`;
-                        input.type = 'range';
-                        input.min = axis.min.toString();
-                        input.max = axis.max.toString();
-                        input.value = axis.val.toString();
-                        input.step = '1';
-                        input.style.width = '300px';
-                        
-                        const valDisplay = document.createElement('span');
-                        valDisplay.style.marginLeft = '10px';
-                        valDisplay.textContent = input.value;
+                const input = document.createElement('input');
+                input.id = `body-${axis.id}`;
+                input.type = 'range';
+                input.min = axis.min.toString();
+                input.max = axis.max.toString();
+                input.value = axis.val.toString();
+                input.step = '1';
+                input.style.width = '300px';
+                
+                const valDisplay = document.createElement('span');
+                valDisplay.style.marginLeft = '10px';
+                valDisplay.textContent = input.value;
 
-                        input.oninput = function() {
-                            valDisplay.textContent = this.value;
-                            
-                            // Gather all current values
-                            const rx = document.getElementById('body-RotX').value;
-                            const ry = document.getElementById('body-RotY').value;
-                            const rz = document.getElementById('body-RotZ').value;
-                            const px = document.getElementById('body-PosX').value;
-                            const py = document.getElementById('body-PosY').value;
-                            const pz = document.getElementById('body-PosZ').value;
+                input.oninput = function() {
+                    valDisplay.textContent = this.value;
+                    
+                    // Gather all current values
+                    const rx = document.getElementById('body-RotX').value;
+                    const ry = document.getElementById('body-RotY').value;
+                    const rz = document.getElementById('body-RotZ').value;
+                    const px = document.getElementById('body-PosX').value;
+                    const py = document.getElementById('body-PosY').value;
+                    const pz = document.getElementById('body-PosZ').value;
 
-                            // Send to API: rotx,roty,rotz,posx,posy,posz
-                            // Matches: sscanf(buf, "%f,%f,%f,%f,%f,%f", &rotx, &roty, &rotz, &posx, &posy, &posz)
-                            fetch('/api/body', {
-                                method: 'POST',
-                                body: `${rx},${ry},${rz},${px},${py},${pz}`
-                            });
-                        };
-
-                        div.appendChild(input);
-                        div.appendChild(valDisplay);
-                        bodyContainer.appendChild(div);
+                    // Send to API: rotx,roty,rotz,posx,posy,posz
+                    // Matches: sscanf(buf, "%f,%f,%f,%f,%f,%f", &rotx, &roty, &rotz, &posx, &posy, &posz)
+                    fetch('/api/body', {
+                        method: 'POST',
+                        body: `${rx},${ry},${rz},${px},${py},${pz}`
                     });
-                </script>
+                };
+
+                div.appendChild(input);
+                div.appendChild(valDisplay);
+                bodyContainer.appendChild(div);
+            });
+
+            // Calibrate button
+            const CalibrateButton = document.createElement('button');
+            CalibrateButton.textContent = 'Calibrate';
+            CalibrateButton.onclick = function() {
+                fetch('/api/calibrate', {
+                    method: 'POST',
+                    body: `12` // 12 indicates full body calibration
+                });
+            };
+            bodyContainer.appendChild(CalibrateButton);
+        </script>
     </div>
     <hr>
     <h1>Voltages</h1>

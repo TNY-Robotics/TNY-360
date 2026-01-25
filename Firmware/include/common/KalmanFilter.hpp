@@ -38,20 +38,20 @@ public:
      * @brief Get the current state estimate.
      * @return Current estimated value.
      */
-    float GetEstimate() const { return _x_est; }
+    float GetEstimate() const { return m_x_est; }
 
     /**
      * @brief Get the current uncertainty (error covariance).
      * @return Current uncertainty value.
      */
-    float GetUncertainty() const { return _P; }
+    float GetUncertainty() const { return m_P; }
 
 private:
     // State
-    float _x_est; // x : Current estimate
-    float _P;     // P : Estimation error covariance (Uncertainty)
+    float m_x_est; // x : Current estimate
+    float m_P;    // P : Current estimate uncertainty (error covariance)
 
     // Parameters
-    float _Q;     // Q : Process noise covariance (Model)
-    float _R;     // R : Measurement noise covariance (Sensor)
+    float m_Q;     // Q : Process noise covariance (Model)
+    float m_R;     // R : Measurement noise covariance (Sensor)
 };

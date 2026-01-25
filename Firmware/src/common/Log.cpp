@@ -47,7 +47,7 @@ void Log::Add(Log::Level level, const char* tag, const char* fmt, ...)
     // Log the message to serial for immediate feedback
     // This is useful for debugging during development
     const char* levelStr = LevelToString(level);
-    printf("[%s] [%s] %*s%s\n", levelStr, tag, logIndent * 2, "", message);
+    printf("[%s] %*s[%s] %s\n", levelStr, (int)(logIndent * 2), "", tag, message);
 #endif
 }
 

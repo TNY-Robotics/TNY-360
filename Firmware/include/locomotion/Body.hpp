@@ -8,6 +8,14 @@ class Body
 public:
     constexpr static const char* TAG = "Body";
 
+    enum class LegIndex: uint8_t {
+        FRONT_LEFT = 0,
+        FRONT_RIGHT = 1,
+        BACK_LEFT = 2,
+        BACK_RIGHT = 3,
+        COUNT = 4
+    };
+
     Body();
 
     /**
@@ -41,6 +49,12 @@ public:
     Error disable();
 
     /**
+     * @brief Starts the calibration process for all motors in the body.
+     * @return Error code indicating success or failure.
+     */
+    Error startCalibration();
+
+    /**
      * @brief Set the target position for the body.
      * @param target Target position for the body.
      * @return Error code indicating success or failure.
@@ -48,28 +62,51 @@ public:
     Error setPosture(const Transformf& posture);
 
     /**
+     * @brief Get the current position of the body.
+     * @param posture Current body posture.
+     * @return Error code indicating success or failure.
+     */
+    Error getTargetPosture(Transformf& posture) const;
+
+    /**
+     * @brief Set the target position for a specific feet
+     * @param leg_index Index of the leg (0-3).
+     * @param target_pos Target foot position in world coordinate frame.
+     * @return Error code indicating success or failure.
+     */
+    Error setFeetPosition(LegIndex leg_index, const Vec3f& position);
+
+    /**
+     * @brief Get the current position of a specific feet
+     * @param leg_index Index of the leg (0-3).
+     * @param target_pos Current foot position in world coordinate frame.
+     * @return Error code indicating success or failure.
+     */
+    Error getFeetPosition(LegIndex leg_index, Vec3f& position) const;
+
+    /**
      * @brief Get the front left leg.
      * @return Reference to the front left Leg.
      */
-    Leg& getFrontLeftLeg() { return leg_fl; }
+    Leg& getFrontLeftLeg() { return legs[static_cast<size_t>(LegIndex::FRONT_LEFT)]; }
 
     /**
      * @brief Get the front right leg.
      * @return Reference to the front right Leg.
      */
-    Leg& getFrontRightLeg() { return leg_fr; }
+    Leg& getFrontRightLeg() { return legs[static_cast<size_t>(LegIndex::FRONT_RIGHT)]; }
 
     /**
      * @brief Get the back left leg.
      * @return Reference to the back left Leg.
      */
-    Leg& getBackLeftLeg() { return leg_bl; }
+    Leg& getBackLeftLeg() { return legs[static_cast<size_t>(LegIndex::BACK_LEFT)]; }
 
     /**
      * @brief Get the back right leg.
      * @return Reference to the back right Leg.
      */
-    Leg& getBackRightLeg() { return leg_br; }
+    Leg& getBackRightLeg() { return legs[static_cast<size_t>(LegIndex::BACK_RIGHT)]; }
 
     /**
      * @brief Get the left ear joint.
@@ -84,10 +121,14 @@ public:
     Joint& getRightEar() { return ear_r; }
 
 private:
-    Leg leg_fl; // Front Left Leg
-    Leg leg_fr; // Front Right Leg
-    Leg leg_bl; // Back Left Leg
-    Leg leg_br; // Back Right Leg
+    Leg legs[4]; // Array of 4 legs
     Joint ear_l; // Left Ear Joint
     Joint ear_r; // Right Ear Joint
+
+    // Kinematic parameters and state
+    Vec3f local_hip_positions_mm[4]; // local to base_link (body center)
+    Vec3f global_feet_positions_mm[4]; // global positions in world frame (ground reference)
+    Transformf posture; // Body posture (position relative to world, orientation relative to body frame)
+
+    Error apply_posture();
 };

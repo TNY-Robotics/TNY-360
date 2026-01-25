@@ -4,6 +4,8 @@
 
 constexpr const char* TAG = "MotorController";
 
+MotorController::MotorController() {}
+
 MotorController::MotorController(MotorDriver::Channel motor_channel, AnalogDriver::Channel analog_channel)
     : motor_channel(motor_channel),
       analog_channel(analog_channel),

@@ -21,6 +21,8 @@ public:
         CALIBRATING,
         CALIBRATED
     };
+
+    MotorController();
     
     MotorController(MotorDriver::Channel motor_channel, AnalogDriver::Channel analog_channel);
 
@@ -94,7 +96,7 @@ public:
      * @brief Get the current state of calibration.
      * @return Current calibration state.
      */
-    CalibrationState getCalibrationState() const;
+    CalibrationState getCalibrationState() const { return calibration_state; }
 
     /**
      * @brief Get the motor channel.

@@ -1,5 +1,6 @@
 #include "network/WiFiManager.hpp"
 #include "common/Log.hpp"
+#include "Robot.hpp"
 
 static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
@@ -168,7 +169,11 @@ Error WiFiManager::init()
         Log::Add(Log::Level::Debug, TAG, "No SSID stored. Starting AP");
         strcpy(ssid, WIFI_AP_SSID);
         strcpy(password, WIFI_AP_PASSWORD);
-        __create_ap();
+        if (Error err = __create_ap(); err != Error::None)
+        {
+            Log::Add(Log::Level::Error, TAG, "Create AP Failed, returning init error");
+            return err;
+        }
     }
 
     return Error::None;
@@ -341,6 +346,13 @@ void WiFiManager::on_ap_stopped()
 void WiFiManager::on_ap_connected()
 {
     Log::Add(Log::Level::Debug, TAG, "WiFiManager::on_ap_connected");
+    
+    // Now that we are connected to a Wi-Fi network, check for updates if internet access is available
+    // NOTE : Launching in a separate task to avoid overflowing the event handler stack
+    xTaskCreate([](void* param) {
+        Robot::GetInstance().getUpdateManager().checkForUpdates();
+        vTaskDelete(nullptr);
+    }, "UpdateCheckTask", 8192, nullptr, tskIDLE_PRIORITY + 1, nullptr);
 }
 
 void WiFiManager::on_ap_disconnected()
