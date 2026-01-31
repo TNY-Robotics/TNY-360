@@ -1,0 +1,27 @@
+@import url('./poppins.css');
+@import 'tailwindcss';
+@import '@nuxt/ui';
+
+#__nuxt {
+    @apply w-full min-h-full;
+}
+
+#__nuxt > div {
+    @apply flex bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-50 w-full min-h-full justify-center items-center;
+}
+
+body {
+    @apply flex min-h-screen;
+}
+
+* {
+    font-family: 'PoppinsWeb', Helvetica, sans-serif;
+}
+
+button[disabled] {
+    @apply cursor-not-allowed;
+}
+
+button {
+    @apply cursor-pointer;
+}

@@ -11,7 +11,7 @@ MotorController::MotorController(MotorDriver::Channel motor_channel, AnalogDrive
       analog_channel(analog_channel),
       nvshandle_ptr(nullptr),
       target_position(0.0f),
-      calibration_state(UNCALIBRATED)
+      calibration_state(CalibrationState::UNCALIBRATED)
 {
 }
 
@@ -20,41 +20,41 @@ Error MotorController::init()
     // Check if below drivers are initialized
     if (Error err = MotorDriver::Init(); err != Error::None)
     {
-        state = ERROR;
+        state = State::ERROR;
         return err;
     }
     if (Error err = AnalogDriver::Init(); err != Error::None)
     {
-        state = ERROR;
+        state = State::ERROR;
         return err;
     }
 
     // Try to read calibration data from NVS
     if (Error err = NVS::Init(); err != Error::None)
     {
-        state = ERROR;
+        state = State::ERROR;
         return err;
     }
     char key[32]; // using motorChannel as identifier
     sprintf(key, "MtrCtrl-%d", static_cast<int>(motor_channel));
     if (Error err = NVS::Open(key, &nvshandle_ptr); err != Error::None)
     {
-        state = ERROR;
+        state = State::ERROR;
         return err;
     }
     if (nvshandle_ptr->get("calib_data", calibration_data) == Error::None)
     {
-        state = ENABLED;
-        calibration_state = CALIBRATED;
+        state = State::ENABLED;
+        calibration_state = CalibrationState::CALIBRATED;
     }
     else
     {
         calibration_data = DEFAULT_CALIBRATION;
-        calibration_state = UNCALIBRATED;
+        calibration_state = CalibrationState::UNCALIBRATED;
     }
 
     // Disable motor initially
-    state = DISABLED;
+    state = State::DISABLED;
     __send_target_position();
     
     return Error::None;
@@ -73,14 +73,14 @@ Error MotorController::deinit()
 
 Error MotorController::enable()
 {
-    state = ENABLED;
+    state = State::ENABLED;
     __send_target_position(); // effective right now
     return Error::None;
 }
 
 Error MotorController::disable()
 {
-    state = DISABLED;
+    state = State::DISABLED;
     __send_target_position(); // effective right now
     return Error::None;
 }
@@ -89,7 +89,7 @@ Error MotorController::startCalibration()
 {
     Log::Add(Log::Level::Info, TAG, "Starting motor calibration");
 
-    if (calibration_state == CALIBRATING)
+    if (calibration_state == CalibrationState::CALIBRATING)
     {
         Log::Add(Log::Level::Warning, TAG, "Motor is already in calibration mode");
         return Error::InvalidState;
@@ -97,14 +97,18 @@ Error MotorController::startCalibration()
 
     if (xTaskCreate([](void* param) {
             MotorController* controller = static_cast<MotorController*>(param);
+            controller->calibration_progress = 0.0f;
+            controller->calibration_state = CalibrationState::CALIBRATING;
             Error err = controller->run_calibration_sequence();
             if (err != Error::None)
             {
                 Log::Add(Log::Level::Error, TAG, "Motor calibration task failed with error %d", static_cast<uint8_t>(err));
+                controller->calibration_state = CalibrationState::UNCALIBRATED;
             }
             else
             {
                 Log::Add(Log::Level::Info, TAG, "Motor calibration task completed successfully");
+                controller->calibration_state = CalibrationState::CALIBRATED;
             }
             // disable motor for safety
             if (Error err = controller->disable(); err != Error::None)
@@ -126,7 +130,7 @@ Error MotorController::stopCalibration()
 {
     Log::Add(Log::Level::Info, TAG, "Stopping motor calibration");
 
-    if (calibration_state != CALIBRATING)
+    if (calibration_state != MotorController::CalibrationState::CALIBRATING)
     {
         Log::Add(Log::Level::Warning, TAG, "Motor is not in calibration mode");
         return Error::InvalidState;
@@ -177,7 +181,7 @@ MotorController::State MotorController::getState() const
 Error MotorController::__send_target_position()
 {
     MotorDriver::Value pwm_value = 0;
-    if (state != DISABLED && state != ERROR)
+    if (state != State::DISABLED && state != State::ERROR)
     {
         pwm_value = static_cast<MotorDriver::Value>(
             calibration_data.min_pwm +
@@ -185,7 +189,7 @@ Error MotorController::__send_target_position()
         );
     }
 
-    if (calibration_state != CALIBRATING) // don't listen to anyone if calibrating
+    if (calibration_state != CalibrationState::CALIBRATING) // don't listen to anyone if calibrating
     {
         // Log::Add(Log::Level::Debug, TAG, "Setting motor %d PWM to %d", motor_channel, pwm_value);
         if (Error err = MotorDriver::SetPWM(motor_channel, pwm_value); err != Error::None)

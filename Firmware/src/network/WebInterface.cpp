@@ -4,373 +4,6 @@
 #include "locomotion/MotorController.hpp"
 #include "Robot.hpp"
 
-esp_err_t WebInterface::interface_handler(httpd_req_t *req)
-{
-    httpd_resp_set_type(req, "text/html");
-    if (interface_file_content)
-    {
-        httpd_resp_send(req, interface_file_content, HTTPD_RESP_USE_STRLEN);
-    } else
-    {
-        httpd_resp_send(req, "interface.html not found", HTTPD_RESP_USE_STRLEN);
-    }
-    return ESP_OK;
-}
-
-esp_err_t WebInterface::api_position_handler(httpd_req_t *req)
-{
-    char buf[64];
-    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
-    if (ret <= 0) {
-        if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
-            httpd_resp_send_408(req);
-        }
-        return ESP_FAIL;
-    }
-    buf[ret] = '\0';
-
-    char *comma = strchr(buf, ',');
-    if (comma) {
-        // Retrieve the number after the comma
-        int value = atoi(comma + 1);
-        
-        // Optional: Retrieve the ID (the number before the comma)
-        int id = atoi(buf);
-
-        Joint* legs[12] = {
-            &Robot::GetInstance().getBody().getFrontLeftLeg().getHipRoll(),
-            &Robot::GetInstance().getBody().getFrontLeftLeg().getHipPitch(),
-            &Robot::GetInstance().getBody().getFrontLeftLeg().getKneePitch(),
-            &Robot::GetInstance().getBody().getFrontRightLeg().getHipRoll(),
-            &Robot::GetInstance().getBody().getFrontRightLeg().getHipPitch(),
-            &Robot::GetInstance().getBody().getFrontRightLeg().getKneePitch(),
-            &Robot::GetInstance().getBody().getBackLeftLeg().getHipRoll(),
-            &Robot::GetInstance().getBody().getBackLeftLeg().getHipPitch(),
-            &Robot::GetInstance().getBody().getBackLeftLeg().getKneePitch(),
-            &Robot::GetInstance().getBody().getBackRightLeg().getHipRoll(),
-            &Robot::GetInstance().getBody().getBackRightLeg().getHipPitch(),
-            &Robot::GetInstance().getBody().getBackRightLeg().getKneePitch(),
-        };
-        
-        Log::Add(Log::Level::Debug, TAG, "Received position value: %d", value);
-        if (id >= 0 && id < 12) {
-            float angle = static_cast<float>(value); // assuming value is in range 0-1000
-            legs[id]->setTarget(DEG_TO_RAD(angle));
-            Log::Add(Log::Level::Debug, TAG, "Set leg ID %d target angle to %.3f", id, angle);
-        } else {
-            Log::Add(Log::Level::Error, TAG, "Invalid leg ID: %d", id);
-        }
-    }
-
-    // respond
-    httpd_resp_set_type(req, "text/plain");
-    httpd_resp_send(req, "ok", HTTPD_RESP_USE_STRLEN);
-    return ESP_OK;
-}
-
-
-esp_err_t WebInterface::api_enable_handler(httpd_req_t *req)
-{
-    char buf[64];
-    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
-    if (ret <= 0) {
-        if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
-            httpd_resp_send_408(req);
-        }
-        return ESP_FAIL;
-    }
-    buf[ret] = '\0';
-
-    char *comma = strchr(buf, ',');
-    if (comma) {
-        // Retrieve the boolean after the comma (0 for disable, 1 for enable)
-        int enable = atoi(comma + 1);
-        
-        // Retrieve the ID (the number before the comma)
-        int id = atoi(buf); 
-
-        Log::Add(Log::Level::Debug, TAG, "Received enable value: %d for ID: %d", enable, id);
-
-        Joint* legs[12] = {
-            &Robot::GetInstance().getBody().getFrontLeftLeg().getHipRoll(),
-            &Robot::GetInstance().getBody().getFrontLeftLeg().getHipPitch(),
-            &Robot::GetInstance().getBody().getFrontLeftLeg().getKneePitch(),
-            &Robot::GetInstance().getBody().getFrontRightLeg().getHipRoll(),
-            &Robot::GetInstance().getBody().getFrontRightLeg().getHipPitch(),
-            &Robot::GetInstance().getBody().getFrontRightLeg().getKneePitch(),
-            &Robot::GetInstance().getBody().getBackLeftLeg().getHipRoll(),
-            &Robot::GetInstance().getBody().getBackLeftLeg().getHipPitch(),
-            &Robot::GetInstance().getBody().getBackLeftLeg().getKneePitch(),
-            &Robot::GetInstance().getBody().getBackRightLeg().getHipRoll(),
-            &Robot::GetInstance().getBody().getBackRightLeg().getHipPitch(),
-            &Robot::GetInstance().getBody().getBackRightLeg().getKneePitch(),
-        };
-
-        if (id >= 0 && id < 12) {
-            if (enable) {
-                legs[id]->enable();
-                Log::Add(Log::Level::Debug, TAG, "Enabled leg ID %d", id);
-            } else {
-                legs[id]->disable();
-                Log::Add(Log::Level::Debug, TAG, "Disabled leg ID %d", id);
-            }
-        } else {
-            Log::Add(Log::Level::Error, TAG, "Invalid leg ID: %d", id);
-        }
-    }
-
-    // respond
-    httpd_resp_set_type(req, "text/plain");
-    httpd_resp_send(req, "ok", HTTPD_RESP_USE_STRLEN);
-    return ESP_OK;
-}
-
-esp_err_t WebInterface::api_feedback_handler(httpd_req_t *req)
-{
-    Joint* legs[12] = {
-        &Robot::GetInstance().getBody().getFrontLeftLeg().getHipRoll(),
-        &Robot::GetInstance().getBody().getFrontLeftLeg().getHipPitch(),
-        &Robot::GetInstance().getBody().getFrontLeftLeg().getKneePitch(),
-        &Robot::GetInstance().getBody().getFrontRightLeg().getHipRoll(),
-        &Robot::GetInstance().getBody().getFrontRightLeg().getHipPitch(),
-        &Robot::GetInstance().getBody().getFrontRightLeg().getKneePitch(),
-        &Robot::GetInstance().getBody().getBackLeftLeg().getHipRoll(),
-        &Robot::GetInstance().getBody().getBackLeftLeg().getHipPitch(),
-        &Robot::GetInstance().getBody().getBackLeftLeg().getKneePitch(),
-        &Robot::GetInstance().getBody().getBackRightLeg().getHipRoll(),
-        &Robot::GetInstance().getBody().getBackRightLeg().getHipPitch(),
-        &Robot::GetInstance().getBody().getBackRightLeg().getKneePitch(),
-    };
-
-    char response[256];
-    int offset = 0;
-    for (int i = 0; i < 12; ++i) {
-        float angle = 0.0f;
-        legs[i]->getFeedback(angle);
-        offset += snprintf(response + offset, sizeof(response) - offset, "%.1f,", RAD_TO_DEG(angle));
-    }
-
-    // respond
-    httpd_resp_set_type(req, "text/plain");
-    httpd_resp_send(req, response, offset - 1); // exclude last comma
-
-    return ESP_OK;
-}
-
-esp_err_t WebInterface::api_voltages_handler(httpd_req_t *req)
-{
-    Joint* legs[12] = {
-        &Robot::GetInstance().getBody().getFrontLeftLeg().getHipRoll(),
-        &Robot::GetInstance().getBody().getFrontLeftLeg().getHipPitch(),
-        &Robot::GetInstance().getBody().getFrontLeftLeg().getKneePitch(),
-        &Robot::GetInstance().getBody().getFrontRightLeg().getHipRoll(),
-        &Robot::GetInstance().getBody().getFrontRightLeg().getHipPitch(),
-        &Robot::GetInstance().getBody().getFrontRightLeg().getKneePitch(),
-        &Robot::GetInstance().getBody().getBackLeftLeg().getHipRoll(),
-        &Robot::GetInstance().getBody().getBackLeftLeg().getHipPitch(),
-        &Robot::GetInstance().getBody().getBackLeftLeg().getKneePitch(),
-        &Robot::GetInstance().getBody().getBackRightLeg().getHipRoll(),
-        &Robot::GetInstance().getBody().getBackRightLeg().getHipPitch(),
-        &Robot::GetInstance().getBody().getBackRightLeg().getKneePitch(),
-    };
-
-    char response[256];
-    int offset = 0;
-    for (int i = 0; i < 12; ++i) {
-        AnalogDriver::Value voltage = 0;
-        AnalogDriver::GetVoltage(legs[i]->getMotorController().getAnalogChannel(), &voltage);
-        offset += snprintf(response + offset, sizeof(response) - offset, "%d,", voltage);
-    }
-
-    // respond
-    httpd_resp_set_type(req, "text/plain");
-    httpd_resp_send(req, response, offset - 1); // exclude last comma
-
-    return ESP_OK;
-}
-
-esp_err_t WebInterface::api_calibrate_handler(httpd_req_t *req)
-{
-    char buf[64];
-    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
-    if (ret <= 0) {
-        if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
-            httpd_resp_send_408(req);
-        }
-        return ESP_FAIL;
-    }
-    buf[ret] = '\0';
-        
-    // Retrieve the ID (the number before the comma)
-    int id = atoi(buf);
-
-    if (id == 12) {
-        Log::Add(Log::Level::Info, TAG, "Starting full body calibration");
-        Robot::GetInstance().getBody().startCalibration();
-        // respond
-        httpd_resp_set_type(req, "text/plain");
-        httpd_resp_send(req, "ok", HTTPD_RESP_USE_STRLEN);
-        return ESP_OK;
-    }
-
-    Joint* legs[12] = {
-        &Robot::GetInstance().getBody().getFrontLeftLeg().getHipRoll(),
-        &Robot::GetInstance().getBody().getFrontLeftLeg().getHipPitch(),
-        &Robot::GetInstance().getBody().getFrontLeftLeg().getKneePitch(),
-        &Robot::GetInstance().getBody().getFrontRightLeg().getHipRoll(),
-        &Robot::GetInstance().getBody().getFrontRightLeg().getHipPitch(),
-        &Robot::GetInstance().getBody().getFrontRightLeg().getKneePitch(),
-        &Robot::GetInstance().getBody().getBackLeftLeg().getHipRoll(),
-        &Robot::GetInstance().getBody().getBackLeftLeg().getHipPitch(),
-        &Robot::GetInstance().getBody().getBackLeftLeg().getKneePitch(),
-        &Robot::GetInstance().getBody().getBackRightLeg().getHipRoll(),
-        &Robot::GetInstance().getBody().getBackRightLeg().getHipPitch(),
-        &Robot::GetInstance().getBody().getBackRightLeg().getKneePitch(),
-    };
-
-    if (id >= 0 && id < 12) {
-        Log::Add(Log::Level::Info, TAG, "Starting calibration for leg ID %d", id);
-        if (Error err = legs[id]->getMotorController().startCalibration(); err != Error::None)
-        {
-            Log::Add(Log::Level::Error, TAG, "Failed to start calibration for leg ID %d", id);
-            httpd_resp_send_500(req);
-            return ESP_FAIL;
-        }
-    } else {
-        Log::Add(Log::Level::Error, TAG, "Invalid leg ID: %d", id);
-    }
-
-    // respond
-    httpd_resp_set_type(req, "text/plain");
-    httpd_resp_send(req, "ok", HTTPD_RESP_USE_STRLEN);
-    return ESP_OK;
-}
-
-esp_err_t WebInterface::api_ik_handler(httpd_req_t* req)
-{
-    char buf[256];
-    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
-    if (ret <= 0) {
-        if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
-            httpd_resp_send_408(req);
-        }
-        return ESP_FAIL;
-    }
-    buf[ret] = '\0';
-
-    // Parse input for leg index and target coordinates
-    int leg_index;
-    float x, y, z;
-    if (sscanf(buf, "%d,%f,%f,%f", &leg_index, &x, &y, &z) != 4) {
-        Log::Add(Log::Level::Error, TAG, "Invalid IK input format");
-        httpd_resp_send(req, "invalid input", HTTPD_RESP_USE_STRLEN);
-        return ESP_FAIL;
-    }
-
-    Leg* legs[4] = {
-        &Robot::GetInstance().getBody().getFrontLeftLeg(),
-        &Robot::GetInstance().getBody().getFrontRightLeg(),
-        &Robot::GetInstance().getBody().getBackLeftLeg(),
-        &Robot::GetInstance().getBody().getBackRightLeg(),
-    };
-
-    if (leg_index < 0 || leg_index >= 4) {
-        Log::Add(Log::Level::Error, TAG, "Invalid leg index: %d", leg_index);
-        httpd_resp_send(req, "invalid leg index", HTTPD_RESP_USE_STRLEN);
-        return ESP_FAIL;
-    }
-    
-    Vec3f target_pos = {x, y, z};
-    if (Error err = legs[leg_index]->setTarget(target_pos); err != Error::None) {
-        Log::Add(Log::Level::Error, TAG, "IK computation failed for leg index %d", leg_index);
-        httpd_resp_send_500(req);
-        return ESP_FAIL;
-    }
-
-    httpd_resp_send(req, "ik ok", HTTPD_RESP_USE_STRLEN);
-    return ESP_OK;
-}
-
-esp_err_t WebInterface::api_body_handler(httpd_req_t* req)
-{
-    char buf[256];
-    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
-    if (ret <= 0) {
-        if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
-            httpd_resp_send_408(req);
-        }
-        return ESP_FAIL;
-    }
-    buf[ret] = '\0';
-
-    // Parse input for body posture
-    float rotx, roty, rotz, posx, posy, posz;
-    if (sscanf(buf, "%f,%f,%f,%f,%f,%f", &rotx, &roty, &rotz, &posx, &posy, &posz) != 6) {
-        Log::Add(Log::Level::Error, TAG, "Invalid Body Posture input format");
-        httpd_resp_send(req, "invalid input", HTTPD_RESP_USE_STRLEN);
-        return ESP_FAIL;
-    }
-
-    Log::Add(Log::Level::Debug, TAG, "Setting body posture to pos(%.2f, %.2f, %.2f) rot(%.2f, %.2f, %.2f)", posx, posy, posz, rotx, roty, rotz);
-    
-    Transformf posture(
-        Vec3f(posx, posy, posz),
-        Quatf::FromEulerAngles(Vec3f(DEG_TO_RAD(rotx), DEG_TO_RAD(roty), DEG_TO_RAD(rotz)))
-    );
-    if (Error err = Robot::GetInstance().getBody().setPosture(posture); err != Error::None) {
-        Log::Add(Log::Level::Error, TAG, "Setting body posture failed");
-        httpd_resp_send_500(req);
-        return ESP_FAIL;
-    }
-
-    httpd_resp_send(req, "body posture ok", HTTPD_RESP_USE_STRLEN);
-    return ESP_OK;
-}
-
-esp_err_t WebInterface::api_connect_handler(httpd_req_t *req)
-{
-    // NOTE : Those malloc should be freed after use, but since we are going to restart the ESP32, it's not a big deal.
-    char* ssid = (char*) malloc(64 * sizeof(char));
-    char* password = (char*) malloc(64 * sizeof(char));
-
-    // Get content length
-    char buf[256] = {0};
-    int received = httpd_req_recv(req, buf, sizeof(buf) - 1);
-    if (received <= 0) {
-        httpd_resp_send_500(req);
-        return ESP_FAIL;
-    }
-
-    // Parse form data (simple parser for application/x-www-form-urlencoded)
-    char *ssid_ptr = strstr(buf, "ssid=");
-    char *pass_ptr = strstr(buf, "password=");
-    if (ssid_ptr) {
-        ssid_ptr += 5;
-        char *end = strchr(ssid_ptr, '&');
-        size_t len = end ? (size_t)(end - ssid_ptr) : strlen(ssid_ptr);
-        strncpy(ssid, ssid_ptr, len);
-        ssid[len] = '\0';
-    }
-    if (pass_ptr) {
-        pass_ptr += 9;
-        char *end = strchr(pass_ptr, '&');
-        size_t len = end ? (size_t)(end - pass_ptr) : strlen(pass_ptr);
-        strncpy(password, pass_ptr, len);
-        password[len] = '\0';
-    }
-
-    Log::Add(Log::Level::Info, TAG, "Connecting to AP: SSID=%s, Password=%s", ssid, password);
-    if (Error err = Robot::GetInstance().getNetworkManager().getWiFiManager().connect(ssid, password); err != Error::None)
-    {
-        Log::Add(Log::Level::Error, TAG, "Failed to connect to AP");
-        httpd_resp_send_500(req);
-        return ESP_FAIL;
-    }
-
-    httpd_resp_send(req, "connecting...", HTTPD_RESP_USE_STRLEN);
-    return ESP_OK;
-}
-
 WebInterface::WebInterface(uint16_t web_port)
     : port(web_port)
 {
@@ -382,7 +15,11 @@ Error WebInterface::init()
     config.server_port = port;
     config.max_uri_handlers = 8;
     config.ctrl_port = port + 1;
-    config.max_uri_handlers = 12; // NOTE: Increase if more handlers are added
+    config.uri_match_fn = httpd_uri_match_wildcard;
+    config.max_open_sockets = 6;
+    config.lru_purge_enable = true;
+    config.recv_wait_timeout = 5;
+    config.send_wait_timeout = 5;
 
     if (httpd_start(&server, &config) != ESP_OK)
     {
@@ -392,13 +29,11 @@ Error WebInterface::init()
     }
     running = true;
 
-    // load content
-    if (LittleFS::LoadFileContent("interface.html", &interface_file_content, nullptr) != Error::None)
+    if (Error err = LittleFS::Init(); err != Error::None)
     {
-        Log::Add(Log::Level::Error, TAG, "Failed to load web interface content");
-        return Error::Unknown;
+        Log::Add(Log::Level::Error, TAG, "Failed to initialize LittleFS");
+        return err;
     }
-    Log::Add(Log::Level::Debug, TAG, "Web interface content loaded");
 
     registerURIHandlers();
     return Error::None;
@@ -417,114 +52,132 @@ Error WebInterface::deinit()
 
 void WebInterface::registerURIHandlers()
 {
-    httpd_uri_t interface_uri = {
-        .uri       = "/",
+    httpd_uri_t catch_all_uri = {
+        .uri       = "/*", // Wildcard
         .method    = HTTP_GET,
-        .handler   = [](httpd_req_t *req) -> esp_err_t {
-            WebInterface* web_interface = static_cast<WebInterface*>(req->user_ctx);
-            return web_interface->interface_handler(req);
-        },
+        .handler   = main_request_handler,
         .user_ctx  = this
     };
-    httpd_register_uri_handler(server, &interface_uri);
+    httpd_register_uri_handler(server, &catch_all_uri);
 
-    httpd_uri_t api_set_uri = {
-        .uri       = "/api/position",
-        .method    = HTTP_POST,
-        .handler   = [](httpd_req_t *req) -> esp_err_t {
-            WebInterface* web_interface = static_cast<WebInterface*>(req->user_ctx);
-            return web_interface->api_position_handler(req);
-        },
-        .user_ctx  = this
-    };
-    httpd_register_uri_handler(server, &api_set_uri);
-
-    httpd_uri_t api_get_uri = {
-        .uri       = "/api/enable",
-        .method    = HTTP_POST,
-        .handler   = [](httpd_req_t *req) -> esp_err_t {
-            WebInterface* web_interface = static_cast<WebInterface*>(req->user_ctx);
-            return web_interface->api_enable_handler(req);
-        },
-        .user_ctx  = this
-    };
-    httpd_register_uri_handler(server, &api_get_uri);
-
-    httpd_uri_t api_feedback_uri = {
-        .uri       = "/api/feedback",
-        .method    = HTTP_GET,
-        .handler   = [](httpd_req_t *req) -> esp_err_t {
-            WebInterface* web_interface = static_cast<WebInterface*>(req->user_ctx);
-            return web_interface->api_feedback_handler(req);
-        },
-        .user_ctx  = this
-    };
-    httpd_register_uri_handler(server, &api_feedback_uri);
-
-    httpd_uri_t api_voltages_uri = {
-        .uri       = "/api/voltages",
-        .method    = HTTP_GET,
-        .handler   = [](httpd_req_t *req) -> esp_err_t {
-            WebInterface* web_interface = static_cast<WebInterface*>(req->user_ctx);
-            return web_interface->api_voltages_handler(req);
-        },
-        .user_ctx  = this
-    };
-    httpd_register_uri_handler(server, &api_voltages_uri);
-
-    httpd_uri_t api_calibrate_uri = {
-        .uri       = "/api/calibrate",
-        .method    = HTTP_POST,
-        .handler   = [](httpd_req_t *req) -> esp_err_t {
-            WebInterface* web_interface = static_cast<WebInterface*>(req->user_ctx);
-            return web_interface->api_calibrate_handler(req);
-        },
-        .user_ctx  = this
-    };
-    httpd_register_uri_handler(server, &api_calibrate_uri);
-
-    httpd_uri_t api_ik_uri = {
-        .uri       = "/api/ik",
-        .method    = HTTP_POST,
-        .handler   = [](httpd_req_t *req) -> esp_err_t {
-            WebInterface* web_interface = static_cast<WebInterface*>(req->user_ctx);
-            return web_interface->api_ik_handler(req);
-        },
-        .user_ctx  = this
-    };
-    httpd_register_uri_handler(server, &api_ik_uri);
-
-    httpd_uri_t api_body_uri = {
-        .uri       = "/api/body",
-        .method    = HTTP_POST,
-        .handler   = [](httpd_req_t *req) -> esp_err_t {
-            WebInterface* web_interface = static_cast<WebInterface*>(req->user_ctx);
-            return web_interface->api_body_handler(req);
-        },
-        .user_ctx  = this
-    };
-    httpd_register_uri_handler(server, &api_body_uri);
-
-    httpd_uri_t api_connect_uri = {
-        .uri       = "/api/connect",
-        .method    = HTTP_POST,
-        .handler   = [](httpd_req_t *req) -> esp_err_t {
-            WebInterface* web_interface = static_cast<WebInterface*>(req->user_ctx);
-            return web_interface->api_connect_handler(req);
-        },
-        .user_ctx  = this
-    };
-    httpd_register_uri_handler(server, &api_connect_uri);
-
+    // Note: The 404 handler is less useful here because "/*" catches everything, 
+    // except if the method is not GET (e.g., POST/PUT)
     httpd_register_err_handler(server, HTTPD_404_NOT_FOUND, [](httpd_req_t *req, httpd_err_code_t error) -> esp_err_t {
-        // Set status
-        httpd_resp_set_status(req, "302 Temporary Redirect");
-        // Redirect to the "/" root directory
-        httpd_resp_set_hdr(req, "Location", "/");
-        // iOS requires content in the response to detect a captive portal, simply redirecting is not sufficient.
-        httpd_resp_send(req, "Redirect to the web interface", HTTPD_RESP_USE_STRLEN);
-
-        Log::Add(Log::Level::Debug, TAG, "Redirecting to web interface");
-        return ESP_OK;
+       // Your Captive Portal logic or iOS redirection
+       httpd_resp_set_status(req, "302 Temporary Redirect");
+       httpd_resp_set_hdr(req, "Location", "/");
+       httpd_resp_send(req, "Redirecting...", HTTPD_RESP_USE_STRLEN);
+       return ESP_OK;
     });
+}
+
+const char* WebInterface::get_mime_type(const char* filepath) {
+    const char* ext = strrchr(filepath, '.');
+    if (!ext) return "application/octet-stream";
+    
+    if (strcmp(ext, ".html") == 0) return "text/html";
+    if (strcmp(ext, ".js") == 0)   return "application/javascript";
+    if (strcmp(ext, ".css") == 0)  return "text/css";
+    if (strcmp(ext, ".png") == 0)  return "image/png";
+    if (strcmp(ext, ".jpg") == 0)  return "image/jpeg";
+    if (strcmp(ext, ".ico") == 0)  return "image/x-icon";
+    if (strcmp(ext, ".svg") == 0)  return "image/svg+xml";
+    if (strcmp(ext, ".json") == 0) return "application/json";
+    if (strcmp(ext, ".woff2") == 0) return "font/woff2";
+    if (strcmp(ext, ".glb") == 0)  return "model/gltf-binary";
+
+    return "text/plain";
+}
+
+esp_err_t WebInterface::send_file_chunked(httpd_req_t *req, const char *filepath, const char *mime_type, bool is_gzip) {
+    FILE *fd = fopen(filepath, "r");
+    if (!fd) {
+        Log::Add(Log::Level::Error, TAG, "Failed to read file: %s", filepath);
+        return HTTPD_500_INTERNAL_SERVER_ERROR;
+    }
+
+    httpd_resp_set_type(req, mime_type);
+    if (is_gzip) {
+        httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
+    }
+
+    char *chunk = (char*)malloc(4096); // 4KB buffer
+    if (!chunk) {
+        fclose(fd);
+        return HTTPD_500_INTERNAL_SERVER_ERROR;
+    }
+
+    size_t chunksize;
+    do {
+        chunksize = fread(chunk, 1, 4096, fd);
+        if (chunksize > 0) {
+            if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
+                fclose(fd);
+                free(chunk);
+                return ESP_FAIL;
+            }
+        }
+    } while (chunksize != 0);
+
+    fclose(fd);
+    free(chunk);
+    
+    // Indicate the end of the response
+    httpd_resp_send_chunk(req, NULL, 0);
+    return ESP_OK;
+}
+
+esp_err_t WebInterface::main_request_handler(httpd_req_t *req) {
+    
+    // 1. Clean the URI (remove query params ?x=1...)
+    char filepath[600];
+    // req->uri starts with "/"
+    snprintf(filepath, sizeof(filepath), "%s%s", MOUNT_POINT, req->uri);
+    
+    char *query = strchr(filepath, '?');
+    if (query) *query = '\0';
+
+    // 2. Handle root "/"
+    if (filepath[strlen(filepath) - 1] == '/') {
+        strcat(filepath, "index.html");
+    }
+
+    Log::Add(Log::Level::Debug, TAG, "Requesting: %s", filepath);
+
+    // 3. FILE STRATEGY:
+    // A. Does a compressed .gz version exist? (TOP PRIORITY)
+    char filepath_gz[610];
+    snprintf(filepath_gz, sizeof(filepath_gz), "%s.gz", filepath);
+    
+    struct stat st;
+    if (stat(filepath_gz, &st) == 0) {
+        // The .gz exists! We send it.
+        // Note: we pass the original path to guess the mime type (e.g., style.css)
+        return send_file_chunked(req, filepath_gz, get_mime_type(filepath), true);
+    }
+
+    // B. Does the file exist as is? (e.g., uncompressed images, js, css)
+    if (stat(filepath, &st) == 0) {
+        return send_file_chunked(req, filepath, get_mime_type(filepath), false);
+    }
+
+    // 4. SPA FALLBACK (Client-Side Routing)
+    // If the file doesn't exist, and the URL doesn't look like an asset (no extension or not in _nuxt)
+    // We return index.html.gz so Nuxt can handle the route.
+    
+    // If the URI contains "/_nuxt/" or a common extension, it's a real 404
+    if (strstr(filepath, "/_nuxt/") || strstr(filepath, "/assets/")) {
+        return httpd_resp_send_404(req);
+    }
+
+    // Otherwise, it's a virtual route (e.g., /calibration), we serve the index
+    Log::Add(Log::Level::Info, TAG, "SPA Fallback: Redirecting to index.html.gz");
+    char index_path[64];
+    snprintf(index_path, sizeof(index_path), "%s/index.html.gz", MOUNT_POINT);
+    
+    if (stat(index_path, &st) == 0) {
+        return send_file_chunked(req, index_path, "text/html", true);
+    }
+
+    return httpd_resp_send_404(req);
 }

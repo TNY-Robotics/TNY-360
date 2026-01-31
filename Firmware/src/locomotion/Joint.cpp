@@ -212,7 +212,7 @@ Error Joint::setTarget_Timed(float angle_rad, float time_s)
 
 Error Joint::getPosition(float &result) const
 {
-    result = estimate_angle_rad;
+    result = feedback_angle_rad; // FIXME : should be estimated angle, but Kalman estimation is currently broken
     return Error::None;
 }
 

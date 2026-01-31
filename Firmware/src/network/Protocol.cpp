@@ -70,8 +70,6 @@ Error Protocol::handleRequest(const Request& req, HandleResponseCallback callbac
         return Error::InvalidParameters;
     }
 
-    Log::Add(Log::Level::Debug, TAG, "Triggering handler for command 0x%02X with payload length %d", req.cmd, req.len);
-
     // Call the handler's callback and return success
     handler->callback(req, [](const Response& res) {
         Robot::GetInstance().getProtocol().resolveCommand(res);

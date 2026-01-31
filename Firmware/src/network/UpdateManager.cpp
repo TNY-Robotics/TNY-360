@@ -17,7 +17,7 @@ UpdateManager::UpdateManager()
 
 Error UpdateManager::init()
 {
-    Log::Add(Log::Level::Info, TAG, "Initializing on FIRMWARE_VERSION: %s", FIRMWARE_VERSION);
+    Log::Add(Log::Level::Debug, TAG, "Initializing on FIRMWARE_VERSION: %s", FIRMWARE_VERSION);
 
     // Initialize and get NVS handle
     if (Error err = NVS::Init(); err != Error::None)
@@ -32,7 +32,7 @@ Error UpdateManager::init()
     }
 
     // Check if firmware needs to be verified on this boot
-    Log::Add(Log::Level::Info, TAG, "Checking if firmware verification is needed...");
+    Log::Add(Log::Level::Debug, TAG, "Checking if firmware verification is needed...");
     const esp_partition_t* running = esp_ota_get_running_partition();
     esp_ota_img_states_t ota_state;
     if (esp_ota_get_state_partition(running, &ota_state) != ESP_OK)
@@ -48,7 +48,7 @@ Error UpdateManager::init()
 
     if (ota_state == ESP_OTA_IMG_PENDING_VERIFY)
     {
-        Log::Add(Log::Level::Info, TAG, "Firmware verification is needed.");
+        Log::Add(Log::Level::Debug, TAG, "Firmware verification is needed.");
 
         // Here you would add code to verify the firmware update.
         // For simplicity, we assume it's always successful.
@@ -56,12 +56,12 @@ Error UpdateManager::init()
         if (err != Error::None)
         {
             Log::Add(Log::Level::Error, TAG, "Firmware verification failed: %d", static_cast<int>(err));
-            Log::Add(Log::Level::Info, TAG, "Reverting to previous firmware...");
+            Log::Add(Log::Level::Error, TAG, "Reverting to previous firmware...");
             esp_ota_mark_app_invalid_rollback_and_reboot();
             return err;
         }
         
-        Log::Add(Log::Level::Info, TAG, "No error during diagnostics, marking firmware as valid.");
+        Log::Add(Log::Level::Debug, TAG, "No error during diagnostics, marking firmware as valid.");
         esp_ota_mark_app_valid_cancel_rollback();
 
         isFilesystemUpdatePending = true; // mark filesystem update as pending
@@ -69,7 +69,7 @@ Error UpdateManager::init()
     }
     else
     {
-        Log::Add(Log::Level::Info, TAG, "No firmware verification needed on this boot.");
+        Log::Add(Log::Level::Debug, TAG, "No firmware verification needed on this boot.");
     }
 
     return Error::None;
@@ -109,7 +109,7 @@ Error UpdateManager::checkForUpdates()
 
     if (isFilesystemUpdatePending)
     {
-        Log::Add(Log::Level::Info, TAG, "Detected pending filesystem update, getting filesystem update URL from NVS.");
+        Log::Add(Log::Level::Debug, TAG, "Detected pending filesystem update, getting filesystem update URL from NVS.");
         if (Error err = nvsHandle_ptr->get("fs_updt_url", filesystemDownloadUrl); err == Error::None)
         {
             if (Error err = downloadAndApplyFilesystemUpdate(); err != Error::None)
@@ -126,18 +126,18 @@ Error UpdateManager::checkForUpdates()
             }
             isFilesystemUpdatePending = false;
             
-            Log::Add(Log::Level::Info, TAG, "Rebooting in 3 seconds to apply filesystem update...");
+            Log::Add(Log::Level::Debug, TAG, "Rebooting in 3 seconds to apply filesystem update...");
             vTaskDelay(pdMS_TO_TICKS(3000));
             esp_restart();
         }
         else
         {
             isFilesystemUpdatePending = false;
-            Log::Add(Log::Level::Info, TAG, "Couldn't get filesystem update URL from NVS: %d", static_cast<int>(err));
+            Log::Add(Log::Level::Debug, TAG, "Couldn't get filesystem update URL from NVS: %d", static_cast<int>(err));
         }
     }
 
-    Log::Add(Log::Level::Info, TAG, "Contacting update server at %s", OTA_FIRMWARE_LATEST_URL);
+    Log::Add(Log::Level::Debug, TAG, "Contacting update server at %s", OTA_FIRMWARE_LATEST_URL);
     esp_http_client_config_t config = {};
     config.url = OTA_FIRMWARE_LATEST_URL;
     config.cert_pem = (char *)root_ca_pem_start;
@@ -177,13 +177,14 @@ Error UpdateManager::checkForUpdates()
                 Log::Add(Log::Level::Debug, TAG, "Comparing version strings: %s vs %s", ver->valuestring, FIRMWARE_VERSION);
                 if (strcmp(ver->valuestring, FIRMWARE_VERSION) != 0)
                 {
-                    Log::Add(Log::Level::Warning, TAG, "New version found: %s", ver->valuestring);
+                    Log::Add(Log::Level::Debug, TAG, "New version found: %s", ver->valuestring);
                     updateAvailable = true;
-                    downloadAndApplyFirmwareUpdate(); // TODO : This should be done outside (menu validation)
+                    // NOTE : Not launching update here, just marking it as available
+                    // It will be triggered by the user if desired
                 }
                 else
                 {
-                    Log::Add(Log::Level::Info, TAG, "System is up to date.");
+                    Log::Add(Log::Level::Debug, TAG, "System is up to date.");
                     updateAvailable = false;
                 }
             }
@@ -203,12 +204,11 @@ Error UpdateManager::downloadAndApplyFirmwareUpdate()
 {
     if (!updateAvailable || !firmwareDownloadUrl)
     {
-        Log::Add(Log::Level::Info, TAG, "No firmware update available to download.");
+        Log::Add(Log::Level::Debug, TAG, "No firmware update available to download.");
         return Error::InvalidState;
     }
 
-    Log::Add(Log::Level::Info, TAG, "Starting firmware update from URL: %s", firmwareDownloadUrl);
-
+    Log::Add(Log::Level::Debug, TAG, "Starting firmware update from URL: %s", firmwareDownloadUrl);
     esp_http_client_config_t config = {};
     config.url = firmwareDownloadUrl;
     config.cert_pem = (char *)root_ca_pem_start;
@@ -243,7 +243,7 @@ Error UpdateManager::downloadAndApplyFilesystemUpdate()
 {
     if (!filesystemDownloadUrl)
     {
-        Log::Add(Log::Level::Info, TAG, "No filesystem update URL, getting from NVS.");
+        Log::Add(Log::Level::Debug, TAG, "No filesystem update URL, getting from NVS.");
         // get from NVS
         if (Error err = nvsHandle_ptr->get("fs_updt_url", filesystemDownloadUrl); err != Error::None)
         {
@@ -252,7 +252,7 @@ Error UpdateManager::downloadAndApplyFilesystemUpdate()
         }
     }
 
-    Log::Add(Log::Level::Info, TAG, "Starting filesystem update from URL: %s", filesystemDownloadUrl);
+    Log::Add(Log::Level::Debug, TAG, "Starting filesystem update from URL: %s", filesystemDownloadUrl);
 
     const esp_partition_t *part = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "storage");
     if (!part) {

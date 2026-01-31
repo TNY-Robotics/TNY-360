@@ -8,18 +8,18 @@
 class MotorController
 {
 public:
-    enum State
+    enum class State : uint8_t
     {
-        ENABLED,
-        DISABLED,
-        ERROR
+        ENABLED = 1,
+        DISABLED = 0,
+        ERROR = 2
     };
 
-    enum CalibrationState
+    enum class CalibrationState : uint8_t
     {
-        UNCALIBRATED,
-        CALIBRATING,
-        CALIBRATED
+        UNCALIBRATED = 0,
+        CALIBRATING = 1,
+        CALIBRATED = 2
     };
 
     MotorController();
@@ -62,6 +62,12 @@ public:
      * @return Error code indicating success or failure.
      */
     Error stopCalibration();
+
+    /**
+     * @brief Get the calibration progress as a ratio (0.0 to 1.0).
+     * @return Calibration progress.
+     */
+    float getCalibrationProgress() const { return calibration_progress; }
 
     /**
      * @brief Set the target position for the motor.
@@ -139,6 +145,7 @@ private:
     float target_position;
     State state;
     CalibrationState calibration_state;
+    float calibration_progress;
 
     TaskHandle_t calibration_task_handle;
 

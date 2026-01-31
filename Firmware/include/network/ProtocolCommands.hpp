@@ -24,6 +24,31 @@ CommandHandler handlers[] = {
         // Maybe we should acutally check something (Like Robot::Status in the future).
         resolve(Protocol::Response(req.id, true));
     }},
+    // start whole body calibration
+    { 0x01, 0, [](const Protocol::Request& req, CallbackResolver resolve) {
+        Error err = Robot::GetInstance().getBody().startCalibration();
+        resolve(Protocol::Response(req.id, err == Error::None));
+    }},
+    // start joint calibration
+    { 0x02, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
+        BinaryReader reader(req.payload, req.len);
+        uint8_t motor_channel;
+        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        Joint* joint = Joint::GetJoint(motor_channel);
+        if (joint == nullptr)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        Error err = joint->getMotorController().startCalibration();
+        resolve(Protocol::Response(req.id, err == Error::None));
+    }},
 
     // get joint state
     { 0x20, sizeof(MotorDriver::Channel), [](const Protocol::Request& req, CallbackResolver resolve) {
@@ -109,17 +134,17 @@ CommandHandler handlers[] = {
     }},
 
     // get joint feedback angle
-    { 0x23, sizeof(MotorDriver::Channel), [](const Protocol::Request& req, CallbackResolver resolve) {
+    { 0x23, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
         BinaryReader reader(req.payload, req.len);
         
-        MotorDriver::Channel motor_channel;
-        if (Error err = reader.read<MotorDriver::Channel>(motor_channel); err != Error::None)
+        uint8_t motor_channel;
+        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
         {
             resolve(Protocol::Response(req.id, false));
             return;
         }
 
-        Joint* joint = Joint::GetJoint(motor_channel);
+        Joint* joint = Joint::GetJoint(static_cast<MotorDriver::Channel>(motor_channel));
         if (joint == nullptr)
         {
             resolve(Protocol::Response(req.id, false));
@@ -138,17 +163,17 @@ CommandHandler handlers[] = {
     }},
 
     // get joint predicted angle
-    { 0x24, sizeof(MotorDriver::Channel), [](const Protocol::Request& req, CallbackResolver resolve) {
+    { 0x24, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
         BinaryReader reader(req.payload, req.len);
         
-        MotorDriver::Channel motor_channel;
-        if (Error err = reader.read<MotorDriver::Channel>(motor_channel); err != Error::None)
+        uint8_t motor_channel;
+        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
         {
             resolve(Protocol::Response(req.id, false));
             return;
         }
 
-        Joint* joint = Joint::GetJoint(motor_channel);
+        Joint* joint = Joint::GetJoint(static_cast<MotorDriver::Channel>(motor_channel));
         if (joint == nullptr)
         {
             resolve(Protocol::Response(req.id, false));
@@ -166,24 +191,100 @@ CommandHandler handlers[] = {
         resolve(Protocol::Response(req.id, true, payload, sizeof(float)));
     }},
 
-    // set joint state (enabled/disabled)
-    { 0x60, sizeof(MotorDriver::Channel) + sizeof(bool), [](const Protocol::Request& req, CallbackResolver resolve) {
+    // get joint calibration state
+    { 0x25, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
         BinaryReader reader(req.payload, req.len);
         
-        MotorDriver::Channel motor_channel;
-        if (Error err = reader.read<MotorDriver::Channel>(motor_channel); err != Error::None)
+        uint8_t motor_channel;
+        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
         {
             resolve(Protocol::Response(req.id, false));
             return;
         }
 
-        Joint* joint = Joint::GetJoint(motor_channel);
+        Joint* joint = Joint::GetJoint(static_cast<MotorDriver::Channel>(motor_channel));
         if (joint == nullptr)
         {
             resolve(Protocol::Response(req.id, false));
             return;
         }
-        Log::Add(Log::Level::Debug, Protocol::TAG, "Found joint for motor channel %d at address %p", motor_channel, joint);
+
+        MotorController::CalibrationState calib_state = joint->getMotorController().getCalibrationState();
+        uint8_t result = static_cast<uint8_t>(calib_state);
+        resolve(Protocol::Response(req.id, true, &result, sizeof(uint8_t)));
+    }},
+
+    // get joint calibration progress
+    { 0x26, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
+        BinaryReader reader(req.payload, req.len);
+        
+        uint8_t motor_channel;
+        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        Joint* joint = Joint::GetJoint(static_cast<MotorDriver::Channel>(motor_channel));
+        if (joint == nullptr)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        float result = joint->getMotorController().getCalibrationProgress();
+        uint8_t payload[sizeof(float)];
+        memcpy(payload, &result, sizeof(float));
+        resolve(Protocol::Response(req.id, true, payload, sizeof(float)));
+    }},
+
+    // get all joint angles
+    { 0x27, 0, [](const Protocol::Request& req, CallbackResolver resolve) {
+        Joint* joints[] = {
+            &Robot::GetInstance().getBody().getFrontLeftLeg().getHipRoll(),
+            &Robot::GetInstance().getBody().getFrontLeftLeg().getHipPitch(),
+            &Robot::GetInstance().getBody().getFrontLeftLeg().getKneePitch(),
+            &Robot::GetInstance().getBody().getFrontRightLeg().getHipRoll(),
+            &Robot::GetInstance().getBody().getFrontRightLeg().getHipPitch(),
+            &Robot::GetInstance().getBody().getFrontRightLeg().getKneePitch(),
+            &Robot::GetInstance().getBody().getBackLeftLeg().getHipRoll(),
+            &Robot::GetInstance().getBody().getBackLeftLeg().getHipPitch(),
+            &Robot::GetInstance().getBody().getBackLeftLeg().getKneePitch(),
+            &Robot::GetInstance().getBody().getBackRightLeg().getHipRoll(),
+            &Robot::GetInstance().getBody().getBackRightLeg().getHipPitch(),
+            &Robot::GetInstance().getBody().getBackRightLeg().getKneePitch()
+        };
+        float angles_rad[12];
+        for (size_t i = 0; i < 12; i++)
+        {
+            if (Error err = joints[i]->getPosition(angles_rad[i]); err != Error::None)
+            {
+                resolve(Protocol::Response(req.id, false));
+                return;
+            }
+        }
+        uint8_t payload[sizeof(float)*12];
+        memcpy(payload, angles_rad, sizeof(float)*12);
+        resolve(Protocol::Response(req.id, true, payload, sizeof(float)*12));
+    }},
+
+    // set joint state (enabled/disabled)
+    { 0x60, sizeof(uint8_t) + sizeof(bool), [](const Protocol::Request& req, CallbackResolver resolve) {
+        BinaryReader reader(req.payload, req.len);
+        
+        uint8_t motor_channel;
+        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        Joint* joint = Joint::GetJoint(static_cast<MotorDriver::Channel>(motor_channel));
+        if (joint == nullptr)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
 
         bool enable;
         if (Error err = reader.read<bool>(enable); err != Error::None)
@@ -192,24 +293,22 @@ CommandHandler handlers[] = {
             return;
         }
 
-        Log::Add(Log::Level::Debug, Protocol::TAG, "%sabling joint for motor channel %d", enable ? "En" : "Dis", motor_channel);
         Error err = enable ? joint->enable() : joint->disable();
-        Log::Add(Log::Level::Debug, Protocol::TAG, "Returned error: %s", ErrorToString(err));
         resolve(Protocol::Response(req.id, (err == Error::None)));
     }},
 
     // set joint target angle
-    { 0x61, sizeof(MotorDriver::Channel) + sizeof(float), [](const Protocol::Request& req, CallbackResolver resolve) {
+    { 0x61, sizeof(uint8_t) + sizeof(float), [](const Protocol::Request& req, CallbackResolver resolve) {
         BinaryReader reader(req.payload, req.len);
         
-        MotorDriver::Channel motor_channel;
-        if (Error err = reader.read<MotorDriver::Channel>(motor_channel); err != Error::None)
+        uint8_t motor_channel;
+        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
         {
             resolve(Protocol::Response(req.id, false));
             return;
         }
 
-        Joint* joint = Joint::GetJoint(motor_channel);
+        Joint* joint = Joint::GetJoint(static_cast<MotorDriver::Channel>(motor_channel));
         if (joint == nullptr)
         {
             resolve(Protocol::Response(req.id, false));
@@ -223,24 +322,22 @@ CommandHandler handlers[] = {
             return;
         }
 
-        Log::Add(Log::Level::Debug, Protocol::TAG, "Setting target angle for motor channel %d to %.2f rad", motor_channel, target_angle_rad);
         Error err = joint->setTarget(target_angle_rad);
-        Log::Add(Log::Level::Debug, Protocol::TAG, "Returned error: %s", ErrorToString(err));
         resolve(Protocol::Response(req.id, (err == Error::None)));
     }},
     
     // set joint target angle with timing
-    { 0x62, sizeof(MotorDriver::Channel) + sizeof(float) + sizeof(float), [](const Protocol::Request& req, CallbackResolver resolve) {
+    { 0x62, sizeof(uint8_t) + sizeof(float) + sizeof(float), [](const Protocol::Request& req, CallbackResolver resolve) {
         BinaryReader reader(req.payload, req.len);
         
-        MotorDriver::Channel motor_channel;
-        if (Error err = reader.read<MotorDriver::Channel>(motor_channel); err != Error::None)
+        uint8_t motor_channel;
+        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
         {
             resolve(Protocol::Response(req.id, false));
             return;
         }
 
-        Joint* joint = Joint::GetJoint(motor_channel);
+        Joint* joint = Joint::GetJoint(static_cast<MotorDriver::Channel>(motor_channel));
         if (joint == nullptr)
         {
             resolve(Protocol::Response(req.id, false));
@@ -356,19 +453,16 @@ CommandHandler handlers[] = {
         Vec3f position;
         if (Error err = reader.read<float>(position.x); err != Error::None)
         {
-            Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to read body posture position x");
             resolve(Protocol::Response(req.id, false));
             return;
         }
         if (Error err = reader.read<float>(position.y); err != Error::None)
         {
-            Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to read body posture position y");
             resolve(Protocol::Response(req.id, false));
             return;
         }
         if (Error err = reader.read<float>(position.z); err != Error::None)
         {
-            Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to read body posture position z");
             resolve(Protocol::Response(req.id, false));
             return;
         }
@@ -376,29 +470,22 @@ CommandHandler handlers[] = {
         Vec3f rotation;
         if (Error err = reader.read<float>(rotation.x); err != Error::None)
         {
-            Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to read body posture rotation x");
             resolve(Protocol::Response(req.id, false));
             return;
         }
         if (Error err = reader.read<float>(rotation.y); err != Error::None)
         {
-            Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to read body posture rotation y");
             resolve(Protocol::Response(req.id, false));
             return;
         }
         if (Error err = reader.read<float>(rotation.z); err != Error::None)
         {
-            Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to read body posture rotation z");
             resolve(Protocol::Response(req.id, false));
             return;
         }
 
         Transformf target_posture(position, Quatf::FromEulerAngles(rotation));
         Error err = Robot::GetInstance().getBody().setPosture(target_posture);
-        if (err != Error::None)
-        {
-            Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to set body posture: %s", ErrorToString(err));
-        }
         resolve(Protocol::Response(req.id, (err == Error::None)));
     }},
     
@@ -409,7 +496,6 @@ CommandHandler handlers[] = {
         uint8_t leg_index;
         if (Error err = reader.read<uint8_t>(leg_index); err != Error::None)
         {
-            Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to read leg index");
             resolve(Protocol::Response(req.id, false));
             return;
         }
@@ -417,28 +503,21 @@ CommandHandler handlers[] = {
         Vec3f position;
         if (Error err = reader.read<float>(position.x); err != Error::None)
         {
-            Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to read body posture position x");
             resolve(Protocol::Response(req.id, false));
             return;
         }
         if (Error err = reader.read<float>(position.y); err != Error::None)
         {
-            Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to read body posture position y");
             resolve(Protocol::Response(req.id, false));
             return;
         }
         if (Error err = reader.read<float>(position.z); err != Error::None)
         {
-            Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to read body posture position z");
             resolve(Protocol::Response(req.id, false));
             return;
         }
 
         Error err = Robot::GetInstance().getBody().setFeetPosition(static_cast<Body::LegIndex>(leg_index), position);
-        if (err != Error::None)
-        {
-            Log::Add(Log::Level::Warning, Protocol::TAG, "Failed to set body posture: %s", ErrorToString(err));
-        }
         resolve(Protocol::Response(req.id, (err == Error::None)));
     }}
 };

@@ -216,11 +216,11 @@ Error Body::startCalibration()
             }
             vTaskDelay(pdMS_TO_TICKS(1000)); // give some time to start
             // wait for it to finish
-            while (leg->getHipRoll().getMotorController().getCalibrationState() == MotorController::CALIBRATING)
+            while (leg->getHipRoll().getMotorController().getCalibrationState() == MotorController::CalibrationState::CALIBRATING)
             {
                 vTaskDelay(pdMS_TO_TICKS(500));
             }
-            if (leg->getHipRoll().getMotorController().getCalibrationState() != MotorController::CALIBRATED)
+            if (leg->getHipRoll().getMotorController().getCalibrationState() != MotorController::CalibrationState::CALIBRATED)
             {
                 Log::Add(Log::Level::Error, Body::TAG, "Hip roll of leg %d failed to calibrate.", i);
                 vTaskDelete(nullptr);
@@ -243,11 +243,11 @@ Error Body::startCalibration()
             }
             vTaskDelay(pdMS_TO_TICKS(1000)); // give some time to start
             // wait for it to finish
-            while (leg->getHipPitch().getMotorController().getCalibrationState() == MotorController::CALIBRATING)
+            while (leg->getHipPitch().getMotorController().getCalibrationState() == MotorController::CalibrationState::CALIBRATING)
             {
                 vTaskDelay(pdMS_TO_TICKS(500));
             }
-            if (leg->getHipPitch().getMotorController().getCalibrationState() != MotorController::CALIBRATED)
+            if (leg->getHipPitch().getMotorController().getCalibrationState() != MotorController::CalibrationState::CALIBRATED)
             {
                 Log::Add(Log::Level::Error, Body::TAG, "Hip pitch of leg %d failed to calibrate.", i);
                 vTaskDelete(nullptr);
@@ -270,11 +270,11 @@ Error Body::startCalibration()
             }
             vTaskDelay(pdMS_TO_TICKS(1000)); // give some time to start
             // wait for it to finish
-            while (leg->getKneePitch().getMotorController().getCalibrationState() == MotorController::CALIBRATING)
+            while (leg->getKneePitch().getMotorController().getCalibrationState() == MotorController::CalibrationState::CALIBRATING)
             {
                 vTaskDelay(pdMS_TO_TICKS(500));
             }
-            if (leg->getKneePitch().getMotorController().getCalibrationState() != MotorController::CALIBRATED)
+            if (leg->getKneePitch().getMotorController().getCalibrationState() != MotorController::CalibrationState::CALIBRATED)
             {
                 Log::Add(Log::Level::Error, Body::TAG, "Knee pitch of leg %d failed to calibrate.", i);
                 vTaskDelete(nullptr);

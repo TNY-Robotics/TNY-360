@@ -15,6 +15,8 @@ Error WebSocket::init()
     config.server_port = server_port;
     config.max_uri_handlers = 8;
     config.ctrl_port = server_port + 1;
+    config.max_open_sockets = 3;
+    // config.lru_purge_enable = true;
 
     // start the server
     if (httpd_start(&server_handle, &config) != ESP_OK)
@@ -51,8 +53,8 @@ Error WebSocket::register_uri_handlers()
         .handle_ws_control_frames = false,
         .supported_subprotocol = ""
     };
-
     httpd_register_uri_handler((httpd_handle_t) server_handle, &ws);
+
     esp_event_handler_register(ESP_HTTP_SERVER_EVENT, HTTP_SERVER_EVENT_ON_CONNECTED,
         [](void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data){
             Robot::GetInstance().getNetworkManager().getWebSocket().on_connected();
