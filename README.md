@@ -1,100 +1,107 @@
-# TNY-360
-
 ![Banner](./extras/banner.png)
 
-**TNY-360** is a compact, open-source quadruped robot (robot dog) designed to **understand**, **interact** and **learn**!
+<div align="center">
 
-It combines **3D-printable parts** and a PlatformIO-based firmware targeting an **ESP32-S3 N16R8** module using the **ESP-IDF framework**.
+# TNY-360 Quadruped Robot
 
-You can learn more about TNY-360 and find assembly instructions, wiring diagrams, and PCB files on the [TNY Robotics website](https://tny-robotics.com/tny-360).
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+[![Platform](https://img.shields.io/badge/Platform-ESP32--S3-blue)](https://espressif.com)
+[![Framework](https://img.shields.io/badge/Framework-ESP--IDF-orange)](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/)
 
-## Highlights
-- Lightweight quadruped platform for learning robotics, programming, and AI
-- 3D CAD models (FreeCAD) included in the CAD folder for modification and printing
-- Firmware is a PlatformIO project (VSCode) for ESP32-S3 (ESP-IDF)
-- Uses TNY Robotics drivers for common sensors and PWM controllers:
-    - MPU6050 driver: https://github.com/TNY-Robotics/mpu6050-esp-idf
-    - PCA9685 driver: https://github.com/TNY-Robotics/pca9685-esp-idf
-    - SH1106 driver: https://github.com/TNY-Robotics/sh1106-esp-idf
-    - INA226 driver: https://github.com/TNY-Robotics/ina226-esp-idf
+**A compact, open-source robot dog designed to *Understand*, *Interact*, and *Learn*.**
 
-## Repository layout
-- `CAD/` — FreeCAD project and all 3D models
-- `Firmware/` — PlatformIO project to build and flash the ESP32-S3 firmware
-- `LICENSE` — Project license (CC BY-NC-SA 4.0)
+[🌐 Website](https://tny-robotics.com/tny-360) • [📸 Instagram](https://instagram.com/furwaz_) • [💬 Discord](https://discord.gg/XGABkx5A4y)
 
-## Hardware
-- Controller: ESP32-S3 N16R8 module
-- MPU6050 6-axis IMU for orientation sensing
-- PCA9685 16-channel PWM driver for motor control
-- VL053L0X Time-of-Flight distance sensor for obstacle detection
-- 12x MG996R servos for leg movement *(MODIFIED FOR POSITION FEEDBACK)*
-- 2x SG-90 servos for ears movement
-- SH1106 128x64 OLED display for face/menu display
-- I2S microphone for sound input
-- Speaker for sound output
-- OV2640 camera module for vision
-- INA219 current/power sensor for battery monitoring
-- Power: 3S LiPo battery (6x Samsung INR18650-25R cells)
-- 3D-printed chassis, head, ears and leg assemblies (see `CAD/`)
+</div>
 
-## Firmware (quick start)
-Requirements:
-- Visual Studio Code with the PlatformIO extension, or PlatformIO Core (CLI)
-- USB cable to the ESP32-S3 module
-- Correct serial/boot drivers installed for your OS
+---
 
-To build and upload from VSCode:
-1. Open VSCode and install PlatformIO extension.
-2. Open the `Firmware/` folder as a workspace.
-3. Select the proper environment (ESP32-S3) in PlatformIO’s status bar.
-4. Click "Build" to compile, and "Upload" to flash.
+## 🚀 Start Building
 
-To build and upload from CLI:
-- From the repository root:
-    - Build: `pio run -d Firmware`
-    - Upload: `pio run -d Firmware --target upload --environment <env-name>`
-Replace `<env-name>` with the environment name defined in `Firmware/platformio.ini` (check that file for exact name).
+Want to build your own? We provide resources ranging from free open-source files to complete "Maker Kits" to save you time.
 
-Notes:
-- PlatformIO will use the ESP-IDF framework configured in the project. If you prefer raw ESP-IDF tooling, follow ESP-IDF docs and the Firmware README for alternate instructions.
-- Ensure the correct serial port is selected or provide it with `--upload-port /dev/ttyUSB0` (or COM port on Windows).
+| Resource | Description | Access |
+| :--- | :--- | :--- |
+| **📁 Source Code & 3D** | Full access to Firmware, FreeCAD files & BOM. | [**Free on GitHub**](#) |
+| **📘 Servo Mod Guide** | PCB files, Bill Of Materials and instructions to add position feedback to MG996R servos. | [**Get for 3€**](https://furwaz.gumroad.com/l/tny-servo-v1) |
+| **📖 Assembly guides** | Step-by-step manual to assemble and get started with your TNY-360, worry-free. | [**Get for 5€**](https://furwaz.gumroad.com/l/tny-360-guides) |
+| **⚡ PCB Pack** | Custom main board, motor controller and other PCB files + BOM (Ready for JLCPCB & LCSC). | [**Get for 9€**](https://furwaz.gumroad.com/l/tny-360-pcb-pack) |
+| **🧰 The Maker Kit** | **(Best Value)** All PCB files + Servo Guide + Full Assembly Manual. | [**Get for 14€**](https://furwaz.gumroad.com/l/tny-360-maker-kit) |
 
-## Dependencies / Drivers
-This project uses driver libraries maintained by TNY Robotics:
-- MPU6050 (IMU): https://github.com/TNY-Robotics/mpu6050-esp-idf
-- PCA9685 (PWM): https://github.com/TNY-Robotics/pca9685-esp-idf
-- SH1106 (OLED): https://github.com/TNY-Robotics/sh1106-esp-idf
-- INA226 (Current/Power): https://github.com/TNY-Robotics/ina226-esp-idf
+> 💡 **Support the project:** Buying these guides directly supports this project and the development of future TNY robots!
 
-Drivers are included as git submodules under `Firmware/components/`. If they are not present locally, initialize or add them:
+---
 
-- Initialize existing submodules:
-    - `git submodule update --init --recursive`
-- Or add a missing driver:
-    - `git submodule add <repo-url> Firmware/components/<name>`
+## ✨ Features
 
-(You can also use PlatformIO's `lib_deps` / `lib_extra_dirs` in `platformio.ini` if you prefer.)
+* **🦾 High-Performance Motion:** 12 DOF (Degrees of Freedom) using modified servos with position feedback.
+* **🧠 AI-Ready Brain:** Powered by the **ESP32-S3 N16R8** for edge computing and Wi-Fi/BLE connectivity.
+* **👀 Computer Vision:** Integrated camera (OV2640) for object tracking.
+* **🗣️ Interaction:** Features an OLED face, microphone, and speaker for full HRI (Human-Robot Interaction).
+* **🛠️ Fully Modifiable:** 100% 3D-printable chassis designed in **FreeCAD** (source files included).
 
-## Contributing
-- Issues and pull requests are welcome.
-- For code contributions, follow the repository style and test on real hardware when possible.
-- If adding parts or firmware features, include clear build/upload instructions and any hardware changes.
+## ⚙️ Hardware Specs
 
-## Troubleshooting
-- If a build fails: confirm PlatformIO and toolchain are up to date.
-- If uploading fails: check boot mode (ESP32-S3 often requires entering download mode), USB cable, and port permissions.
+### 🧠 Core & Power
+* **MCU:** ESP32-S3 N16R8 Module
+* **Power:** 3S LiPo Battery (6x Samsung INR18650-25R)
+* **Monitoring:** INA219 (Voltage/Current sensor)
 
-## License
+### 🦵 Actuators
+* **Legs:** 12x MG996R Servos *(Must be modified for analog feedback)*
+* **Head:** 2x SG-90 Micro Servos (Ears)
+* **Driver:** PCA9685 (16-Channel PWM)
 
-[![License: CC BY-NC-SA 4.0](https://mirrors.creativecommons.org/presskit/buttons/88x31/svg/by-nc-sa.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+### 📡 Sensors & I/O
+* **Vision:** OV2640 Camera Module
+* **Distance:** VL53L0X Time-of-Flight (Lidar)
+* **Orientation:** MPU6050 6-axis IMU
+* **Display:** SH1106 OLED (128x64)
+* **Audio:** I2S MEMS Microphone + Speaker
 
-This project is licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA 4.0) License**.
+---
 
-See the [LICENSE](./LICENSE) file, or the [Creative Commons](https://creativecommons.org/licenses/by-nc-sa/4.0/) website for details.
+## 💻 Firmware Quick Start
 
-## Authors
+The firmware is built on **PlatformIO** using the **ESP-IDF** framework.
 
-This repository is maintained by the TNY Robotics team - https://tny-robotics.com.
+### Prerequisites
+1.  **VS Code** installed.
+2.  **PlatformIO** extension installed in VS Code.
 
-If you have any questions or suggestions, feel free to open an issue or contact us at [contact@tny-robotics.com](mailto:contact@tny-robotics.com).
+### Installation
+1.  **Clone** this repository:
+    ```bash
+    git clone --recursive https://github.com/TNY-Robotics/TNY-360.git
+    ```
+2.  **Open** the `Firmware/` folder in VS Code.
+3.  **Connect** your ESP32-S3 via USB.
+4.  **Upload:** Click the generic "Arrow" icon (➡️) in the PlatformIO bottom bar to Build & Flash.
+
+> **Note:** If you are missing drivers, run `git submodule update --init --recursive` to pull the TNY-Robotics custom components.
+
+---
+
+## 📂 Repository Structure
+
+* `CAD/` — **Hardware Source.** FreeCAD project files and ready-to-print STLs.
+* `Firmware/` — **Codebase.** PlatformIO project (C++/ESP-IDF).
+* `Firmware/components/` — **Drivers.** Custom libraries for sensors/actuators.
+
+## 🤝 Contributing
+
+We love contributions!
+* **Code:** Please follow the ESP-IDF coding style.
+* **Hardware:** Submit PRs with updated FreeCAD files or improvements.
+* Found a bug? [Open an Issue](https://github.com/TNY-Robotics/TNY-360/issues).
+
+## 📄 License & Authors
+
+**TNY-360** is maintained by the [TNY Robotics Team](https://tny-robotics.com).
+
+Licensed under **CC BY-NC-SA 4.0**.<br>
+*You are free to share and adapt this material for non-commercial purposes, as long as you provide attribution and share alike.*
+
+[![CC BY-NC-SA 4.0](https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png)](http://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+Need help? Contact us [by mail](mailto:contact@tny-robotics.com) or join our [Discord](https://discord.gg/XGABkx5A4y).
