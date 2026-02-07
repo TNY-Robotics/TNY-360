@@ -98,12 +98,25 @@ watchEffect(() => {
 });
 
 const jointAngles = ref<number[]>(Array(12).fill(0));
+const bodyOrientation = ref<THREE.Quaternion>(new THREE.Quaternion());
 setInterval(() => {
     remote.getAllJointAngles().then((angles) => {
         jointAngles.value = angles;
-    }).catch((err) => {
-        // do nothing, don't care
-    });
+    }).catch((err) => {});
+
+    setTimeout(() => {
+        remote.getBodyOrientation().then((orientation) => {
+            if (model.value) {
+                const quat = new THREE.Quaternion(
+                    orientation.x,
+                    orientation.y,
+                    orientation.z,
+                    orientation.w
+                ).normalize();
+                bodyOrientation.value = quat;
+            }
+        }).catch((err) => {});
+    }, 50);
 }, 100);
 
 function DEG_TO_RAD(deg: number): number {
@@ -121,6 +134,14 @@ onBeforeRender(({ elapsed }) => {
             (boneStruct.rotationAxis === 'x' ? rotation : 0) + DEG_TO_RAD(boneStruct.offsets?.x || 0),
             (boneStruct.rotationAxis === 'y' ? rotation : 0) + DEG_TO_RAD(boneStruct.offsets?.y || 0),
             (boneStruct.rotationAxis === 'z' ? rotation : 0) + DEG_TO_RAD(boneStruct.offsets?.z || 0),
+        );
+    }
+    if (model.value) {
+        model.value.scene.quaternion.set(
+            bodyOrientation.value.x,
+            bodyOrientation.value.y,
+            bodyOrientation.value.z,
+            bodyOrientation.value.w
         );
     }
 });

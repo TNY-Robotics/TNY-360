@@ -8,13 +8,13 @@ namespace MotorDriver
     constexpr Channel CHANNEL_COUNT = 16;
 
     /**
-    * @brief Initializes the Motor module.
+    * @brief Initializes the Motor driver.
     * @return Error code indicating success or failure.
     */
     Error Init();
 
     /**
-    * @brief Deinitializes the Motor module.
+    * @brief Deinitializes the Motor driver.
     * @return Error code indicating success or failure.
     */
     Error Deinit();

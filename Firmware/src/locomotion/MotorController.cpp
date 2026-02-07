@@ -172,11 +172,52 @@ Error MotorController::getCurrentPosition(float& result) const
     return Error::None;
 }
 
-MotorController::State MotorController::getState() const
+Error MotorController::declarePositionAsMinimum()
 {
-    return state;
+    AnalogDriver::Value voltage_mV = 0;
+    if (Error err = AnalogDriver::GetVoltage(analog_channel, &voltage_mV); err != Error::None)
+    {
+        return err;
+    }
+
+    MotorDriver::Value pwm_value = 0;
+    if (Error err = MotorDriver::GetPWM(motor_channel, pwm_value); err != Error::None)
+    {
+        return err;
+    }
+
+    calibration_data.min_voltage = voltage_mV;
+    calibration_data.min_pwm = pwm_value;
+    save_calibration_data();
+    return Error::None;
 }
 
+Error MotorController::declarePositionAsMaximum()
+{
+    AnalogDriver::Value voltage_mV = 0;
+    if (Error err = AnalogDriver::GetVoltage(analog_channel, &voltage_mV); err != Error::None)
+    {
+        return err;
+    }
+
+    MotorDriver::Value pwm_value = 0;
+    if (Error err = MotorDriver::GetPWM(motor_channel, pwm_value); err != Error::None)
+    {
+        return err;
+    }
+
+    calibration_data.max_voltage = voltage_mV;
+    calibration_data.max_pwm = pwm_value;
+    save_calibration_data();
+    return Error::None;
+}
+
+Error MotorController::setCalibrationState(CalibrationState state)
+{
+    Log::Add(Log::Level::Warning, TAG, "Manually changing calibration state to %d. This could lead to unexpected behavior if not used correctly.", static_cast<uint8_t>(state));
+    calibration_state = state;
+    return Error::None;
+}
 
 Error MotorController::__send_target_position()
 {
@@ -198,5 +239,15 @@ Error MotorController::__send_target_position()
         }
     }
 
+    return Error::None;
+}
+
+Error MotorController::save_calibration_data()
+{
+    if (Error err = nvshandle_ptr->set("calib_data", calibration_data); err != Error::None)
+    {
+        Log::Add(Log::Level::Error, TAG, "Failed to save calibration data to NVS. Error: %d", static_cast<uint8_t>(err));
+        return err;
+    }
     return Error::None;
 }

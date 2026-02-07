@@ -96,7 +96,29 @@ public:
      * @brief Get the current state of the motor controller.
      * @return Current state.
      */
-    State getState() const;
+    State getState() const { return state; }
+
+    /**
+     * @brief Declare the current position as the minimum position for calibration purposes.
+     * @return Error code indicating success or failure.
+     * @note This should be called at the appropriate time during the calibration sequence to set the minimum position reference.
+     */
+    Error declarePositionAsMinimum();
+
+    /**
+     * @brief Declare the current position as the maximum position for calibration purposes.
+     * @return Error code indicating success or failure.
+     * @note This should be called at the appropriate time during the calibration sequence to set the maximum position reference.
+     */
+    Error declarePositionAsMaximum();
+
+    /**
+     * @brief Set the calibration state.
+     * @param state New calibration state.
+     * @return Error code indicating success or failure.
+     * @note Should only be used for manual calibration control. 
+     */
+    Error setCalibrationState(CalibrationState state);
 
     /**
      * @brief Get the current state of calibration.
@@ -150,6 +172,8 @@ private:
     TaskHandle_t calibration_task_handle;
 
     Error __send_target_position();
+
+    Error save_calibration_data();
 
     void abort_calibration();
     Error run_calibration_sequence();

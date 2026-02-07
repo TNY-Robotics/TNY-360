@@ -69,6 +69,13 @@ Error Body::init()
     {
         return err;
     }
+
+    // init IMU controller
+    if ((err = imu_controller.init()) != Error::None)
+    {
+        return err;
+    }
+
     return Error::None;
 }
 
@@ -94,12 +101,25 @@ Error Body::deinit()
     {
         return err;
     }
+
+    // deinit IMU controller
+    if ((err = imu_controller.deinit()) != Error::None)
+    {
+        return err;
+    }
+
     return Error::None;
 }
 
 Error Body::update()
 {
     Error err;
+
+    // Update the IMU controller
+    if ((err = imu_controller.update()) != Error::None)
+    {
+        return err;
+    }
 
     // update legs
     for (size_t i = 0; i < static_cast<size_t>(LegIndex::COUNT); i++)

@@ -181,7 +181,7 @@ esp_err_t WebSocket::__ws_handler(httpd_req_t* req)
         });
 
         if (err != Error::None) {
-            Log::Add(Log::Level::Error, TAG, "Protocol::Handle error: %d", static_cast<uint8_t>(err));
+            Log::Add(Log::Level::Error, TAG, "Protocol::Handle error: %s", ErrorToString(err));
             char hex_str[WEBSOCKET_MAX_MSG_SIZE * 3 + 1] = {0}; // Each byte: "XX " + null terminator
             size_t pos = 0;
             for (size_t i = 0; i < ws_pkt.len && pos < sizeof(hex_str) - 4; ++i) {

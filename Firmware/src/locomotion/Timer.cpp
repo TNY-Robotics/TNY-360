@@ -6,6 +6,7 @@
 #include "common/config.hpp"
 #include "drivers/AnalogDriver.hpp"
 #include "drivers/MotorDriver.hpp"
+#include "drivers/IMUDriver.hpp"
 #include "Robot.hpp"
 
 TaskHandle_t timer_task_handle;
@@ -127,7 +128,7 @@ Error Timer::analog_read_task()
 Error Timer::control_task()
 {
     // Read the IMU data
-    // TODO : IMU::__ISRReadData();
+    IMUDriver::__ISRReadData();
 
     // Update the body
     if (Error err = Robot::GetInstance().getBody().update(); err != Error::None)

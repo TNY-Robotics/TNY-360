@@ -49,6 +49,73 @@ CommandHandler handlers[] = {
         Error err = joint->getMotorController().startCalibration();
         resolve(Protocol::Response(req.id, err == Error::None));
     }},
+    // declare joint minimum
+    { 0x03, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
+        BinaryReader reader(req.payload, req.len);
+        uint8_t motor_channel;
+        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        Joint* joint = Joint::GetJoint(motor_channel);
+        if (joint == nullptr)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        Error err = joint->getMotorController().declarePositionAsMinimum();
+        resolve(Protocol::Response(req.id, err == Error::None));
+    }},
+    // declare joint maximum
+    { 0x04, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
+        BinaryReader reader(req.payload, req.len);
+        uint8_t motor_channel;
+        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        Joint* joint = Joint::GetJoint(motor_channel);
+        if (joint == nullptr)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        Error err = joint->getMotorController().declarePositionAsMaximum();
+        resolve(Protocol::Response(req.id, err == Error::None));
+    }},
+    // Change joint calibration state
+    { 0x05, sizeof(uint8_t) + sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
+        BinaryReader reader(req.payload, req.len);
+        uint8_t motor_channel;
+        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        Joint* joint = Joint::GetJoint(motor_channel);
+        if (joint == nullptr)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        uint8_t calibration_state;
+        if (Error err = reader.read<uint8_t>(calibration_state); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        Error err = joint->getMotorController().setCalibrationState(static_cast<MotorController::CalibrationState>(calibration_state));
+        resolve(Protocol::Response(req.id, err == Error::None));
+    }},
 
     // get joint state
     { 0x20, sizeof(MotorDriver::Channel), [](const Protocol::Request& req, CallbackResolver resolve) {
@@ -266,6 +333,65 @@ CommandHandler handlers[] = {
         uint8_t payload[sizeof(float)*12];
         memcpy(payload, angles_rad, sizeof(float)*12);
         resolve(Protocol::Response(req.id, true, payload, sizeof(float)*12));
+    }},
+
+    // get body orientation
+    { 0x28, 0, [](const Protocol::Request& req, CallbackResolver resolve) {
+        Quatf& orientation = Robot::GetInstance().getBody().getIMUController().getOrientation();
+        uint8_t payload[sizeof(float)*4];
+        memcpy(payload, &orientation.x, sizeof(float));
+        memcpy(payload + sizeof(float), &orientation.y, sizeof(float));
+        memcpy(payload + sizeof(float)*2, &orientation.z, sizeof(float));
+        memcpy(payload + sizeof(float)*3, &orientation.w, sizeof(float));
+        resolve(Protocol::Response(req.id, true, payload, sizeof(float)*4));
+    }},
+
+    // Get joint PWM
+    { 0x29, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
+        BinaryReader reader(req.payload, req.len);
+        
+        uint8_t motor_channel;
+        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        MotorDriver::Value pwm_value;
+        if (Error err = MotorDriver::GetPWM(static_cast<MotorDriver::Channel>(motor_channel), pwm_value); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        int value = static_cast<int>(pwm_value);
+        uint8_t payload[sizeof(int)];
+        memcpy(payload, &value, sizeof(int));
+        resolve(Protocol::Response(req.id, true, payload, sizeof(int)));
+    }},
+
+    // Get Joint Voltage
+    { 0x2A, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
+        BinaryReader reader(req.payload, req.len);
+        
+        uint8_t motor_channel;
+        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        AnalogDriver::Value voltage_mV;
+        if (Error err = AnalogDriver::GetVoltage(static_cast<AnalogDriver::Channel>(motor_channel), &voltage_mV); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        float voltage = static_cast<float>(voltage_mV) / 1000.f;
+        uint8_t payload[sizeof(float)];
+        memcpy(payload, &voltage, sizeof(float));
+        resolve(Protocol::Response(req.id, true, payload, sizeof(float)));
     }},
 
     // set joint state (enabled/disabled)
@@ -519,5 +645,28 @@ CommandHandler handlers[] = {
 
         Error err = Robot::GetInstance().getBody().setFeetPosition(static_cast<Body::LegIndex>(leg_index), position);
         resolve(Protocol::Response(req.id, (err == Error::None)));
-    }}
+    }},
+
+    // Set Joint PWM
+    { 0x67, sizeof(uint8_t) + sizeof(int), [](const Protocol::Request& req, CallbackResolver resolve) {
+        BinaryReader reader(req.payload, req.len);
+
+        uint8_t motor_channel;
+        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        int pwm_value_int;
+        if (Error err = reader.read<int>(pwm_value_int); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+        MotorDriver::Value pwm_value = static_cast<MotorDriver::Value>(pwm_value_int);
+
+        Error err = MotorDriver::SetPWM(static_cast<MotorDriver::Channel>(motor_channel), pwm_value);
+        resolve(Protocol::Response(req.id, (err == Error::None)));
+    }},
 };

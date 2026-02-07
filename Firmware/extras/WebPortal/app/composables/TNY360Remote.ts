@@ -23,9 +23,32 @@ export class TNY360Remote {
         });
     }
 
+    public calibrateBody(): Promise<void> {
+        return this.remote.send(0x01, [], [], []).then(() => {});
+    }
+
     public calibrateJoint(jointIndex: number): Promise<void> {
         return this.remote.send(0x02, [Type.BYTE], [], [jointIndex]).then(() => {});
     }
+
+    public declareJointMinimum(jointIndex: number): Promise<void> {
+        return this.remote.send(0x03, [Type.BYTE], [], [jointIndex]).then(() => {});
+    }
+
+    public declareJointMaximum(jointIndex: number): Promise<void> {
+        return this.remote.send(0x04, [Type.BYTE], [], [jointIndex]).then(() => {});
+    }
+    public setJointCalibrationState(jointIndex: number, state: CalibrationState): Promise<void> {
+        let stateByte: number;
+        switch (state) {
+            case 'UNCALIBRATED': stateByte = 0; break;
+            case 'CALIBRATING': stateByte = 1; break;
+            case 'CALIBRATED': stateByte = 2; break;
+            default: throw new RobotError(`Unknown calibration state: ${state}`);
+        }
+        return this.remote.send(0x05, [Type.BYTE, Type.BYTE], [], [jointIndex, stateByte]).then(() => {});
+    }
+
 
     public getJointState(jointIndex: number): Promise<boolean> {
         return this.remote.send(0x20, [Type.BYTE], [Type.BOOL], [jointIndex]).then((args) => {
@@ -73,6 +96,30 @@ export class TNY360Remote {
         });
     }
 
+    public getBodyOrientation(): Promise<{ x: number; y: number; z: number; w: number }> {
+        return this.remote.send(0x28, [], Array.from({ length: 4 }, () => Type.FLOAT), []).then((args) => {
+            return {
+                x: RAD_TO_DEG(args[0] as number),
+                y: RAD_TO_DEG(args[1] as number),
+                z: RAD_TO_DEG(args[2] as number),
+                w: RAD_TO_DEG(args[3] as number),
+            };
+        });
+    }
+
+    public getJointPWM(jointIndex: number): Promise<number> {
+        return this.remote.send(0x29, [Type.BYTE], [Type.INT], [jointIndex]).then((args) => {
+            return args[0] as number;
+        });
+    }
+
+    public getJointVoltage(jointIndex: number): Promise<number> {
+        return this.remote.send(0x2A, [Type.BYTE], [Type.INT], [jointIndex]).then((args) => {
+            return args[0] as number;
+        });
+    }
+
+
     public setJointState(jointIndex: number, enabled: boolean): Promise<void> {
         return this.remote.send(0x60, [Type.BYTE, Type.BOOL], [], [jointIndex, enabled]).then(() => {});
     }
@@ -99,6 +146,10 @@ export class TNY360Remote {
             posY*10, // robot works in mm not cm
             posZ*10, // robot works in mm not cm
         ]).then(() => {});
+    }
+
+    public setJointPWM(index: number, pwm: number): Promise<void> {
+        return this.remote.send(0x67, [Type.BYTE, Type.INT], [], [index, pwm]).then(() => {});
     }
 }
 

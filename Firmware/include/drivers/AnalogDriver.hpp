@@ -8,13 +8,13 @@ namespace AnalogDriver
     constexpr Channel CHANNEL_COUNT = 16;
 
     /**
-    * @brief Initializes the AnalogDriver.
+    * @brief Initializes the Analog driver.
     * @return Error code indicating success or failure.
     */
     Error Init();
 
     /**
-     * @brief Deinitializes the AnalogDriver.
+     * @brief Deinitializes the Analog driver.
      * @return Error code indicating success or failure.
      */
     Error Deinit();
