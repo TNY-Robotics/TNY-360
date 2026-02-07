@@ -1,10 +1,12 @@
 # TNY-360
 
+![Banner](./extras/banner.png)
+
 **TNY-360** is a compact, open-source quadruped robot (robot dog) designed to **understand**, **interact** and **learn**!
 
 It combines **3D-printable parts** and a PlatformIO-based firmware targeting an **ESP32-S3 N16R8** module using the **ESP-IDF framework**.
 
-You can learn more about TNY-360 and find assembly instructions, wiring diagrams, and bill of materials on the [TNY Robotics website](https://tny-robotics.com/tny-360).
+You can learn more about TNY-360 and find assembly instructions, wiring diagrams, and PCB files on the [TNY Robotics website](https://tny-robotics.com/tny-360).
 
 ## Highlights
 - Lightweight quadruped platform for learning robotics, programming, and AI
