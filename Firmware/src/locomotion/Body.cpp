@@ -8,25 +8,25 @@ Body::Body()
     legs[static_cast<size_t>(LegIndex::FRONT_LEFT)] = Leg(
         Joint(MotorController( 7,  9), DEG_TO_RAD( -45.0f), DEG_TO_RAD( 45.0f), false),  // Hip Roll
         Joint(MotorController( 5, 11), DEG_TO_RAD(-135.0f), DEG_TO_RAD( 45.0f), true ),  // Hip Pitch
-        Joint(MotorController( 6, 10), DEG_TO_RAD(   0.0f), DEG_TO_RAD(135.0f), false),  // Knee Pitch
+        Joint(MotorController( 6, 10), DEG_TO_RAD(   0.0f), DEG_TO_RAD(150.0f), false),  // Knee Pitch
         true
     );
     legs[static_cast<size_t>(LegIndex::FRONT_RIGHT)] = Leg(
         Joint(MotorController( 4, 13), DEG_TO_RAD( -45.0f), DEG_TO_RAD( 45.0f), true ),  // Hip Roll
         Joint(MotorController( 2, 15), DEG_TO_RAD(-135.0f), DEG_TO_RAD( 45.0f), false),  // Hip Pitch
-        Joint(MotorController( 3, 14), DEG_TO_RAD(   0.0f), DEG_TO_RAD(135.0f), true ),  // Knee Pitch
+        Joint(MotorController( 3, 14), DEG_TO_RAD(   0.0f), DEG_TO_RAD(150.0f), true ),  // Knee Pitch
         false
     );
     legs[static_cast<size_t>(LegIndex::BACK_LEFT)] = Leg(
         Joint(MotorController(10,  5), DEG_TO_RAD( -45.0f), DEG_TO_RAD( 45.0f), true ),  // Hip Roll
         Joint(MotorController( 8,  7), DEG_TO_RAD(-135.0f), DEG_TO_RAD( 45.0f), true ),  // Hip Pitch
-        Joint(MotorController( 9,  6), DEG_TO_RAD(   0.0f), DEG_TO_RAD(135.0f), false),  // Knee Pitch
+        Joint(MotorController( 9,  6), DEG_TO_RAD(   0.0f), DEG_TO_RAD(150.0f), false),  // Knee Pitch
         true
     );
     legs[static_cast<size_t>(LegIndex::BACK_RIGHT)] = Leg(
         Joint(MotorController(13,  1), DEG_TO_RAD( -45.0f), DEG_TO_RAD( 45.0f), false),  // Hip Roll
         Joint(MotorController(11,  3), DEG_TO_RAD(-135.0f), DEG_TO_RAD( 45.0f), false),  // Hip Pitch
-        Joint(MotorController(12,  2), DEG_TO_RAD(   0.0f), DEG_TO_RAD(135.0f), true ),  // Knee Pitch
+        Joint(MotorController(12,  2), DEG_TO_RAD(   0.0f), DEG_TO_RAD(150.0f), true ),  // Knee Pitch
         false
     );
 
