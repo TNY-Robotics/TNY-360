@@ -3,6 +3,7 @@
 #include "locomotion/Joint.hpp"
 #include "common/geometry.hpp"
 #include "locomotion/IMUController.hpp"
+#include "locomotion/MovementPlanner.hpp"
 
 class Body
 {
@@ -127,12 +128,21 @@ public:
      */
     IMUController& getIMUController() { return imu_controller; }
 
+    /**
+     * @brief Get the movement planner.
+     * @return Reference to the movement planner.
+     */
+    MovementPlanner& getMovementPlanner() { return movement_planner; }
+
 private:
     Leg legs[4]; // Array of 4 legs
     Joint ear_l; // Left Ear Joint
     Joint ear_r; // Right Ear Joint
 
     IMUController imu_controller; // IMU Controller
+
+    // Movement planner, for walking and other complex movements
+    MovementPlanner movement_planner;
 
     // Kinematic parameters and state
     Vec3f local_hip_positions_mm[4]; // local to base_link (body center)

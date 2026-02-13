@@ -17,6 +17,13 @@ public:
      */
     static Joint* GetJoint(MotorDriver::Channel motor_channel);
 
+    /**
+     * @brief Clamp maximum velocity for all joints.
+     * @param max_velocity_rad_s Maximum velocity in radians per second. Set to 0 to disable clamping.
+     * @return Error code indicating success or failure.
+     */
+    static Error ClampVelocity(float max_velocity_rad_s);
+
     Joint();
 
     Joint(MotorController motor_controller, float min_angle_rad = 0.f, float max_angle_rad = TWO_PI, bool inverted = false);
@@ -141,6 +148,7 @@ public:
 
 private:
     static Joint* joints[JOINT_COUNT]; // static array of all joints (index is motor channel)
+    static float joint_velocity_clamp_rad_s; // static variable for global maximum joint velocity
 
     MotorController motor_controller;
     KalmanFilter1D kalman_filter;

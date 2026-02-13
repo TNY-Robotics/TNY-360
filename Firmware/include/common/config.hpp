@@ -19,9 +19,9 @@ constexpr int HIP_POS_X_MM = 75; // in mm
 constexpr int HIP_POS_Y_MM = 50; // in mm
 
 /** DEFAULT POSE INFORMATIONS **/
-constexpr float DEFAULT_BODY_HEIGHT_MM = 150.0f; // in mm, from ground level
-constexpr float DEFAULT_FEET_SPREAD_Y_MM = 80.0f; // in mm, from body center 
-constexpr float DEFAULT_FEET_SPREAD_X_MM = 75.0f; // in mm, from body center
+constexpr float DEFAULT_BODY_HEIGHT_MM = 140.0f; // in mm, from ground level
+constexpr float DEFAULT_FEET_SPREAD_Y_MM = 100.0f; // in mm, from body center 
+constexpr float DEFAULT_FEET_SPREAD_X_MM = 90.0f; // in mm, from body center
 
 
 /** LOGGING **/
@@ -82,6 +82,7 @@ constexpr int CONTROL_LOOP_FREQ_HZ = 50; // 50Hz for slower updates (imu, motors
 // calculated values below, do not edit manually
 constexpr int TIMER_DIVIDER_SECONDARY = ANALOG_LOOP_FREQ_HZ / CONTROL_LOOP_FREQ_HZ;
 constexpr float CONTROL_LOOP_DT_S = 1.0f / CONTROL_LOOP_FREQ_HZ;
+constexpr uint32_t CONTROL_LOOP_DT_MS = static_cast<uint32_t>(CONTROL_LOOP_DT_S * 1000);
 
 
 /** Analog scanner **/

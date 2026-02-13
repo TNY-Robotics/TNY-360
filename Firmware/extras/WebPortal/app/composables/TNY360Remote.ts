@@ -151,6 +151,14 @@ export class TNY360Remote {
     public setJointPWM(index: number, pwm: number): Promise<void> {
         return this.remote.send(0x67, [Type.BYTE, Type.INT], [], [index, pwm]).then(() => {});
     }
+
+    public setMovementVelocity(tx: number, ty: number, rz: number): Promise<void> {
+        return this.remote.send(0x68, [Type.FLOAT, Type.FLOAT, Type.FLOAT], [], [
+            tx,
+            ty,
+            DEG_TO_RAD(rz),
+        ]).then(() => {});
+    }
 }
 
 export function useRemote() {

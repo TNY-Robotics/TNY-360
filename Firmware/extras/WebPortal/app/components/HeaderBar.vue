@@ -27,7 +27,7 @@
 const pages = [
     { name: 'Home', path: '/' },
     { name: 'Joints', path: '/joints' },
-    { name: 'Position', path: '/position' },
+    { name: 'Movements', path: '/movements' },
     { name: 'View', path: '/view' },
 ];
 const selected = (path: string) => {

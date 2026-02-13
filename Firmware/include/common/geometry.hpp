@@ -3,6 +3,7 @@
 
 constexpr float PI = 3.14159265358979323846f;
 constexpr float TWO_PI = 2.0f * PI;
+constexpr float HALF_PI = PI / 2.0f;
 constexpr float DEG_TO_RAD_FACTOR = PI / 180.0f;
 constexpr float RAD_TO_DEG_FACTOR = 180.0f / PI;
 
@@ -13,6 +14,11 @@ template<typename T>
 class Vec3
 {
 public:
+    constexpr static Vec3<T> Zero() { return Vec3<T>(0, 0, 0); }
+    constexpr static Vec3<T> X() { return Vec3<T>(1, 0, 0); }
+    constexpr static Vec3<T> Y() { return Vec3<T>(0, 1, 0); }
+    constexpr static Vec3<T> Z() { return Vec3<T>(0, 0, 1); }
+
     T x;
     T y;
     T z;
@@ -36,6 +42,13 @@ public:
     
     T length() const { return std::sqrt(lengthSq()); }
 
+    void rotateAround(const Vec3<T>& axis, T angle_rad) {
+        float cos_angle = std::cos(angle_rad);
+        float sin_angle = std::sin(angle_rad);
+        Vec3<T> rotated = (*this * cos_angle) + (axis.cross(*this) * sin_angle) + (axis * (axis.dot(*this)) * (1 - cos_angle));
+        x = rotated.x; y = rotated.y; z = rotated.z;
+    }
+
     Vec3<T> normalized() const {
         T len = length();
         if (len > 0) return *this / len;
@@ -47,6 +60,9 @@ public:
     }
     Vec3<T> operator-(const Vec3<T>& other) const {
         return Vec3<T>(x - other.x, y - other.y, z - other.z);
+    }
+    Vec3<T> operator-() const {
+        return Vec3<T>(-x, -y, -z);
     }
     Vec3<T> operator*(T scalar) const {
         return Vec3<T>(x * scalar, y * scalar, z * scalar);
@@ -75,6 +91,10 @@ template<typename T>
 class Vec2
 {
 public:
+    constexpr static Vec2<T> Zero() { return Vec2<T>(0, 0); }
+    constexpr static Vec2<T> X() { return Vec2<T>(1, 0); }
+    constexpr static Vec2<T> Y() { return Vec2<T>(0, 1); }
+
     T x;
     T y;
 
@@ -85,6 +105,9 @@ public:
     }
     Vec2<T> operator-(const Vec2<T>& other) const {
         return Vec2<T>(x - other.x, y - other.y);
+    }
+    Vec2<T> operator-() const {
+        return Vec2<T>(-x, -y);
     }
     Vec2<T> operator*(T scalar) const {
         return Vec2<T>(x * scalar, y * scalar);

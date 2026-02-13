@@ -3,6 +3,7 @@
 #include "common/Log.hpp"
 
 Joint* Joint::joints[JOINT_COUNT] = { nullptr }; // Static array to hold Joint instances
+float Joint::joint_velocity_clamp_rad_s = Joint::MAX_VELOCITY_RAD_S; // Initialize static max velocity variable
 
 Joint* Joint::GetJoint(MotorDriver::Channel motor_channel)
 {
@@ -11,6 +12,23 @@ Joint* Joint::GetJoint(MotorDriver::Channel motor_channel)
         return nullptr;
     }
     return joints[motor_channel];
+}
+
+Error Joint::ClampVelocity(float max_velocity_rad_s)
+{
+    if (max_velocity_rad_s < 0.f || max_velocity_rad_s > MAX_VELOCITY_RAD_S)
+    {
+        Log::Add(Log::Level::Error, TAG, "Requested max joint velocity %.2f rad/s is out of bounds (0 - %.2f rad/s)", max_velocity_rad_s, MAX_VELOCITY_RAD_S);
+        return Error::InvalidParameters;
+    }
+    if (max_velocity_rad_s == 0.f) // if zero, disable clamp
+    {
+        joint_velocity_clamp_rad_s = MAX_VELOCITY_RAD_S;
+        return Error::None;
+    }
+
+    joint_velocity_clamp_rad_s = max_velocity_rad_s;
+    return Error::None;
 }
 
 Joint::Joint() {}
@@ -76,11 +94,13 @@ Error Joint::deinit()
 
 Error Joint::update()
 {
+    float clamped_velocity_rad_s = std::min(velocity_rad_s, joint_velocity_clamp_rad_s);
+
     // Update model angle based on velocity and target
     float last_model_angle_rad = model_angle_rad;
     if (target_angle_rad > model_angle_rad)
     {
-        model_angle_rad += velocity_rad_s * CONTROL_LOOP_DT_S;
+        model_angle_rad += clamped_velocity_rad_s * CONTROL_LOOP_DT_S;
         if (model_angle_rad > target_angle_rad)
         {
             model_angle_rad = target_angle_rad;
@@ -88,7 +108,7 @@ Error Joint::update()
     }
     else if (target_angle_rad < model_angle_rad)
     {
-        model_angle_rad -= velocity_rad_s * CONTROL_LOOP_DT_S;
+        model_angle_rad -= clamped_velocity_rad_s * CONTROL_LOOP_DT_S;
         if (model_angle_rad < target_angle_rad)
         {
             model_angle_rad = target_angle_rad;
@@ -164,7 +184,7 @@ Error Joint::setVelocity(float velocity_rad_s)
 
 Error Joint::getVelocity(float &result) const
 {
-    result = velocity_rad_s;
+    result = std::min(velocity_rad_s, joint_velocity_clamp_rad_s);
     return Error::None;
 }
 

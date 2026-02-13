@@ -669,4 +669,32 @@ CommandHandler handlers[] = {
         Error err = MotorDriver::SetPWM(static_cast<MotorDriver::Channel>(motor_channel), pwm_value);
         resolve(Protocol::Response(req.id, (err == Error::None)));
     }},
+
+    // Set movement velocity (x_translation_m_s, y_translation_m_s, rotation_rad_s)
+    { 0x68, sizeof(float) * 3, [](const Protocol::Request& req, CallbackResolver resolve) {
+        BinaryReader reader(req.payload, req.len);
+
+        float x_translation;
+        if (Error err = reader.read<float>(x_translation); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+        float y_translation;
+        if (Error err = reader.read<float>(y_translation); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+        float rotation;
+        if (Error err = reader.read<float>(rotation); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        MovementPlanner& planner = Robot::GetInstance().getBody().getMovementPlanner();
+        planner.setVelocityCommand(x_translation*1000, y_translation*1000, rotation); // m/s to mm/s
+        resolve(Protocol::Response(req.id, true));
+    }},
 };

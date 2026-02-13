@@ -130,10 +130,17 @@ Error Timer::control_task()
     // Read the IMU data
     IMUDriver::__ISRReadData();
 
+    // Run the movement planification
+    if (Error err = Robot::GetInstance().getBody().getMovementPlanner().update(); err != Error::None)
+    {
+        Log::Add(Log::Level::Error, TAG, "Movement planner update failed in control task with error: %s", ErrorToString(err));
+        return err;
+    }
+
     // Update the body
     if (Error err = Robot::GetInstance().getBody().update(); err != Error::None)
     {
-        Log::Add(Log::Level::Error, TAG, "Body update failed in control task with error: %d", static_cast<uint8_t>(err));
+        Log::Add(Log::Level::Error, TAG, "Body update failed in control task with error: %s", ErrorToString(err));
         return err;
     }
 
