@@ -164,6 +164,9 @@ esp_err_t WebInterface::main_request_handler(httpd_req_t *req) {
     // 4. SPA FALLBACK (Client-Side Routing)
     // If the file doesn't exist, and the URL doesn't look like an asset (no extension or not in _nuxt)
     // We return index.html.gz so Nuxt can handle the route.
+
+    // FIXME : This is not working. stat doesnt return if the file exists or not.
+    //         We should check the return value of send_file_chunked instead and fallback to index file.
     
     // If the URI contains "/_nuxt/" or a common extension, it's a real 404
     if (strstr(filepath, "/_nuxt/") || strstr(filepath, "/assets/")) {
