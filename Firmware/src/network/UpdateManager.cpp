@@ -103,6 +103,12 @@ Error UpdateManager::deinit()
 
 Error UpdateManager::checkForUpdates()
 {
+    if (strcmp(FIRMWARE_VERSION, "0.0.0") == 0)
+    {
+        Log::Add(Log::Level::Debug, TAG, "Firmware version is 0.0.0 (BETA, WIP, UNRELEASED), skipping update check.");
+        return Error::None;
+    }
+
     Log::Add(Log::Level::Debug, TAG, "Checking for updates...");
 
     // check the current filesystem version, if older than firmware version, download it
