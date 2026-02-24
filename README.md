@@ -18,18 +18,16 @@
 
 ## 🚀 Start Building
 
-Want to build your own? We provide resources ranging from free open-source files to complete "Maker Kits" to save you time.
+Everything you need to build the TNY-360 is completely free and open-source.
+Follow the links below to find the technical files and documentation you need to get started!
 
-| Resource | Description | Access |
-| :--- | :--- | :--- |
-| **📁 Source Code & 3D** | Full access to Firmware, FreeCAD files & BOM. | [**Free on GitHub**](#) |
-| **📘 Servo Mod Guide** | PCB files, Bill Of Materials and instructions to add position feedback to MG996R servos. | [**Get for 3€**](https://furwaz.gumroad.com/l/tny-servo-v1) |
-| **📖 Assembly guides** | Step-by-step manual to assemble and get started with your TNY-360, worry-free. | [**Get for 5€**](https://furwaz.gumroad.com/l/tny-360-guides) |
-| **⚡ PCB Pack** | Custom main board, motor controller and other PCB files + BOM (Ready for JLCPCB & LCSC). | [**Get for 9€**](https://furwaz.gumroad.com/l/tny-360-pcb-pack) |
-| **🧰 The Maker Kit** | **(Best Value)** All PCB files + Servo Guide + Full Assembly Manual. | [**Get for 14€**](https://furwaz.gumroad.com/l/tny-360-maker-kit) |
-
-> 💡 **Support the project:** Buying these guides directly supports this project and the development of future TNY robots!
-
+| Resource | Description | Location | Status |
+| :--- | :--- | :--- | :--- |
+| **💻 Firmware** | ESP-IDF source code and drivers. | [`/Firmware`](./Firmware) | **Available** |
+| **📐 CAD & 3D Files** | FreeCAD source files and STLs. | [`/CAD`](./CAD) | **Available** |
+| **📘 Servo Mod Guide** | Instructions to add position feedback to MG996R. | [`/Docs/Servos`](#) | *Coming Soon* |
+| **📖 Assembly Guide** | Step-by-step manual for the full build. | [`/Docs/Assembly`](#) | *Coming Soon* |
+| **⚡ PCB Design** | Main board and controller KiCad/Gerber files. | [`/Hardware/PCB`](#) | *Coming Soon* |
 ---
 
 ## ✨ Features
