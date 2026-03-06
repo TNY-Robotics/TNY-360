@@ -25,9 +25,9 @@ Follow the links below to find the technical files and documentation you need to
 | :--- | :--- | :--- | :--- |
 | **💻 Firmware** | ESP-IDF source code and drivers. | [`/Firmware`](./Firmware) | **Available** |
 | **📐 CAD & 3D Files** | FreeCAD source files and STLs. | [`/CAD`](./CAD) | **Available** |
-| **📘 Servo Mod Guide** | Instructions to add position feedback to MG996R. | [`/Docs/Servos`](#) | *Coming Soon* |
-| **📖 Assembly Guide** | Step-by-step manual for the full build. | [`/Docs/Assembly`](#) | *Coming Soon* |
-| **⚡ PCB Design** | Main board and controller KiCad/Gerber files. | [`/Hardware/PCB`](#) | *Coming Soon* |
+| **📘 Servo Mod Guide** | Instructions to add position feedback to MG996R. | [`/Docs/Servos`](./Docs/Servos) | *Coming Soon* |
+| **📖 Assembly Guide** | Step-by-step manual for the full build. | [`/Docs/Assembly`](./Docs/Assembly) | *Coming Soon* |
+| **⚡ PCB Design** | All PCBs Gerber, BOM, and Pick'n'Place files. | [`/Electronics/PCBs`](./Electronics/PCBs) | **Available** |
 ---
 
 ## ✨ Features
