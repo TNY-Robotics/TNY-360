@@ -1,11 +1,32 @@
 #pragma once
 #include "common/utils.hpp"
+#include "common/config.hpp"
 
 namespace MotorDriver
 {
     using Channel = uint8_t;
     using Value = uint16_t;
     constexpr Channel CHANNEL_COUNT = 16;
+
+    /**
+     * @brief Converts milliseconds to the corresponding PWM value for the PCA9685.
+     * @param ms Time in milliseconds (e.g., 1.0 for 1ms).
+     * @return Corresponding PWM value (0-4096) for the PCA9685 at the defined frequency.
+     */
+    constexpr static Value MS_TO_PWM(float ms)
+    {
+        return static_cast<Value>(4096.f * ms) / (1000.f / MOTOR_DRIVER_PWM_FREQUENCY_HZ);
+    }
+
+    /**
+     * @brief Converts a PWM value to the corresponding time in milliseconds for the PCA9685.
+     * @param pwm PWM value (0-4096).
+     * @return Corresponding time in milliseconds (e.g., 1.0 for 1ms).
+     */
+    constexpr static Value PWM_TO_MS(Value pwm)
+    {
+        return static_cast<Value>(pwm * (1000.f / MOTOR_DRIVER_PWM_FREQUENCY_HZ) / 4096.f);
+    }
 
     /**
     * @brief Initializes the Motor driver.

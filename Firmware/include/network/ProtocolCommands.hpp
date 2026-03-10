@@ -7,6 +7,7 @@
 #include "common/BinaryReader.hpp"
 #include "common/Log.hpp"
 #include "Robot.hpp"
+#include "common/SysStats.hpp"
 
 using CallbackResolver = void(*)(const Protocol::Response& res);
 using HandlerCallback = void(*)(const Protocol::Request& req, CallbackResolver resolve);
@@ -49,7 +50,7 @@ CommandHandler handlers[] = {
         Error err = joint->getMotorController().startCalibration();
         resolve(Protocol::Response(req.id, err == Error::None));
     }},
-    // declare joint minimum
+    // stop joint calibration
     { 0x03, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
         BinaryReader reader(req.payload, req.len);
         uint8_t motor_channel;
@@ -66,11 +67,11 @@ CommandHandler handlers[] = {
             return;
         }
 
-        Error err = joint->getMotorController().declarePositionAsMinimum();
+        Error err = joint->getMotorController().stopCalibration();
         resolve(Protocol::Response(req.id, err == Error::None));
     }},
-    // declare joint maximum
-    { 0x04, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
+    // set joint calibration data
+    { 0x04, sizeof(uint8_t) + sizeof(MotorController::CalibrationData), [](const Protocol::Request& req, CallbackResolver resolve) {
         BinaryReader reader(req.payload, req.len);
         uint8_t motor_channel;
         if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
@@ -86,11 +87,18 @@ CommandHandler handlers[] = {
             return;
         }
 
-        Error err = joint->getMotorController().declarePositionAsMaximum();
+        MotorController::CalibrationData calib_data;
+        if (Error err = reader.read<MotorController::CalibrationData>(calib_data); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        Error err = joint->getMotorController().setCalibrationData(calib_data);
         resolve(Protocol::Response(req.id, err == Error::None));
     }},
-    // Change joint calibration state
-    { 0x05, sizeof(uint8_t) + sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
+    // get joint calibration data
+    { 0x05, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
         BinaryReader reader(req.payload, req.len);
         uint8_t motor_channel;
         if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
@@ -106,15 +114,97 @@ CommandHandler handlers[] = {
             return;
         }
 
-        uint8_t calibration_state;
-        if (Error err = reader.read<uint8_t>(calibration_state); err != Error::None)
+        MotorController::CalibrationData calib_data = joint->getMotorController().getCalibrationData();
+
+        uint8_t payload[sizeof(MotorController::CalibrationData)];
+        memcpy(payload, &calib_data, sizeof(MotorController::CalibrationData));
+        resolve(Protocol::Response(req.id, true, payload, sizeof(MotorController::CalibrationData)));
+    }},
+    // delete joint calibration
+    { 0x06, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
+        BinaryReader reader(req.payload, req.len);
+        uint8_t motor_channel;
+        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
         {
             resolve(Protocol::Response(req.id, false));
             return;
         }
 
-        Error err = joint->getMotorController().setCalibrationState(static_cast<MotorController::CalibrationState>(calibration_state));
+        Joint* joint = Joint::GetJoint(motor_channel);
+        if (joint == nullptr)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        Error err = joint->getMotorController().deleteCalibrationData();
         resolve(Protocol::Response(req.id, err == Error::None));
+    }},
+    // get joint calibration state
+    { 0x07, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
+        BinaryReader reader(req.payload, req.len);
+        
+        uint8_t motor_channel;
+        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        Joint* joint = Joint::GetJoint(static_cast<MotorDriver::Channel>(motor_channel));
+        if (joint == nullptr)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        MotorController::CalibrationState calib_state = joint->getMotorController().getCalibrationState();
+        uint8_t result = static_cast<uint8_t>(calib_state);
+        resolve(Protocol::Response(req.id, true, &result, sizeof(uint8_t)));
+    }},
+    // get joint calibration progress
+    { 0x08, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
+        BinaryReader reader(req.payload, req.len);
+        
+        uint8_t motor_channel;
+        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        Joint* joint = Joint::GetJoint(static_cast<MotorDriver::Channel>(motor_channel));
+        if (joint == nullptr)
+        {
+            resolve(Protocol::Response(req.id, false));
+            return;
+        }
+
+        float result = joint->getMotorController().getCalibrationProgress();
+        uint8_t payload[sizeof(float)];
+        memcpy(payload, &result, sizeof(float));
+        resolve(Protocol::Response(req.id, true, payload, sizeof(float)));
+    }},
+    // Get CPU Usage
+    { 0x09, 0, [](const Protocol::Request& req, CallbackResolver resolve) {
+        SysStats::CPUUsage cpu_usage = SysStats::GetCPUUsage();
+        uint8_t payload[sizeof(SysStats::CPUUsage)];
+        memcpy(payload, &cpu_usage, sizeof(SysStats::CPUUsage));
+        resolve(Protocol::Response(req.id, true, payload, sizeof(SysStats::CPUUsage)));
+    }},
+    // Get RAM Usage
+    { 0x0A, 0, [](const Protocol::Request& req, CallbackResolver resolve) {
+        SysStats::RAMUsage ram_usage = SysStats::GetRAMUsage();
+        uint8_t payload[sizeof(SysStats::RAMUsage)];
+        memcpy(payload, &ram_usage, sizeof(SysStats::RAMUsage));
+        resolve(Protocol::Response(req.id, true, payload, sizeof(SysStats::RAMUsage)));
+    }},
+    // Get Temperature
+    { 0x0B, 0, [](const Protocol::Request& req, CallbackResolver resolve) {
+        float temperature = SysStats::GetTemperature();
+        uint8_t payload[sizeof(float)];
+        memcpy(payload, &temperature, sizeof(float));
+        resolve(Protocol::Response(req.id, true, payload, sizeof(float)));
     }},
 
     // get joint state
@@ -258,55 +348,8 @@ CommandHandler handlers[] = {
         resolve(Protocol::Response(req.id, true, payload, sizeof(float)));
     }},
 
-    // get joint calibration state
-    { 0x25, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
-        BinaryReader reader(req.payload, req.len);
-        
-        uint8_t motor_channel;
-        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
-        {
-            resolve(Protocol::Response(req.id, false));
-            return;
-        }
-
-        Joint* joint = Joint::GetJoint(static_cast<MotorDriver::Channel>(motor_channel));
-        if (joint == nullptr)
-        {
-            resolve(Protocol::Response(req.id, false));
-            return;
-        }
-
-        MotorController::CalibrationState calib_state = joint->getMotorController().getCalibrationState();
-        uint8_t result = static_cast<uint8_t>(calib_state);
-        resolve(Protocol::Response(req.id, true, &result, sizeof(uint8_t)));
-    }},
-
-    // get joint calibration progress
-    { 0x26, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
-        BinaryReader reader(req.payload, req.len);
-        
-        uint8_t motor_channel;
-        if (Error err = reader.read<uint8_t>(motor_channel); err != Error::None)
-        {
-            resolve(Protocol::Response(req.id, false));
-            return;
-        }
-
-        Joint* joint = Joint::GetJoint(static_cast<MotorDriver::Channel>(motor_channel));
-        if (joint == nullptr)
-        {
-            resolve(Protocol::Response(req.id, false));
-            return;
-        }
-
-        float result = joint->getMotorController().getCalibrationProgress();
-        uint8_t payload[sizeof(float)];
-        memcpy(payload, &result, sizeof(float));
-        resolve(Protocol::Response(req.id, true, payload, sizeof(float)));
-    }},
-
     // get all joint angles
-    { 0x27, 0, [](const Protocol::Request& req, CallbackResolver resolve) {
+    { 0x25, 0, [](const Protocol::Request& req, CallbackResolver resolve) {
         Joint* joints[] = {
             &Robot::GetInstance().getBody().getFrontLeftLeg().getHipRoll(),
             &Robot::GetInstance().getBody().getFrontLeftLeg().getHipPitch(),
@@ -336,7 +379,7 @@ CommandHandler handlers[] = {
     }},
 
     // get body orientation
-    { 0x28, 0, [](const Protocol::Request& req, CallbackResolver resolve) {
+    { 0x26, 0, [](const Protocol::Request& req, CallbackResolver resolve) {
         Quatf& orientation = Robot::GetInstance().getBody().getIMUController().getOrientation();
         uint8_t payload[sizeof(float)*4];
         memcpy(payload, &orientation.x, sizeof(float));
@@ -347,7 +390,7 @@ CommandHandler handlers[] = {
     }},
 
     // Get joint PWM
-    { 0x29, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
+    { 0x27, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
         BinaryReader reader(req.payload, req.len);
         
         uint8_t motor_channel;
@@ -371,7 +414,7 @@ CommandHandler handlers[] = {
     }},
 
     // Get Joint Voltage
-    { 0x2A, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
+    { 0x28, sizeof(uint8_t), [](const Protocol::Request& req, CallbackResolver resolve) {
         BinaryReader reader(req.payload, req.len);
         
         uint8_t motor_channel;
@@ -696,5 +739,10 @@ CommandHandler handlers[] = {
         MovementPlanner& planner = Robot::GetInstance().getBody().getMovementPlanner();
         planner.setVelocityCommand(x_translation*1000, y_translation*1000, rotation); // m/s to mm/s
         resolve(Protocol::Response(req.id, true));
+    }},
+
+    // secret command : send picture
+    { 0x99, 0, [](const Protocol::Request& req, CallbackResolver resolve) {
+        
     }},
 };

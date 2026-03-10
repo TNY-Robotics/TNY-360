@@ -4,5 +4,6 @@
 .vscode/launch.json
 .vscode/ipch
 build/
+managed_components/
 
 data/web/

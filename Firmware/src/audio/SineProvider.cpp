@@ -9,6 +9,13 @@ SineProvider::SineProvider()
     phaseIncrement = (2.0f * M_PI * frequency) / static_cast<float>(SPEAKER_SAMPLE_RATE_HZ);
 }
 
+SineProvider::SineProvider(float frequencyHz, float volume)
+    : volume(volume), frequency(frequencyHz)
+{
+    phase = 0.0f;
+    phaseIncrement = (2.0f * M_PI * frequency) / static_cast<float>(SPEAKER_SAMPLE_RATE_HZ);
+}
+
 bool SineProvider::provideSamples(Speaker::Sample* buffer, size_t sampleCount)
 {
     const float amplitude = 20000.0f * volume; // 30000 est proche de la saturation, 20000 est plus sûr pour tester

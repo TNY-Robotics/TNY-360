@@ -1,5 +1,6 @@
 #include "network/WiFiManager.hpp"
 #include "common/Log.hpp"
+#include "common/NVS.hpp"
 #include "Robot.hpp"
 
 static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
@@ -108,7 +109,12 @@ WiFiManager::WiFiManager()
 
 Error WiFiManager::init()
 {
-    // ... (Ton code d'initialisation esp_netif_init et loop reste identique) ...
+    if (NVS::Init() != Error::None)
+    {
+        Log::Add(Log::Level::Error, TAG, "NVS initialization failed");
+        return Error::SoftwareFailure;
+    }
+
     if (esp_netif_init() != ESP_OK)
     {
         Log::Add(Log::Level::Error, TAG, "esp_netif_init failed");
@@ -143,10 +149,8 @@ Error WiFiManager::init()
         return Error::SoftwareFailure;
     }
 
-    // --- NVS code (identique au tien) ---
     if (Error err = NVS::Open("WiFi", &nvs_handle_ptr); err != Error::None) return err;
     
-    // ... (Récupération SSID/PWD identique) ...
     if (nvs_handle_ptr->get("ssid", ssid, sizeof(ssid)) != Error::None)
     {
         Log::Add(Log::Level::Debug, TAG, "No stored SSID found in NVS");
@@ -243,10 +247,10 @@ Error WiFiManager::__connect_to_ap()
     strncpy((char*)wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid) - 1);
     if (strlen(password) > 0) {
         strncpy((char*)wifi_config.sta.password, password, sizeof(wifi_config.sta.password) - 1);
-        // wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK; // Aide à la connexion
+        // wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
     }
     
-    // Configuration moderne pour supporter WPA3/WPA2-mixed
+    // WPA3/WPA2-mixed
     // wifi_config.sta.pmf_cfg.capable = true;
     // wifi_config.sta.pmf_cfg.required = false;
 
@@ -271,7 +275,6 @@ Error WiFiManager::__connect_to_ap()
         return Error::SoftwareFailure;
     }
     
-    // On lance (si ce n'est pas déjà lancé, esp_wifi_start renvoie ESP_OK ou ESP_ERR_WIFI_ALREADY_STARTED, peu importe)
     if (esp_err_t err = esp_wifi_start(); err != ESP_OK)
     {
         Log::Add(Log::Level::Error, TAG, "esp_wifi_start failed with code 0x%x", err);

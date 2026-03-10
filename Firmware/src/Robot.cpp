@@ -32,6 +32,11 @@ Error Robot::init()
         return err;
     }
 
+    if ((err = ui_manager.init()) != Error::None)
+    {
+        return err;
+    }
+
     if ((err = audio_manager.init()) != Error::None)
     {
         return err;
@@ -39,6 +44,7 @@ Error Robot::init()
 
     // THIS DELAY IS IMPORTANT!
     // allow some time for systems to stabilize before enabling motors and everything
+    // (to get motor feedback data and all that stuff)
     vTaskDelay(pdMS_TO_TICKS(500));
 
     return Error::None;
@@ -59,6 +65,11 @@ Error Robot::deinit()
     }
 
     if ((err = timer.deinit()) != Error::None)
+    {
+        return err;
+    }
+
+    if ((err = ui_manager.deinit()) != Error::None)
     {
         return err;
     }

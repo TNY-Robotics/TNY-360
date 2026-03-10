@@ -13,6 +13,18 @@ MotorController::MotorController(MotorDriver::Channel motor_channel, AnalogDrive
       target_position(0.0f),
       calibration_state(CalibrationState::UNCALIBRATED)
 {
+    default_calibration_data = DEFAULT_CALIBRATION_MG996R;
+}
+
+MotorController::MotorController(MotorDriver::Channel motor_channel, AnalogDriver::Channel analog_channel, CalibrationData default_calibration)
+    : motor_channel(motor_channel),
+      analog_channel(analog_channel),
+      nvshandle_ptr(nullptr),
+      target_position(0.0f),
+      calibration_state(CalibrationState::UNCALIBRATED)
+{
+    default_calibration_data = default_calibration;
+    calibration_data = default_calibration;
 }
 
 Error MotorController::init()
@@ -44,12 +56,13 @@ Error MotorController::init()
     }
     if (nvshandle_ptr->get("calib_data", calibration_data) == Error::None)
     {
+        Log::Add(Log::Level::Info, TAG, "Calibration data loaded from NVS for motor channel %d", motor_channel);
         state = State::ENABLED;
         calibration_state = CalibrationState::CALIBRATED;
     }
     else
     {
-        calibration_data = DEFAULT_CALIBRATION;
+        calibration_data = DEFAULT_CALIBRATION_MG996R;
         calibration_state = CalibrationState::UNCALIBRATED;
     }
 
@@ -128,14 +141,54 @@ Error MotorController::startCalibration()
 
 Error MotorController::stopCalibration()
 {
-    Log::Add(Log::Level::Info, TAG, "Stopping motor calibration");
-
     if (calibration_state != MotorController::CalibrationState::CALIBRATING)
     {
         Log::Add(Log::Level::Warning, TAG, "Motor is not in calibration mode");
         return Error::InvalidState;
     }
 
+    if (calibration_task_handle != NULL)
+    {
+        vTaskDelete(calibration_task_handle);
+    }
+
+    return Error::None;
+}
+
+Error MotorController::setCalibrationData(CalibrationData& data, bool save)
+{
+    calibration_data = data;
+    calibration_state = CalibrationState::CALIBRATED;
+    if (save)
+    {
+        if (Error err = nvshandle_ptr->set("calib_data", calibration_data); err != Error::None)
+        {
+            Log::Add(Log::Level::Error, TAG, "Failed to save calibration data to NVS. Error: %d", static_cast<uint8_t>(err));
+            return err;
+        }
+    }
+    return Error::None;
+}
+
+Error MotorController::deleteCalibrationData(bool save)
+{
+    calibration_data = DEFAULT_CALIBRATION_MG996R;
+    calibration_state = CalibrationState::UNCALIBRATED;
+    if (save)
+    {
+        if (Error err = nvshandle_ptr->erase("calib_data"); err != Error::None)
+        {
+            Log::Add(Log::Level::Error, TAG, "Failed to delete calibration data from NVS. Error: %d", static_cast<uint8_t>(err));
+            return err;
+        }
+    }
+    return Error::None;
+}
+
+Error MotorController::setCalibrationState(CalibrationState state)
+{
+    Log::Add(Log::Level::Warning, TAG, "Manually changing calibration state to %d. This could lead to unexpected behavior if not used correctly.", static_cast<uint8_t>(state));
+    calibration_state = state;
     return Error::None;
 }
 
@@ -169,53 +222,6 @@ Error MotorController::getCurrentPosition(float& result) const
                      (calibration_data.max_voltage - calibration_data.min_voltage);
     
     result = position;
-    return Error::None;
-}
-
-Error MotorController::declarePositionAsMinimum()
-{
-    AnalogDriver::Value voltage_mV = 0;
-    if (Error err = AnalogDriver::GetVoltage(analog_channel, &voltage_mV); err != Error::None)
-    {
-        return err;
-    }
-
-    MotorDriver::Value pwm_value = 0;
-    if (Error err = MotorDriver::GetPWM(motor_channel, pwm_value); err != Error::None)
-    {
-        return err;
-    }
-
-    calibration_data.min_voltage = voltage_mV;
-    calibration_data.min_pwm = pwm_value;
-    save_calibration_data();
-    return Error::None;
-}
-
-Error MotorController::declarePositionAsMaximum()
-{
-    AnalogDriver::Value voltage_mV = 0;
-    if (Error err = AnalogDriver::GetVoltage(analog_channel, &voltage_mV); err != Error::None)
-    {
-        return err;
-    }
-
-    MotorDriver::Value pwm_value = 0;
-    if (Error err = MotorDriver::GetPWM(motor_channel, pwm_value); err != Error::None)
-    {
-        return err;
-    }
-
-    calibration_data.max_voltage = voltage_mV;
-    calibration_data.max_pwm = pwm_value;
-    save_calibration_data();
-    return Error::None;
-}
-
-Error MotorController::setCalibrationState(CalibrationState state)
-{
-    Log::Add(Log::Level::Warning, TAG, "Manually changing calibration state to %d. This could lead to unexpected behavior if not used correctly.", static_cast<uint8_t>(state));
-    calibration_state = state;
     return Error::None;
 }
 

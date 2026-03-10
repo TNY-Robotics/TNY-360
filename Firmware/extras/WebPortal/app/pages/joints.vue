@@ -3,11 +3,10 @@
         
         <div v-for="leg in joints" :key="leg.name" class="p-4">
             <h2 class="font-bold text-xl"> {{ leg.name }} </h2>
-            <div v-for="joint in leg.joints" :key="joint.index" class="p-4">
-                <JointControl
-                    :range="joint.range" :index="joint.index"
-                    :name="joint.name" :angle="joint.angle.value"
-                />
+            <div class="flex justify-evenly">
+                <div v-for="joint in leg.joints" :key="joint.index" class="p-4">
+                    <JointControlBox :index="joint.index" :name="joint.name" :range="joint.range" />
+                </div>
             </div>
         </div>
 
@@ -15,54 +14,40 @@
 </template>
 
 <script lang="ts" setup>
-const remote = useRemote();
-
 const joints = [
     {
         name: 'Front Left Leg',
         joints: [
-            { index: 7, name: 'Hip', range: [-45, 45], angle: ref(0) },
-            { index: 5, name: 'Knee', range: [-135, 45], angle: ref(0) },
-            { index: 6, name: 'Ankle', range: [0, 135], angle: ref(0) },
+            { index: 7, name: 'Hip Roll', range: [-45, 45] },
+            { index: 5, name: 'Hip Pitch', range: [-135, 45] },
+            { index: 6, name: 'Knee Pitch', range: [0, 135] },
         ]
     },
     {
         name: 'Front Right Leg',
         joints: [
-            { index: 4, name: 'Hip', range: [-45, 45], angle: ref(0) },
-            { index: 2, name: 'Knee', range: [-135, 45], angle: ref(0) },
-            { index: 3, name: 'Ankle', range: [0, 135], angle: ref(0) },
+            { index: 4, name: 'Hip Roll', range: [-45, 45] },
+            { index: 2, name: 'Hip Pitch', range: [-135, 45] },
+            { index: 3, name: 'Knee Pitch', range: [0, 135] },
         ]
     },
     {
         name: 'Back Left Leg',
         joints: [
-            { index: 10, name: 'Hip', range: [-45, 45], angle: ref(0) },
-            { index: 8, name: 'Knee', range: [-135, 45], angle: ref(0) },
-            { index: 9, name: 'Ankle', range: [0, 135], angle: ref(0) },
+            { index: 10, name: 'Hip Roll', range: [-45, 45] },
+            { index: 8, name: 'Hip Pitch', range: [-135, 45] },
+            { index: 9, name: 'Knee Pitch', range: [0, 135] },
         ]
     },
     {
         name: 'Back Right Leg',
         joints: [
-            { index: 13, name: 'Hip', range: [-45, 45], angle: ref(0) },
-            { index: 11, name: 'Knee', range: [-135, 45], angle: ref(0) },
-            { index: 12, name: 'Ankle', range: [0, 135], angle: ref(0) },
+            { index: 13, name: 'Hip Roll', range: [-45, 45] },
+            { index: 11, name: 'Hip Pitch', range: [-135, 45] },
+            { index: 12, name: 'Knee Pitch', range: [0, 135] },
         ]
     },
 ];
-
-setInterval(() => {
-    remote.getAllJointAngles().then((angles) => {
-        let index = 0;
-        for (const leg of joints) {
-            for (const joint of leg.joints) {
-                joint.angle.value = angles[index] as number;
-                index++;
-            }
-        }
-    });
-}, 200);
 
 </script>
 

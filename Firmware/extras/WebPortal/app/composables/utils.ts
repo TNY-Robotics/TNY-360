@@ -2,7 +2,12 @@ export type CommandID = number;
 export enum Type {
     BYTE = 'byte',
     INT = 'int',
+    INT16 = 'int16',
+    UINT16 = 'uint16',
+    INT32 = 'int32',
+    UINT32 = 'uint32',
     FLOAT = 'float',
+    DOUBLE = 'double',
     BOOL = 'bool',
 };
 export function sizeof(type: Type|Type[]): number {
@@ -11,8 +16,13 @@ export function sizeof(type: Type|Type[]): number {
     }
     switch (type) {
         case Type.BYTE:  return 1;
-        case Type.INT:   return 4;
+        case Type.INT:  return 4;
+        case Type.INT16:   return 2;
+        case Type.UINT16:   return 2;
+        case Type.INT32:   return 4;
+        case Type.UINT32:   return 4;
         case Type.FLOAT: return 4;
+        case Type.DOUBLE: return 8;
         case Type.BOOL:  return 1;
         default: throw new Error(`Unknown type: ${type}`);
     }

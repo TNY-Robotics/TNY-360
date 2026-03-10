@@ -30,9 +30,9 @@ Body::Body()
         false
     );
 
-    // Create the ears
-    ear_l = Joint(MotorController(1, 0), DEG_TO_RAD(-45.0f), DEG_TO_RAD(45.0f), false);
-    ear_r = Joint(MotorController(0, 0), DEG_TO_RAD(-45.0f), DEG_TO_RAD(45.0f), false);
+    // Create the ears (default calib is for MG996R, using SG90 for ears)
+    ear_l = Joint(MotorController(1, 0, MotorController::DEFAULT_CALIBRATION_SG90), DEG_TO_RAD(0.0f), DEG_TO_RAD(180.0f), true);
+    ear_r = Joint(MotorController(0, 0, MotorController::DEFAULT_CALIBRATION_SG90), DEG_TO_RAD(0.0f), DEG_TO_RAD(180.0f), false);
 
     // Set the default posture and kinematic parameters
     local_hip_positions_mm[static_cast<size_t>(LegIndex::FRONT_LEFT)] = Vec3f( HIP_POS_X_MM,  HIP_POS_Y_MM, 0.f); // Front Left

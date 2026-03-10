@@ -1,8 +1,10 @@
 #include "network/WebInterface.hpp"
+#include <string>
 #include "common/Log.hpp"
 #include "common/LittleFS.hpp"
 #include "locomotion/MotorController.hpp"
 #include "Robot.hpp"
+
 
 WebInterface::WebInterface(uint16_t web_port)
     : port(web_port)
@@ -63,11 +65,10 @@ void WebInterface::registerURIHandlers()
     // Note: The 404 handler is less useful here because "/*" catches everything, 
     // except if the method is not GET (e.g., POST/PUT)
     httpd_register_err_handler(server, HTTPD_404_NOT_FOUND, [](httpd_req_t *req, httpd_err_code_t error) -> esp_err_t {
-       // Your Captive Portal logic or iOS redirection
-       httpd_resp_set_status(req, "302 Temporary Redirect");
-       httpd_resp_set_hdr(req, "Location", "/");
-       httpd_resp_send(req, "Redirecting...", HTTPD_RESP_USE_STRLEN);
-       return ESP_OK;
+        httpd_resp_set_status(req, "302 Temporary Redirect");
+        httpd_resp_set_hdr(req, "Location", "/");
+        httpd_resp_send(req, "Redirecting...", HTTPD_RESP_USE_STRLEN);
+        return ESP_OK;
     });
 }
 
@@ -89,29 +90,36 @@ const char* WebInterface::get_mime_type(const char* filepath) {
     return "text/plain";
 }
 
-esp_err_t WebInterface::send_file_chunked(httpd_req_t *req, const char *filepath, const char *mime_type, bool is_gzip) {
+esp_err_t WebInterface::send_file_chunked(httpd_req_t *req, const char *filepath, const char *mime_type, bool is_gzip)
+{
     FILE *fd = fopen(filepath, "r");
-    if (!fd) {
+    if (!fd)
+    {
         Log::Add(Log::Level::Error, TAG, "Failed to read file: %s", filepath);
         return HTTPD_500_INTERNAL_SERVER_ERROR;
     }
 
     httpd_resp_set_type(req, mime_type);
-    if (is_gzip) {
+    if (is_gzip)
+    {
         httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
     }
 
     char *chunk = (char*)malloc(4096); // 4KB buffer
-    if (!chunk) {
+    if (!chunk)
+    {
         fclose(fd);
         return HTTPD_500_INTERNAL_SERVER_ERROR;
     }
 
     size_t chunksize;
-    do {
+    do
+    {
         chunksize = fread(chunk, 1, 4096, fd);
-        if (chunksize > 0) {
-            if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
+        if (chunksize > 0)
+        {
+            if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK)
+            {
                 fclose(fd);
                 free(chunk);
                 return ESP_FAIL;
@@ -127,60 +135,53 @@ esp_err_t WebInterface::send_file_chunked(httpd_req_t *req, const char *filepath
     return ESP_OK;
 }
 
-esp_err_t WebInterface::main_request_handler(httpd_req_t *req) {
-    
-    // 1. Clean the URI (remove query params ?x=1...)
-    char filepath[600];
-    // req->uri starts with "/"
-    snprintf(filepath, sizeof(filepath), "%s%s", MOUNT_POINT, req->uri);
-    
-    char *query = strchr(filepath, '?');
-    if (query) *query = '\0';
+esp_err_t WebInterface::main_request_handler(httpd_req_t *req)
+{
+    std::string filepath = MOUNT_POINT;
+    filepath += req->uri;
 
-    // 2. Handle root "/"
-    if (filepath[strlen(filepath) - 1] == '/') {
-        strcat(filepath, "index.html");
+    // Cleaning the URI by removing query parameters (if any)
+    size_t query_pos = filepath.find('?');
+    if (query_pos != std::string::npos) {
+        filepath = filepath.substr(0, query_pos);
     }
 
-    Log::Add(Log::Level::Debug, TAG, "Requesting: %s", filepath);
-
-    // 3. FILE STRATEGY:
-    // A. Does a compressed .gz version exist? (TOP PRIORITY)
-    char filepath_gz[610];
-    snprintf(filepath_gz, sizeof(filepath_gz), "%s.gz", filepath);
-    
     struct stat st;
-    if (stat(filepath_gz, &st) == 0) {
-        // The .gz exists! We send it.
-        // Note: we pass the original path to guess the mime type (e.g., style.css)
-        return send_file_chunked(req, filepath_gz, get_mime_type(filepath), true);
+
+    // Checking for a gzipped version of the file first (e.g., index.html.gz for index.html)
+    std::string filepath_gz = filepath + ".gz";
+    if (stat(filepath_gz.c_str(), &st) == 0)
+    {
+        return send_file_chunked(req, filepath_gz.c_str(), get_mime_type(filepath.c_str()), true);
     }
 
-    // B. Does the file exist as is? (e.g., uncompressed images, js, css)
-    if (stat(filepath, &st) == 0) {
-        return send_file_chunked(req, filepath, get_mime_type(filepath), false);
-    }
+    // Checking if the file/folder exists (otherwise fallback to SPA)
+    if (stat(filepath.c_str(), &st) != 0)
+    {        
+        std::string index_path = std::string(MOUNT_POINT) + "/index.html.gz";
+        if (stat(index_path.c_str(), &st) == 0) {
+            return send_file_chunked(req, index_path.c_str(), "text/html", true);
+        }
 
-    // 4. SPA FALLBACK (Client-Side Routing)
-    // If the file doesn't exist, and the URL doesn't look like an asset (no extension or not in _nuxt)
-    // We return index.html.gz so Nuxt can handle the route.
-
-    // FIXME : This is not working. stat doesnt return if the file exists or not.
-    //         We should check the return value of send_file_chunked instead and fallback to index file.
-    
-    // If the URI contains "/_nuxt/" or a common extension, it's a real 404
-    if (strstr(filepath, "/_nuxt/") || strstr(filepath, "/assets/")) {
         return httpd_resp_send_404(req);
     }
 
-    // Otherwise, it's a virtual route (e.g., /calibration), we serve the index
-    Log::Add(Log::Level::Info, TAG, "SPA Fallback: Redirecting to index.html.gz");
-    char index_path[64];
-    snprintf(index_path, sizeof(index_path), "%s/index.html.gz", MOUNT_POINT);
-    
-    if (stat(index_path, &st) == 0) {
-        return send_file_chunked(req, index_path, "text/html", true);
-    }
+    // If it's a directory, try to serve index.html.gz or index.html
+    if (S_ISDIR(st.st_mode))
+    {
+        std::string index_gz_path = filepath + "/index.html.gz";
+        if (stat(index_gz_path.c_str(), &st) == 0) {
+            return send_file_chunked(req, index_gz_path.c_str(), "text/html", true);
+        }
 
-    return httpd_resp_send_404(req);
+        std::string index_path = filepath + "/index.html";
+        if (stat(index_path.c_str(), &st) == 0) {
+            return send_file_chunked(req, index_path.c_str(), "text/html", false);
+        }
+
+        return httpd_resp_send_404(req);
+    }
+    
+    // Last option : serve the file directly
+    return send_file_chunked(req, filepath.c_str(), get_mime_type(filepath.c_str()), false);
 }

@@ -43,7 +43,7 @@ void MotorController::abort_calibration()
     Log::Add(Log::Level::Info, TAG, "Resetting calibration.");
     if (nvshandle_ptr->get("calib_data", calibration_data) != Error::None)
     {
-        calibration_data = DEFAULT_CALIBRATION;
+        calibration_data = DEFAULT_CALIBRATION_MG996R; // fallback to default if no saved data
     }
 
     // disabling motor
@@ -212,12 +212,12 @@ Error MotorController::detect_feedback_latency(AnalogDriver::Value noise_level_m
 
 Error MotorController::run_calibration_sequence()
 {
-    constexpr uint16_t CALIB_SAFEGUARD_MIN_PWM = 50; // absolute minimum PWM to avoid breaking the motor
-    constexpr uint16_t CALIB_SAFEGUARD_MAX_PWM = 580; // absolute maximum PWM to avoid breaking the motor
-    constexpr AnalogDriver::Value CALIB_FEEDBACK_NOISE_ERR_THRESHOLD_MV = 48; // Maximum acceptable noise level in mV
-    constexpr AnalogDriver::Value CALIB_FEEDBACK_NOISE_MIN_MV = 4; // Minimum detectable noise level in mV
-    constexpr MotorDriver::Value CALIB_DEADBAND_ERR_THRESHOLD_PWM_MAX = 20; // Maximum acceptable deadband in PWM units
-    constexpr MotorDriver::Value CALIB_DEADBAND_MIN_PWM = 2; // Minimum deadband in PWM units
+    constexpr uint16_t CALIB_SAFEGUARD_MIN_PWM = MotorDriver::MS_TO_PWM(0.1); // absolute minimum PWM to avoid breaking the motor
+    constexpr uint16_t CALIB_SAFEGUARD_MAX_PWM = MotorDriver::MS_TO_PWM(2.9); // absolute maximum PWM to avoid breaking the motor
+    constexpr AnalogDriver::Value CALIB_FEEDBACK_NOISE_ERR_THRESHOLD_MV = 24; // Maximum acceptable noise level in mV
+    constexpr AnalogDriver::Value CALIB_FEEDBACK_NOISE_MIN_MV = 2; // Minimum detectable noise level in mV
+    constexpr MotorDriver::Value CALIB_DEADBAND_ERR_THRESHOLD_PWM_MAX = MotorDriver::MS_TO_PWM((2.f/180.f) * (2.5f-0.5f)); // Maximum acceptable deadband in PWM units (max 2°)
+    constexpr MotorDriver::Value CALIB_DEADBAND_MIN_PWM = MotorDriver::MS_TO_PWM((0.1f/180.f) * (2.5f-0.5f)); // Minimum deadband in PWM units (min 0.1°)
 
     Log::Add(Log::Level::Info, TAG, "Motor calibration sequence started");
     this->calibration_state = CalibrationState::CALIBRATING;
@@ -227,7 +227,7 @@ Error MotorController::run_calibration_sequence()
     ///=== Moving motor to center position ===///
     // NOTE : assuming duty cycle of 1.5ms at 50Hz
     Log::Add(Log::Level::Info, TAG, "Moving motor to center position ...");
-    MotorDriver::Value center_pwm = static_cast<MotorDriver::Value>( (4096 * 1.5f) / 20 );
+    MotorDriver::Value center_pwm = MotorDriver::MS_TO_PWM(1.5f);
     if (Error err = MotorDriver::SetPWM(motor_channel, center_pwm); err != Error::None)
     {
         Log::Add(Log::Level::Error, TAG, "Failed to set motor PWM, aborting calibration. Error: %d", static_cast<uint8_t>(err));

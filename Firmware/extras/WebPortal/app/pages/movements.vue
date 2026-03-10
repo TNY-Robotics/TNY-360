@@ -6,7 +6,7 @@
                 <p class="text-xl">Translation X</p>
                 <div class="flex space-x-4">
                     <USlider v-model="body.pos_x" :min="-20" :max="20" :step="1" class="w-lg" />
-                    <code class="w-12 bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.pos_x }}</code>
+                    <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.pos_x }}</code>
                     <p>cm</p>
                 </div>
             </div>
@@ -14,7 +14,7 @@
                 <p class="text-xl">Translation Y</p>
                 <div class="flex space-x-4">
                     <USlider v-model="body.pos_y" :min="-20" :max="20" :step="1" class="w-lg" />
-                    <code class="w-12 bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.pos_y }}</code>
+                    <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.pos_y }}</code>
                     <p>cm</p>
                 </div>
             </div>
@@ -22,7 +22,7 @@
                 <p class="text-xl">Translation Z</p>
                 <div class="flex space-x-4">
                     <USlider v-model="body.pos_z" :min="0" :max="20" :step="1" class="w-lg" />
-                    <code class="w-12 bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.pos_z }}</code>
+                    <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.pos_z }}</code>
                     <p>cm</p>
                 </div>
             </div>
@@ -30,7 +30,7 @@
                 <p class="text-xl">Rotation X</p>
                 <div class="flex space-x-4">
                     <USlider v-model="body.rot_x" :min="-45" :max="45" :step="1" class="w-lg" />
-                    <code class="w-12 bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.rot_x }}</code>
+                    <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.rot_x }}</code>
                     <p>deg</p>
                 </div>
             </div>
@@ -38,7 +38,7 @@
                 <p class="text-xl">Rotation Y</p>
                 <div class="flex space-x-4">
                     <USlider v-model="body.rot_y" :min="-45" :max="45" :step="1" class="w-lg" />
-                    <code class="w-12 bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.rot_y }}</code>
+                    <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.rot_y }}</code>
                     <p>deg</p>
                 </div>
             </div>
@@ -46,7 +46,7 @@
                 <p class="text-xl">Rotation Z</p>
                 <div class="flex space-x-4">
                     <USlider v-model="body.rot_z" :min="-45" :max="45" :step="1" class="w-lg" />
-                    <code class="w-12 bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.rot_z }}</code>
+                    <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.rot_z }}</code>
                     <p>deg</p>
                 </div>
             </div>
@@ -57,7 +57,7 @@
                 <p class="text-xl">Translation speed</p>
                 <div class="flex space-x-4">
                     <USlider v-model="translation_speed" :min="0.0" :max="1" :step="0.01" class="w-lg" />
-                    <code class="w-12 bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ translation_speed }}</code>
+                    <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ translation_speed }}</code>
                     <p>m/s</p>
                 </div>
             </div>
@@ -65,7 +65,7 @@
                 <p class="text-xl">Rotation speed</p>
                 <div class="flex space-x-4">
                     <USlider v-model="rotation_speed" :min="0.0" :max="180" :step="1" class="w-lg" />
-                    <code class="w-12 bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ rotation_speed }}</code>
+                    <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ rotation_speed }}</code>
                     <p>deg/s</p>
                 </div>
             </div>

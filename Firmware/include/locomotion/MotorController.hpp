@@ -22,9 +22,42 @@ public:
         CALIBRATED = 2
     };
 
+    struct CalibrationData
+    {
+        MotorDriver::Value min_pwm;
+        MotorDriver::Value max_pwm;
+        AnalogDriver::Value min_voltage;
+        AnalogDriver::Value max_voltage;
+        AnalogDriver::Value feedback_noise;
+        MotorDriver::Value pwm_deadband;
+        uint16_t feedback_latency_ms;
+    };
+
+    constexpr static CalibrationData DEFAULT_CALIBRATION_MG996R = {
+        .min_pwm = MotorDriver::MS_TO_PWM(0.5f), // 0.5us duty cycle
+        .max_pwm = MotorDriver::MS_TO_PWM(2.5f), // 2.5us duty cycle
+        .min_voltage = 200,  // in mV
+        .max_voltage = 3000, // in mV
+        .feedback_noise = 1, // in mV
+        .pwm_deadband = 1, // in PWM units
+        .feedback_latency_ms = 0 // in ms
+    };
+
+    constexpr static CalibrationData DEFAULT_CALIBRATION_SG90 = {
+        .min_pwm = MotorDriver::MS_TO_PWM(1.0f), // 1.0us duty cycle
+        .max_pwm = MotorDriver::MS_TO_PWM(2.0f), // 2.0us duty cycle
+        .min_voltage = 0,  // in mV | NOTE : NO FEEDBACK ON EARS (SG90)
+        .max_voltage = 0, // in mV | NOTE : NO FEEDBACK ON EARS (SG90)
+        .feedback_noise = 1, // in mV
+        .pwm_deadband = 1, // in PWM units
+        .feedback_latency_ms = 0 // in ms
+    };
+
     MotorController();
     
     MotorController(MotorDriver::Channel motor_channel, AnalogDriver::Channel analog_channel);
+    
+    MotorController(MotorDriver::Channel motor_channel, AnalogDriver::Channel analog_channel, CalibrationData default_calibration);
 
     /**
      * @brief Initialize the motor controller.
@@ -70,6 +103,35 @@ public:
     float getCalibrationProgress() const { return calibration_progress; }
 
     /**
+     * @brief Set the calibration state.
+     * @param state New calibration state.
+     * @return Error code indicating success or failure.
+     * @note Should only be used for manual calibration control. 
+     */
+    Error setCalibrationState(CalibrationState state);
+
+    /**
+     * @brief Get the current calibration data
+     * @return Current calibration data
+     */
+    const CalibrationData& getCalibrationData() const { return calibration_data; }
+
+    /**
+     * @brief Set the current calibration data
+     * @param data The CalibrationData object to set
+     * @param save Should the data be saved in NVS for future use
+     * @return If the save was successfull or not
+     */
+    Error setCalibrationData(CalibrationData& data, bool save = true);
+
+    /**
+     * @brief Delete the current calibration data (fallback to default)
+     * @param save Should the deletion be saved in NVS or not
+     * @return If the deletion was successfull or not
+     */
+    Error deleteCalibrationData(bool save = true);
+
+    /**
      * @brief Set the target position for the motor.
      * @param position Target position as a ratio (0.0 to 1.0).
      * @note An approximate position can be set even if the motor is uncalibrated.
@@ -99,28 +161,6 @@ public:
     State getState() const { return state; }
 
     /**
-     * @brief Declare the current position as the minimum position for calibration purposes.
-     * @return Error code indicating success or failure.
-     * @note This should be called at the appropriate time during the calibration sequence to set the minimum position reference.
-     */
-    Error declarePositionAsMinimum();
-
-    /**
-     * @brief Declare the current position as the maximum position for calibration purposes.
-     * @return Error code indicating success or failure.
-     * @note This should be called at the appropriate time during the calibration sequence to set the maximum position reference.
-     */
-    Error declarePositionAsMaximum();
-
-    /**
-     * @brief Set the calibration state.
-     * @param state New calibration state.
-     * @return Error code indicating success or failure.
-     * @note Should only be used for manual calibration control. 
-     */
-    Error setCalibrationState(CalibrationState state);
-
-    /**
      * @brief Get the current state of calibration.
      * @return Current calibration state.
      */
@@ -139,31 +179,11 @@ public:
     AnalogDriver::Channel getAnalogChannel() const { return analog_channel; }
 
 private:
-    struct CalibrationData
-    {
-        MotorDriver::Value min_pwm;
-        MotorDriver::Value max_pwm;
-        AnalogDriver::Value min_voltage;
-        AnalogDriver::Value max_voltage;
-        AnalogDriver::Value feedback_noise;
-        MotorDriver::Value pwm_deadband;
-        uint16_t feedback_latency_ms;
-    };
-
-    static constexpr CalibrationData DEFAULT_CALIBRATION = {
-        .min_pwm = static_cast<uint16_t>(4096 * 0.5f) / 20, // 0.5us duty cycle at 50Hz in 12-bit
-        .max_pwm = static_cast<uint16_t>(4096 * 2.5f) / 20, // 2.5us duty cycle at 50Hz in 12-bit
-        .min_voltage = 200,  // in mV
-        .max_voltage = 3000, // in mV
-        .feedback_noise = 1, // in mV
-        .pwm_deadband = 1, // in PWM units
-        .feedback_latency_ms = 0 // in ms
-    };
-
     MotorDriver::Channel motor_channel;
     AnalogDriver::Channel analog_channel;
     NVS::Handle* nvshandle_ptr;
     CalibrationData calibration_data;
+    CalibrationData default_calibration_data;
     float target_position;
     State state;
     CalibrationState calibration_state;

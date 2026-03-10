@@ -5,6 +5,7 @@
 #include "network/Protocol.hpp"
 #include "network/UpdateManager.hpp"
 #include "audio/AudioManager.hpp"
+#include "ui/UIManager.hpp"
 
 class Robot
 {
@@ -69,4 +70,5 @@ private:
     Timer timer;
     Protocol protocol;
     AudioManager audio_manager;
+    UIManager ui_manager;
 };

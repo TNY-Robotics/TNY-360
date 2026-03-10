@@ -47,7 +47,6 @@ function registerBone(bone: THREE.Bone) {
         console.warn('Bone name does not conform to expected format:', bone.name);
         return;
     }
-    console.log('Registering bone:', bone.name, nameParts);
     const index = parseInt(nameParts[1] as string);
     const axisPart = nameParts[2] as string;
     const invertRotation = axisPart.startsWith("-");
@@ -65,7 +64,6 @@ function registerBone(bone: THREE.Bone) {
             },
             invert: invertRotation,
         });
-        console.log('Registered bone:', bone.name, 'as motor index', index, 'on axis', axis);
     } else {
         console.warn('Failed to register bone:', bone.name);
     }
@@ -82,7 +80,6 @@ watchEffect(error => {
 });
 watchEffect(() => {
   if (!isLoading.value) {
-    console.log('Model loaded:', model);
     model.value.scene.traverse((child) => {
         if ((child as THREE.Mesh).isMesh) {
             const mesh = child as THREE.Mesh;
@@ -99,25 +96,34 @@ watchEffect(() => {
 
 const jointAngles = ref<number[]>(Array(12).fill(0));
 const bodyOrientation = ref<THREE.Quaternion>(new THREE.Quaternion());
-setInterval(() => {
-    remote.getAllJointAngles().then((angles) => {
-        jointAngles.value = angles;
-    }).catch((err) => {});
-
-    setTimeout(() => {
-        remote.getBodyOrientation().then((orientation) => {
-            if (model.value) {
-                const quat = new THREE.Quaternion(
-                    orientation.x,
-                    orientation.y,
-                    orientation.z,
-                    orientation.w
-                ).normalize();
-                bodyOrientation.value = quat;
-            }
+let pollingInterval: number | null = null;
+onMounted(() => {
+    pollingInterval = setInterval(() => {
+        remote.getAllJointAngles().then((angles) => {
+            jointAngles.value = angles;
         }).catch((err) => {});
-    }, 50);
-}, 100);
+
+        setTimeout(() => {
+            remote.getBodyOrientation().then((orientation) => {
+                if (model.value) {
+                    const quat = new THREE.Quaternion(
+                        orientation.x,
+                        orientation.y,
+                        orientation.z,
+                        orientation.w
+                    ).normalize();
+                    bodyOrientation.value = quat;
+                }
+            }).catch((err) => {});
+        }, 50);
+    }, 100);
+});
+
+onUnmounted(() => {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+    }
+});
 
 function DEG_TO_RAD(deg: number): number {
     return deg * (Math.PI / 180);
@@ -145,39 +151,6 @@ onBeforeRender(({ elapsed }) => {
         );
     }
 });
-
-// setInterval(() => {
-//     jointAngles.value[0] = 0;
-//     jointAngles.value[1] = 0;
-//     jointAngles.value[2] = 0;
-//     jointAngles.value[3] = 0;
-//     jointAngles.value[4] = 0;
-//     jointAngles.value[5] = 0;
-//     jointAngles.value[6] = 0;
-//     jointAngles.value[7] = 0;
-//     jointAngles.value[8] = 0;
-//     jointAngles.value[9] = 0;
-//     jointAngles.value[10] = 0;
-//     jointAngles.value[11] = 0;
-//     setTimeout(() => {
-//         jointAngles.value[0] = 45;
-//         jointAngles.value[3] = 45;
-//         jointAngles.value[6] = 45;
-//         jointAngles.value[9] = 45;
-//     }, 500);
-//     setTimeout(() => {
-//         jointAngles.value[1] = 45;
-//         jointAngles.value[4] = 45;
-//         jointAngles.value[7] = 45;
-//         jointAngles.value[10] = 45;
-//     }, 1000);
-//     setTimeout(() => {
-//         jointAngles.value[2] = 45;
-//         jointAngles.value[5] = 45;
-//         jointAngles.value[8] = 45;
-//         jointAngles.value[11] = 45;
-//     }, 1500);
-// }, 3000);
 </script>
 
 <style></style>

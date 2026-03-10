@@ -65,14 +65,6 @@ constexpr gpio_num_t I2C_SECONDARY_SDA_GPIO_NUM = GPIO_NUM_38;
 constexpr gpio_num_t I2C_SECONDARY_SCL_GPIO_NUM = GPIO_NUM_45;
 
 
-/** Buttons **/
-constexpr gpio_num_t BTN_LEFT_PIN = GPIO_NUM_10;
-constexpr gpio_num_t BTN_RIGHT_PIN = GPIO_NUM_11;
-constexpr uint16_t BTN_LONG_PRESS_MS = 500; // ms
-// Buttons polling interval in milliseconds
-constexpr uint16_t BTN_POLL_INT_MS = 50; // ms
-
-
 /** Timer management **/
 // Main timer frequency in Hz
 constexpr int ANALOG_LOOP_FREQ_HZ = 800;
@@ -114,12 +106,22 @@ constexpr uint8_t MOTOR_DRIVER_I2C_ADDR = 0x40;
 // I2C clock speed for motor driver communication
 constexpr uint32_t MOTOR_DRIVER_I2C_CLOCK = 100000; // 100kHz, could be up to 400kHz but i'm not 100% confident in the wiring
 // PWM frequency for the motor driver (standard servo frequency)
-constexpr uint16_t MOTOR_DRIVER_PWM_FREQUENCY_HZ = 50; // 50Hz
-// NOTE : Internal robot motor update is driven by the main timer at 50Hz
+constexpr uint16_t MOTOR_DRIVER_PWM_FREQUENCY_HZ = 200; // In Hz.
+// NOTE : Internal robot motor update is driven by the main timer at CONTROL_LOOP_FREQ_HZ
 
 
 /** Joint **/
 constexpr uint8_t JOINT_COUNT = 16; // 12 legs joints + 2 ears, but PCA9685 has 16 channels
+
+/** Screen **/
+constexpr int SCREEN_REFRESH_RATE = 30;
+
+/** Buttons **/
+constexpr gpio_num_t BTN_LEFT_PIN = GPIO_NUM_10;
+constexpr gpio_num_t BTN_RIGHT_PIN = GPIO_NUM_11;
+constexpr uint16_t BTN_LONG_PRESS_MS = 500; // ms
+// Buttons polling interval in milliseconds
+constexpr uint16_t BTN_POLL_INT_MS = 50; // ms
 
 /** Menu **/
 // List item shift by default
