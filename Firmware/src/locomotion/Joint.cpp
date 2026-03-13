@@ -33,9 +33,9 @@ Error Joint::ClampVelocity(float max_velocity_rad_s)
 
 Joint::Joint() {}
 
-Joint::Joint(MotorController motor_controller, float min_angle_rad, float max_angle_rad, bool inverted)
+Joint::Joint(MotorController motor_controller, float min_angle_rad, float max_angle_rad, bool inverted, bool has_feedback)
     : motor_controller(motor_controller), min_angle_rad(min_angle_rad), max_angle_rad(max_angle_rad),
-      inverted(inverted), velocity_rad_s(MAX_VELOCITY_RAD_S)
+      inverted(inverted), velocity_rad_s(MAX_VELOCITY_RAD_S), has_feedback(has_feedback)
 {
 }
 
@@ -54,23 +54,37 @@ Error Joint::init()
         return err;
     }
 
-    // Initialize model angle with current feedback
-    if (Error err = get_motorcontroller_position(model_angle_rad); err != Error::None)
+    if (has_feedback)
     {
-        return err;
+        // Initialize model angle with current feedback
+        if (Error err = get_motorcontroller_position(model_angle_rad); err != Error::None)
+        {
+            return err;
+        }
+        // Clamp the model angle within limits (just in case)
+        if(model_angle_rad > max_angle_rad) model_angle_rad = max_angle_rad;
+        if(model_angle_rad < min_angle_rad) model_angle_rad = min_angle_rad;
+
+        // Initialize feedback and estimate angles
+        feedback_angle_rad = model_angle_rad;
+        estimate_angle_rad = model_angle_rad;
+
+        // Set the target angle to the current position
+        if (Error err = setTarget(model_angle_rad); err != Error::None)
+        {
+            return err;
+        }
+
+        // Initialize Kalman filter
+        constexpr float SENSOR_NOISE_VARIANCE = 1.f;
+        constexpr float PROCESS_NOISE_VARIANCE = 0.1f;
+        kalman_filter.Init(SENSOR_NOISE_VARIANCE, PROCESS_NOISE_VARIANCE, model_angle_rad);
     }
-    // Clamp the model angle within limits (just in case)
-    if(model_angle_rad > max_angle_rad) model_angle_rad = max_angle_rad;
-    if(model_angle_rad < min_angle_rad) model_angle_rad = min_angle_rad;
-
-    // Initialize feedback and estimate angles
-    feedback_angle_rad = model_angle_rad;
-    estimate_angle_rad = model_angle_rad;
-
-    // Set the target angle to the current position
-    if (Error err = setTarget(model_angle_rad); err != Error::None)
+    else // no feedback, set to half the servo course
     {
-        return err;
+        model_angle_rad = (min_angle_rad + max_angle_rad) / 2;
+        feedback_angle_rad = model_angle_rad;
+        estimate_angle_rad = model_angle_rad;
     }
 
     // Disable the motor initially
@@ -78,11 +92,6 @@ Error Joint::init()
     {
         return err;
     }
-
-    // Initialize Kalman filter
-    constexpr float SENSOR_NOISE_VARIANCE = 1.f;
-    constexpr float PROCESS_NOISE_VARIANCE = 0.1f;
-    kalman_filter.Init(SENSOR_NOISE_VARIANCE, PROCESS_NOISE_VARIANCE, model_angle_rad);
 
     return Error::None;
 }
@@ -115,15 +124,23 @@ Error Joint::update()
         }
     }
 
-    // Get the raw feedback from the motor controller
-    if (Error err = get_motorcontroller_position(feedback_angle_rad); err != Error::None)
+    if (has_feedback)
     {
-        return err;
-    }
+        // Get the raw feedback from the motor controller
+        if (Error err = get_motorcontroller_position(feedback_angle_rad); err != Error::None)
+        {
+            return err;
+        }
 
-    // Update the Kalman filter
-    kalman_filter.Predict(model_angle_rad - last_model_angle_rad);
-    estimate_angle_rad = kalman_filter.Update(feedback_angle_rad);
+        // Update the Kalman filter
+        kalman_filter.Predict(model_angle_rad - last_model_angle_rad);
+        estimate_angle_rad = kalman_filter.Update(feedback_angle_rad);
+    }
+    else // no feedback, use model as feedback and estimation
+    {
+        feedback_angle_rad = model_angle_rad;
+        estimate_angle_rad = model_angle_rad;
+    }
 
     // Move the motor at the desired position
     // NOTE : We could maybe improve this by moving the motor a bit ahead (to catch up with the control loop delay)
@@ -137,26 +154,30 @@ Error Joint::update()
 
 Error Joint::enable()
 {
-    // because the motor was probably disabled before,
-    // model_angle may have drifted from the actual position.
-    // Thus, to avoid sudden jumps, we reset the model and estimate to the current position.
-    if (Error err = get_motorcontroller_position(feedback_angle_rad); err != Error::None)
+    if (has_feedback)
     {
-        return err;
-    }
-    model_angle_rad = feedback_angle_rad;
-    estimate_angle_rad = feedback_angle_rad;
-    target_angle_rad = feedback_angle_rad;
-    kalman_filter.ResetState(feedback_angle_rad);
+        // because the motor was probably disabled before,
+        // model_angle may have drifted from the actual position.
+        // Thus, to avoid sudden jumps, we reset the model and estimate to the current position.
+        if (Error err = get_motorcontroller_position(feedback_angle_rad); err != Error::None)
+        {
+            return err;
+        }
+        model_angle_rad = feedback_angle_rad;
+        estimate_angle_rad = feedback_angle_rad;
+        target_angle_rad = feedback_angle_rad;
+        kalman_filter.ResetState(feedback_angle_rad);
 
-    // Also force the controller to go to the current position
-    if (Error err = send_motorcontroller_position(model_angle_rad); err != Error::None)
+        // Now that the model is synced, enable the motor
+        return motor_controller.enable();
+    }
+    else
     {
-        return err;
+        // No feedback.
+        // We don't try to lerp the motor position from it's current position to the target.
+        // We will enable the motor on the next setTarget() call, setting the model_angle_rad in the meantime
+        return Error::None;
     }
-
-    // Now that the model is synced, enable the motor
-    return motor_controller.enable();
 }
 
 Error Joint::disable()
@@ -198,6 +219,14 @@ Error Joint::setTarget(float angle_rad)
 
     setVelocity(MAX_VELOCITY_RAD_S); // reset to max velocity for normal setTarget calls
 
+    if (!has_feedback && motor_controller.getState() == MotorController::State::DISABLED) // If no feedback, enable the motor now (see enable() notes for more info).
+    {
+        model_angle_rad = angle_rad;
+        feedback_angle_rad = model_angle_rad;
+        estimate_angle_rad = model_angle_rad;
+        motor_controller.enable();
+    }
+
     target_angle_rad = angle_rad;
     return Error::None;
 }
@@ -232,7 +261,7 @@ Error Joint::setTarget_Timed(float angle_rad, float time_s)
 
 Error Joint::getPosition(float &result) const
 {
-    result = feedback_angle_rad; // FIXME : should be estimated angle, but Kalman estimation is currently broken
+    result = estimate_angle_rad;
     return Error::None;
 }
 
@@ -274,6 +303,9 @@ Error Joint::send_motorcontroller_position(const float& position)
 
 Error Joint::get_motorcontroller_position(float &result) const
 {
+    // if no feedback, just use the internal model
+    if (!has_feedback) result = model_angle_rad;
+
     float position_ratio;
     Error err = motor_controller.getCurrentPosition(position_ratio);
     if (err != Error::None)

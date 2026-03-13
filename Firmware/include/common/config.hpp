@@ -5,11 +5,18 @@
 /** COMPILATION FLAGS **/
 #define DEBUG_MODE 1  // 1 to enable debug logs and behaviors, 0 to disable
 
+/** MULTICORE SETUP */
+constexpr int CORE_BRAIN = 0;
+constexpr int CORE_REFLEX = 1;
+// number of milliseconds before triggering security stop (in case brain core crashes to clear control intent)
+constexpr uint32_t CONTROL_INTENT_WATCHDOG_MS = 500;
+
 /** OTA SETUP **/
 constexpr const char* OTA_FIRMWARE_LATEST_URL = "https://api.tny-robotics.com/firmware/latest";
 constexpr int OTA_UPDATE_TIMEOUT_MS = 5000;
 constexpr int OTA_UPDATE_FILESYSTEM_BUFFER_SIZE = 4096; // in bytes
 constexpr const char* OTA_ROBOT_MODEL = "tny-360";
+
 
 /** PHYSICAL INFORMATIONS **/
 constexpr int LEG_THIGH_LENGTH_MM = 100; // in mm
@@ -34,6 +41,9 @@ constexpr uint8_t LOG_MAX_MSG_LEN = 128;
 // Maximum path length for file operations
 constexpr uint8_t MAX_PATH_LEN = 128;
 
+/** RPC **/
+constexpr int RPC_QUEUE_SIZE = 32; // number of pending RPC jobs (between core 0 and core 1)
+
 
 /** Wi-Fi **/
 // Maximum number of connection retries before giving up
@@ -53,7 +63,9 @@ constexpr uint16_t WEBSOCKET_MAX_MSG_SIZE = 256; // in bytes
 
 /** Protocol **/
 // Maximum number of pending protocol commands
-constexpr uint8_t PROTOCOL_MAX_PENDING_COMMANDS = 16;
+constexpr uint8_t PROTOCOL_MAX_PENDING_COMMANDS = 32;
+// Maximum number of commands in the protocol
+constexpr uint8_t PROTOCOL_MAX_COMMANDS_HANDLERS = 255;
 
 
 /** I2C **/
@@ -65,17 +77,24 @@ constexpr gpio_num_t I2C_SECONDARY_SDA_GPIO_NUM = GPIO_NUM_38;
 constexpr gpio_num_t I2C_SECONDARY_SCL_GPIO_NUM = GPIO_NUM_45;
 
 
-/** Timer management **/
-// Main timer frequency in Hz
-constexpr int ANALOG_LOOP_FREQ_HZ = 800;
-// NOTE : 800Hz is chosen because we need to sample 16 channels at 50Hz (for motors + sensors),
-//        so we need at least 16*50 = 800 updates per second.
-constexpr int CONTROL_LOOP_FREQ_HZ = 50; // 50Hz for slower updates (imu, motors, etc)
-// calculated values below, do not edit manually
-constexpr int TIMER_DIVIDER_SECONDARY = ANALOG_LOOP_FREQ_HZ / CONTROL_LOOP_FREQ_HZ;
-constexpr float CONTROL_LOOP_DT_S = 1.0f / CONTROL_LOOP_FREQ_HZ;
-constexpr uint32_t CONTROL_LOOP_DT_MS = static_cast<uint32_t>(CONTROL_LOOP_DT_S * 1000);
+/** Analog Readings **/
+// EMA filter alpha value (1.0 = no filtering, 0.1 = big inertia)
+constexpr float ANALOG_EMA_ALPHA = 0.5f;
 
+/** Timer management **/
+// Control loop frequency
+constexpr int CONTROL_LOOP_FREQ_HZ = 200; // Hz
+// Resolution of the control loop timer
+constexpr int TIMER_RESOLUTION = 1'000'000; // 1Mhz, 1 us
+// [][] calculated values below, do not edit manually
+constexpr int TIMER_ALARM_COUNT = TIMER_RESOLUTION / CONTROL_LOOP_FREQ_HZ;
+constexpr float CONTROL_LOOP_DT_S = 1.0f / CONTROL_LOOP_FREQ_HZ;
+constexpr int CONTROL_LOOP_DT_MS = static_cast<int>(CONTROL_LOOP_DT_S * 1000);
+
+// Decision loop frequency
+constexpr int DECISION_LOOP_FREQ_HZ = 50; // Hz
+constexpr float DECISION_LOOP_DT_S = 1.0f / DECISION_LOOP_FREQ_HZ;
+constexpr int DECISION_LOOP_DT_MS = static_cast<int>(DECISION_LOOP_DT_S * 1000);
 
 /** Analog scanner **/
 // GPIO pins for the 4-bit multiplexer select lines
@@ -104,7 +123,7 @@ constexpr uint16_t IMU_NB_CALIB_SAMPLES = 100;
 // I2C address for the motor driver (PCA9685)
 constexpr uint8_t MOTOR_DRIVER_I2C_ADDR = 0x40;
 // I2C clock speed for motor driver communication
-constexpr uint32_t MOTOR_DRIVER_I2C_CLOCK = 100000; // 100kHz, could be up to 400kHz but i'm not 100% confident in the wiring
+constexpr uint32_t MOTOR_DRIVER_I2C_CLOCK = 400'000; // Hz
 // PWM frequency for the motor driver (standard servo frequency)
 constexpr uint16_t MOTOR_DRIVER_PWM_FREQUENCY_HZ = 200; // In Hz.
 // NOTE : Internal robot motor update is driven by the main timer at CONTROL_LOOP_FREQ_HZ

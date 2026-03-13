@@ -19,6 +19,7 @@ namespace IMUDriver
         }
 
         mpu6050_info_t mpu_info = MPU6050_DEFAULT_INFO();
+        mpu_info.clock_speed = 400'000; // Fast-mode
 
         if (esp_err_t err = mpu6050_create(I2C::handle_primary, mpu_info, &mpu_handle); err != ESP_OK)
         {

@@ -1,6 +1,8 @@
 #include "locomotion/Body.hpp"
 #include "common/config.hpp"
 #include "common/Log.hpp"
+#include "common/RPC.hpp"
+#include "locomotion/IPC.hpp"
 
 Body::Body()
 {
@@ -31,8 +33,8 @@ Body::Body()
     );
 
     // Create the ears (default calib is for MG996R, using SG90 for ears)
-    ear_l = Joint(MotorController(1, 0, MotorController::DEFAULT_CALIBRATION_SG90), DEG_TO_RAD(0.0f), DEG_TO_RAD(180.0f), true);
-    ear_r = Joint(MotorController(0, 0, MotorController::DEFAULT_CALIBRATION_SG90), DEG_TO_RAD(0.0f), DEG_TO_RAD(180.0f), false);
+    ear_l = Joint(MotorController(1, 0, MotorController::DEFAULT_CALIBRATION_SG90), DEG_TO_RAD(0.0f), DEG_TO_RAD(180.0f), true, false);
+    ear_r = Joint(MotorController(0, 0, MotorController::DEFAULT_CALIBRATION_SG90), DEG_TO_RAD(0.0f), DEG_TO_RAD(180.0f), false, false);
 
     // Set the default posture and kinematic parameters
     local_hip_positions_mm[static_cast<size_t>(LegIndex::FRONT_LEFT)] = Vec3f( HIP_POS_X_MM,  HIP_POS_Y_MM, 0.f); // Front Left
@@ -51,7 +53,7 @@ Error Body::init()
 {
     Error err;
 
-    // init legs
+    // Initialize the legs
     for (size_t i = 0; i < static_cast<size_t>(LegIndex::COUNT); i++)
     {
         if ((err = legs[i].init()) != Error::None)
@@ -60,7 +62,7 @@ Error Body::init()
         }
     }
     
-    // init ears
+    // Initialize the ears
     if ((err = ear_l.init()) != Error::None)
     {
         return err;
@@ -70,8 +72,26 @@ Error Body::init()
         return err;
     }
 
-    // init IMU controller
-    if ((err = imu_controller.init()) != Error::None)
+    // Initialize the IMU
+    if ((err = imu.init()) != Error::None)
+    {
+        return err;
+    }
+
+    // Initialize the IPC layer (for inter-core infos)
+    if (Error err = IPC::Init(); err != Error::None)
+    {
+        return err;
+    }
+
+    // Initialize the RPC layer (for inter-core calls)
+    if (Error err = RPC::Init(); err != Error::None)
+    {
+        return err;
+    }
+
+    // Initialize the control loop
+    if (Error err = control_loop.init(); err != Error::None)
     {
         return err;
     }
@@ -81,29 +101,45 @@ Error Body::init()
 
 Error Body::deinit()
 {
-    Error err;
+    // Deinitialize the control loop
+    if (Error err = control_loop.init(); err != Error::None)
+    {
+        return err;
+    }
 
-    // deinit legs
+    // Deinitialize the RPC layer
+    if (Error err = RPC::DeInit(); err != Error::None)
+    {
+        return err;
+    }
+
+    // Deinitialize the IPC layer (for inter-core infos)
+    if (Error err = IPC::Deinit(); err != Error::None)
+    {
+        return err;
+    }
+
+    // Deinitialize the legs
     for (size_t i = 0; i < static_cast<size_t>(LegIndex::COUNT); i++)
     {
-        if ((err = legs[i].deinit()) != Error::None)
+        if (Error err = legs[i].deinit(); err != Error::None)
         {
             return err;
         }
     }
     
-    // deinit ears
-    if ((err = ear_l.deinit()) != Error::None)
+    // Deinitialize the ears
+    if (Error err = ear_l.deinit(); err != Error::None)
     {
         return err;
     }
-    if ((err = ear_r.deinit()) != Error::None)
+    if (Error err = ear_r.deinit(); err != Error::None)
     {
         return err;
     }
 
-    // deinit IMU controller
-    if ((err = imu_controller.deinit()) != Error::None)
+    // Deinitialize the IMU
+    if (Error err = imu.deinit(); err != Error::None)
     {
         return err;
     }
@@ -116,7 +152,7 @@ Error Body::update()
     Error err;
 
     // Update the IMU controller
-    if ((err = imu_controller.update()) != Error::None)
+    if ((err = imu.update()) != Error::None)
     {
         return err;
     }
@@ -189,137 +225,6 @@ Error Body::disable()
     {
         return err;
     }
-    return Error::None;
-}
-
-Error Body::startCalibration()
-{
-    xTaskCreate([](void* param) {
-        Body* body = static_cast<Body*>(param);
-        Error err;
-
-        // Disable all joints before calibration
-        Log::Add(Log::Level::Info, Body::TAG, "Disabling all joints before calibration...");
-        for (size_t i = 0; i < static_cast<size_t>(LegIndex::COUNT); i++)
-        {
-            Joint* joints[] = {
-                &body->legs[i].getHipRoll(),
-                &body->legs[i].getHipPitch(),
-                &body->legs[i].getKneePitch()
-            };
-            int nb_joints = sizeof(joints) / sizeof(joints[0]);
-
-            for (int j = 0; j < nb_joints; j++)
-            {
-                Joint* joint = joints[j];
-                if ((err = joint->disable()) != Error::None)
-                {
-                    Log::Add(Log::Level::Error, Body::TAG, "Failed to disable a joint before calibration. Error: %d", static_cast<uint8_t>(err));
-                    vTaskDelete(nullptr);
-                    return;
-                }
-            }
-        }
-        
-        Log::Add(Log::Level::Info, Body::TAG, "Starting body calibration sequence...");
-        Log::GroupStart();
-        for (size_t i = 0; i < static_cast<size_t>(LegIndex::COUNT); i++)
-        {
-            Leg* leg = &body->legs[i];
-            Log::Add(Log::Level::Info, Body::TAG, "Calibrating leg %d/%d ...", i + 1, LegIndex::COUNT);
-            // calibrate hip roll
-            if ((err = leg->getHipRoll().getMotorController().startCalibration()) != Error::None)
-            {
-                Log::Add(Log::Level::Error, Body::TAG, "Failed to start calibration for hip roll of leg %d. Error: %d", i, static_cast<uint8_t>(err));
-                vTaskDelete(nullptr);
-                return;
-            }
-            vTaskDelay(pdMS_TO_TICKS(1000)); // give some time to start
-            // wait for it to finish
-            while (leg->getHipRoll().getMotorController().getCalibrationState() == MotorController::CalibrationState::CALIBRATING)
-            {
-                vTaskDelay(pdMS_TO_TICKS(500));
-            }
-            if (leg->getHipRoll().getMotorController().getCalibrationState() != MotorController::CalibrationState::CALIBRATED)
-            {
-                Log::Add(Log::Level::Error, Body::TAG, "Hip roll of leg %d failed to calibrate.", i);
-                vTaskDelete(nullptr);
-                return;
-            }
-
-            // set to target 30deg position (to avoid leg collision during next calibrations)
-            leg->getHipRoll().enable();
-            leg->getHipRoll().setTarget(DEG_TO_RAD(30.f));
-            vTaskDelay(pdMS_TO_TICKS(1000)); // wait to reach position
-            // disable again for safety
-            leg->getHipRoll().disable();
-
-            // calibrate hip pitch
-            if ((err = leg->getHipPitch().getMotorController().startCalibration()) != Error::None)
-            {
-                Log::Add(Log::Level::Error, Body::TAG, "Failed to start calibration for hip pitch of leg %d. Error: %d", i, static_cast<uint8_t>(err));
-                vTaskDelete(nullptr);
-                return;
-            }
-            vTaskDelay(pdMS_TO_TICKS(1000)); // give some time to start
-            // wait for it to finish
-            while (leg->getHipPitch().getMotorController().getCalibrationState() == MotorController::CalibrationState::CALIBRATING)
-            {
-                vTaskDelay(pdMS_TO_TICKS(500));
-            }
-            if (leg->getHipPitch().getMotorController().getCalibrationState() != MotorController::CalibrationState::CALIBRATED)
-            {
-                Log::Add(Log::Level::Error, Body::TAG, "Hip pitch of leg %d failed to calibrate.", i);
-                vTaskDelete(nullptr);
-                return;
-            }
-
-            // set to target 30deg (or -120deg) position (to avoid leg collision during next calibrations)
-            leg->getHipPitch().enable();
-            leg->getHipPitch().setTarget(DEG_TO_RAD(i >= 2 ? -120.f : 30.f)); // back legs go negative, front legs positive
-            vTaskDelay(pdMS_TO_TICKS(1000)); // wait to reach position
-            // disable again for safety
-            leg->getHipPitch().disable();
-
-            // calibrate knee pitch
-            if ((err = leg->getKneePitch().getMotorController().startCalibration()) != Error::None)
-            {
-                Log::Add(Log::Level::Error, Body::TAG, "Failed to start calibration for knee pitch of leg %d. Error: %d", i, static_cast<uint8_t>(err));
-                vTaskDelete(nullptr);
-                return;
-            }
-            vTaskDelay(pdMS_TO_TICKS(1000)); // give some time to start
-            // wait for it to finish
-            while (leg->getKneePitch().getMotorController().getCalibrationState() == MotorController::CalibrationState::CALIBRATING)
-            {
-                vTaskDelay(pdMS_TO_TICKS(500));
-            }
-            if (leg->getKneePitch().getMotorController().getCalibrationState() != MotorController::CalibrationState::CALIBRATED)
-            {
-                Log::Add(Log::Level::Error, Body::TAG, "Knee pitch of leg %d failed to calibrate.", i);
-                vTaskDelete(nullptr);
-                return;
-            }
-
-            // retract the whole leg to let space for other legs to calibrate
-            leg->getKneePitch().enable();
-            leg->getHipPitch().enable();
-            leg->getHipRoll().enable();
-            leg->getKneePitch().setTarget(DEG_TO_RAD(135.f));
-            leg->getHipPitch().setTarget(DEG_TO_RAD(40.f));
-            leg->getHipRoll().setTarget(DEG_TO_RAD(0.f));
-            vTaskDelay(pdMS_TO_TICKS(1000)); // wait to reach position
-            // disable again for safety
-            leg->getKneePitch().disable();
-            leg->getHipPitch().disable();
-            leg->getHipRoll().disable();
-        }
-        Log::GroupEnd();
-        Log::Add(Log::Level::Info, Body::TAG, "Body calibration completed.");
-
-        vTaskDelete(nullptr);
-    }, "BodyCalib", 8192, this, tskIDLE_PRIORITY + 1, nullptr);
-
     return Error::None;
 }
 

@@ -26,7 +26,7 @@ public:
 
     Joint();
 
-    Joint(MotorController motor_controller, float min_angle_rad = 0.f, float max_angle_rad = TWO_PI, bool inverted = false);
+    Joint(MotorController motor_controller, float min_angle_rad = 0.f, float max_angle_rad = TWO_PI, bool inverted = false, bool has_feedback = true);
 
     /**
      * @brief Initialize the joint.
@@ -50,6 +50,7 @@ public:
     /**
      * @brief Enable the joint (motor).
      * @return Error code indicating success or failure.
+     * @note Useless if no feedback. Motor will be enabled when calling setTarget()
      */
     Error enable();
 
@@ -84,6 +85,7 @@ public:
      * @brief Set the target angle for the joint.
      * @param angle_rad Target angle in radians.
      * @return Error code indicating success or failure.
+     * @note If no feedback, calling this method will enable the motor.
      */
     Error setTarget(float angle_rad);
 
@@ -160,6 +162,7 @@ private:
     float estimate_angle_rad;
     float model_angle_rad;
     float velocity_rad_s;
+    bool has_feedback;
 
     Error send_motorcontroller_position(const float& position);
     Error get_motorcontroller_position(float &result) const;

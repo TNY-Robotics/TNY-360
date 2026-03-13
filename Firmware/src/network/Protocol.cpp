@@ -1,9 +1,16 @@
 #include "network/Protocol.hpp"
-#include "network/ProtocolCommands.hpp"
 #include "common/Log.hpp"
+
+// All registered handers
+#include "network/commands/systems.hpp"
+#include "network/commands/getters.hpp"
+#include "network/commands/setters.hpp"
+#include "network/commands/raws.hpp"
 
 Protocol::Protocol()
 {
+    // clear the handlers list to detect missing handlers (pointer is NULL)
+    memset(this->handlers, 0, sizeof(this->handlers));
 }
 
 Error Protocol::init()
@@ -12,6 +19,28 @@ Error Protocol::init()
     for (uint8_t i = 0; i < PROTOCOL_MAX_PENDING_COMMANDS; ++i) {
         pending_commands[i].id = 0;
         pending_commands[i].callback = nullptr;
+    }
+
+    // Attach all registered handlers to the handlers list
+    for (int i = 0; i < sizeof(systems)/sizeof(CommandHandler); i++)
+    {
+        Log::Add(Log::Level::Info, TAG, "Registering [systems] command %x", systems[i].cmd);
+        this->handlers[systems[i].cmd] = &systems[i];
+    }
+    for (int i = 0; i < sizeof(getters)/sizeof(CommandHandler); i++)
+    {
+        Log::Add(Log::Level::Info, TAG, "Registering [getters] command %x", getters[i].cmd);
+        this->handlers[getters[i].cmd] = &getters[i];
+    }
+    for (int i = 0; i < sizeof(setters)/sizeof(CommandHandler); i++)
+    {
+        Log::Add(Log::Level::Info, TAG, "Registering [setters] command %x", setters[i].cmd);
+        this->handlers[setters[i].cmd] = &setters[i];
+    }
+    for (int i = 0; i < sizeof(raws)/sizeof(CommandHandler); i++)
+    {
+        Log::Add(Log::Level::Info, TAG, "Registering [raws] command %x", raws[i].cmd);
+        this->handlers[raws[i].cmd]    = &raws[i];
     }
 
     return Error::None;
@@ -47,16 +76,7 @@ Error Protocol::handleRequest(const Request& req, HandleResponseCallback callbac
     }
 
     // Find the appropriate handler for the command
-    // TODO : Instead of iterating through all handlers, use an array indexed by command ID (only 255 possible commands)
-    CommandHandler* handler = nullptr;
-    for (auto& h : handlers)
-    {
-        if (h.cmd == req.cmd)
-        {
-            handler = &h;
-            break;
-        }
-    }
+    CommandHandler* handler = this->handlers[req.cmd];
     if (handler == nullptr) // No handler found for this command
     {
         Log::Add(Log::Level::Error, TAG, "No handler found for command 0x%02X", req.cmd);
@@ -72,7 +92,7 @@ Error Protocol::handleRequest(const Request& req, HandleResponseCallback callbac
 
     // Call the handler's callback and return success
     handler->callback(req, [](const Response& res) {
-        Robot::GetInstance().getProtocol().resolveCommand(res);
+        Robot::GetInstance().getNetworkManager().getProtocol().resolveCommand(res);
     });
     return Error::None;
 }

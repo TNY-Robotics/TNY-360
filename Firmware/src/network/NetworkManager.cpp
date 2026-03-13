@@ -1,4 +1,5 @@
 #include "network/NetworkManager.hpp"
+#include "network/Protocol.hpp"
 
 NetworkManager::NetworkManager()
 {
@@ -6,20 +7,32 @@ NetworkManager::NetworkManager()
 
 Error NetworkManager::init()
 {
-    // Initialize WiFiManager
+    // Initialize the WiFi manager
     if (Error err = wifi_manager.init(); err != Error::None)
     {
         return err;
     }
 
-    // Initialize WebInterface
+    // Initialize the web interface
     if (Error err = web_interface.init(); err != Error::None)
     {
         return err;
     }
 
-    // Initialize WebSocket
+    // Initialize the websocket server
     if (Error err = web_socket.init(); err != Error::None)
+    {
+        return err;
+    }
+
+    // Initialize the update manager
+    if (Error err = update_manager.init(); err != Error::None)
+    {
+        return err;
+    }
+
+    // Initialize the protocol layer
+    if (Error err = protocol.init(); err != Error::None)
     {
         return err;
     }
@@ -29,20 +42,32 @@ Error NetworkManager::init()
 
 Error NetworkManager::deinit()
 {
-    // Deinitialize WiFiManager
-    if (Error err = wifi_manager.deinit(); err != Error::None)
+    // Deinitialize the protocol layer
+    if (Error err = protocol.deinit(); err != Error::None)
+    {
+        return err;
+    }
+
+    // Denitialize the update manager
+    if (Error err = update_manager.deinit(); err != Error::None)
+    {
+        return err;
+    }
+
+    // Deinitialize the websocket server
+    if (Error err = web_socket.deinit(); err != Error::None)
     {
         return err;
     }
     
-    // Deinitialize WebInterface
+    // Deinitialize the web interface
     if (Error err = web_interface.deinit(); err != Error::None)
     {
         return err;
     }
 
-    // Deinitialize WebSocket
-    if (Error err = web_socket.deinit(); err != Error::None)
+    // Deinitialize the WiFi manager
+    if (Error err = wifi_manager.deinit(); err != Error::None)
     {
         return err;
     }

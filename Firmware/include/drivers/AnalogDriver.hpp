@@ -42,11 +42,6 @@ namespace AnalogDriver
     * @return Error code indicating success or failure.
     */
     Error GetVoltages(const Channel* ids, Value* outVoltages_mV, uint8_t count);
-    
-    /**
-     * @brief Internal update mhod for analog scanning.
-     * @note YOU SHOULD NOT CALL THIS FUNCTION DIRECTLY.
-     * @return void.
-     */
-    void __ISRStepRead();
+
+    Error ReadAllChannels();
 }

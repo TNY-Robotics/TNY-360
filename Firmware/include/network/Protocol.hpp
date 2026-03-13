@@ -28,6 +28,16 @@ public:
     } __attribute__((packed)) Response;
 
     using HandleResponseCallback = void(*)(const Response& res);
+    
+    using CallbackResolver = void(*)(const Response& res);
+    using HandlerCallback = void(*)(const Request& req, CallbackResolver resolve);
+
+    typedef struct CommandHandler
+    {
+        uint8_t cmd;
+        uint8_t len;
+        HandlerCallback callback;
+    } CommandHandler;
 
     Protocol();
 
@@ -66,4 +76,6 @@ private:
     } PendingCommand;
 
     PendingCommand pending_commands[PROTOCOL_MAX_PENDING_COMMANDS];
+
+    CommandHandler* handlers[PROTOCOL_MAX_COMMANDS_HANDLERS];
 };

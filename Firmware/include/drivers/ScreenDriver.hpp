@@ -5,9 +5,9 @@
 
 extern char (*screen_font)[8];
 
-namespace Screen
+namespace ScreenDriver
 {
-    constexpr const char* TAG = "Screen";
+    constexpr const char* TAG = "ScreenDriver";
 
     /**
      * Color type

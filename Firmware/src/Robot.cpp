@@ -10,39 +10,50 @@ Robot::Robot()
 
 Error Robot::init()
 {
-    Error err;
-
-    if ((err = update_manager.init()) != Error::None)
+    if (Error err = body.init(); err != Error::None)
     {
         return err;
     }
 
-    if ((err = body.init()) != Error::None)
+    if (Error err = network_manager.init(); err != Error::None)
     {
         return err;
     }
 
-    if ((err = network_manager.init()) != Error::None)
+    if (Error err = ui_manager.init(); err != Error::None)
     {
         return err;
     }
 
-    if ((err = timer.init()) != Error::None)
+    if (Error err = audio_manager.init(); err != Error::None)
     {
         return err;
     }
 
-    if ((err = ui_manager.init()) != Error::None)
+    // Initialize the decision loop
+    if (Error err = decision_loop.init(); err != Error::None)
     {
         return err;
     }
 
-    if ((err = audio_manager.init()) != Error::None)
+    return Error::None;
+}
+
+Error Robot::start()
+{
+    // Start the decision loop
+    if (Error err = decision_loop.start(); err != Error::None)
     {
         return err;
     }
 
-    // THIS DELAY IS IMPORTANT!
+    // Start the control loop
+    if (Error err = body.getControlLoop().start(); err != Error::None)
+    {
+        return err;
+    }
+
+    // NOTE : THIS DELAY IS IMPORTANT!
     // allow some time for systems to stabilize before enabling motors and everything
     // (to get motor feedback data and all that stuff)
     vTaskDelay(pdMS_TO_TICKS(500));
@@ -50,31 +61,47 @@ Error Robot::init()
     return Error::None;
 }
 
+Error Robot::stop()
+{
+    // Stop the control loop
+    if (Error err = body.getControlLoop().stop(); err != Error::None)
+    {
+        return err;
+    }
+
+    // Stop the decision loop
+    if (Error err = decision_loop.stop(); err != Error::None)
+    {
+        return err;
+    }
+
+    return Error::None;
+}
+
 Error Robot::deinit()
 {
-    Error err;
-
-    if ((err = body.deinit()) != Error::None)
+    // Deinitialize the decision loop
+    if (Error err = decision_loop.deinit(); err != Error::None)
     {
         return err;
     }
 
-    if ((err = network_manager.deinit()) != Error::None)
+    if (Error err = audio_manager.deinit(); err != Error::None)
     {
         return err;
     }
 
-    if ((err = timer.deinit()) != Error::None)
+    if (Error err = ui_manager.deinit(); err != Error::None)
     {
         return err;
     }
 
-    if ((err = ui_manager.deinit()) != Error::None)
+    if (Error err = network_manager.deinit(); err != Error::None)
     {
         return err;
     }
 
-    if ((err = audio_manager.deinit()) != Error::None)
+    if (Error err = body.deinit(); err != Error::None)
     {
         return err;
     }

@@ -2,12 +2,12 @@
 #include "common/utils.hpp"
 #include "common/geometry.hpp"
 
-class IMUController
+class IMU
 {
 public:
     constexpr static const char* TAG = "IMUController";
 
-    IMUController();
+    IMU();
 
     /**
     * @brief Initializes the IMU controller.

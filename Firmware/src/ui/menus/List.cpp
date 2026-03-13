@@ -92,7 +92,7 @@ void MenuList::onCreate()
 
 void MenuList::onRender()
 {
-    Screen::Clear();
+    ScreenDriver::Clear();
 
     if (m_selected_shift < MENU_LIST_ITEM_SELECTED_SHIFT) m_selected_shift += 1;
 
@@ -103,22 +103,22 @@ void MenuList::onRender()
     const uint8_t padding = 4;
     const uint8_t item_height = text_height + padding * 2;
 
-    int16_t y_select_pos = Screen::info.height / 2 + (m_selected_index_current - m_view_shift_current) * item_height;
-    Draw::RectFilled(0, y_select_pos - item_height / 2, Screen::info.width, item_height, Screen::COLOR_WHITE);
+    int16_t y_select_pos = ScreenDriver::info.height / 2 + (m_selected_index_current - m_view_shift_current) * item_height;
+    Draw::RectFilled(0, y_select_pos - item_height / 2, ScreenDriver::info.width, item_height, ScreenDriver::COLOR_WHITE);
     
     for (uint8_t i = 0; i < m_item_count; i++)
     {
         bool selected = (i == m_selected_index);
         uint8_t x_pos = (selected ? m_selected_shift : MENU_LIST_ITEM_DEFAULT_SHIFT);
-        uint8_t y_pos = Screen::info.height / 2 + (i - m_view_shift_current) * item_height;
-        Draw::Text<true>(x_pos + 14, y_pos - text_height / 2, m_items[i]->getTitle(), selected ? Screen::COLOR_BLACK : Screen::COLOR_WHITE);
-        Draw::RectRounded<true>(x_pos - 2, y_pos - 6, 12, 12, 2, Screen::COLOR_BLACK);
-        Draw::Blit<true>(x_pos, y_pos - 4, 8, 8, (uint8_t*)m_items[i]->getIcon(), Screen::COLOR_WHITE, true);
+        uint8_t y_pos = ScreenDriver::info.height / 2 + (i - m_view_shift_current) * item_height;
+        Draw::Text<true>(x_pos + 14, y_pos - text_height / 2, m_items[i]->getTitle(), selected ? ScreenDriver::COLOR_BLACK : ScreenDriver::COLOR_WHITE);
+        Draw::RectRounded<true>(x_pos - 2, y_pos - 6, 12, 12, 2, ScreenDriver::COLOR_BLACK);
+        Draw::Blit<true>(x_pos, y_pos - 4, 8, 8, (uint8_t*)m_items[i]->getIcon(), ScreenDriver::COLOR_WHITE, true);
     }
 
     renderHeader();
 
-    Screen::Upload();
+    ScreenDriver::Upload();
 }
 
 void MenuList::onUpdate()

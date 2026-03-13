@@ -47,9 +47,9 @@ public:
         .min_pwm = MotorDriver::MS_TO_PWM(1.0f), // 1.0us duty cycle
         .max_pwm = MotorDriver::MS_TO_PWM(2.0f), // 2.0us duty cycle
         .min_voltage = 0,  // in mV | NOTE : NO FEEDBACK ON EARS (SG90)
-        .max_voltage = 0, // in mV | NOTE : NO FEEDBACK ON EARS (SG90)
-        .feedback_noise = 1, // in mV
-        .pwm_deadband = 1, // in PWM units
+        .max_voltage = 0, // in mV  | NOTE : NO FEEDBACK ON EARS (SG90)
+        .feedback_noise = 0, // in mV
+        .pwm_deadband = 0, // in PWM units
         .feedback_latency_ms = 0 // in ms
     };
 

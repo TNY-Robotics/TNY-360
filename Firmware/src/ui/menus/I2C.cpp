@@ -64,11 +64,11 @@ void MenuI2C::onCreate()
 
 void MenuI2C::onRender()
 {
-    Screen::Clear();
+    ScreenDriver::Clear();
 
     char i2c_bus_str[32];
     sprintf(i2c_bus_str, "Bus: %s", m_i2c_bus_select ? "Primary" : "Secondary");
-    Draw::Text<true>(2, Menu::HEADER_HEIGHT + 4, i2c_bus_str, Screen::COLOR_WHITE);
+    Draw::Text<true>(2, Menu::HEADER_HEIGHT + 4, i2c_bus_str, ScreenDriver::COLOR_WHITE);
 
     char i2c_scanning[32];
     if (m_scanning)
@@ -83,19 +83,19 @@ void MenuI2C::onRender()
     char i2c_devices_found[32];
     sprintf(i2c_devices_found, "Found: %d", m_device_count);
 
-    Draw::Text<true>(2, Menu::HEADER_HEIGHT + 16, i2c_scanning, Screen::COLOR_WHITE);
-    Draw::Text<true>(2, Menu::HEADER_HEIGHT + 28, i2c_devices_found, Screen::COLOR_WHITE);
+    Draw::Text<true>(2, Menu::HEADER_HEIGHT + 16, i2c_scanning, ScreenDriver::COLOR_WHITE);
+    Draw::Text<true>(2, Menu::HEADER_HEIGHT + 28, i2c_devices_found, ScreenDriver::COLOR_WHITE);
 
     if (m_device_count > 0)
     {
         char device_addr_str[32];
         sprintf(device_addr_str, "Device: 0x%02X", m_devices_list[m_device_count - 1]);
-        Draw::Text<true>(2, Menu::HEADER_HEIGHT + 40, device_addr_str, Screen::COLOR_WHITE);
+        Draw::Text<true>(2, Menu::HEADER_HEIGHT + 40, device_addr_str, ScreenDriver::COLOR_WHITE);
     }
 
     renderHeader();
 
-    Screen::Upload();
+    ScreenDriver::Upload();
 }
 
 void MenuI2C::onUpdate()

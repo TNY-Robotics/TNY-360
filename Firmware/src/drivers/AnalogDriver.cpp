@@ -17,7 +17,7 @@ namespace AnalogDriver
 
     static Value voltages_buffer[static_cast<size_t>(CHANNEL_COUNT)] = { 0 };
 
-    static Channel update_current_channel = 0;
+    static Channel cur_channel = 0;
     
     Error select(Channel channel)
     {
@@ -83,7 +83,7 @@ namespace AnalogDriver
         adc_cali_create_scheme_curve_fitting(&cali_config, &cali_handle);
 
         // select initial channel
-        select(update_current_channel); // 0
+        select(cur_channel); // 0
 
         initialized = true;
         return Error::None;
@@ -140,30 +140,24 @@ namespace AnalogDriver
         return Error::None;
     }
 
-    void __ISRStepRead()
+    Error ReadAllChannels()
     {
-        // sample multiple times to stabilize reading
-        constexpr int NB_SAMPLES = 9;
-        Value raw_samples[NB_SAMPLES] = { 0 };
-        for (int i = 0; i < NB_SAMPLES; i++)
+        for (int i = 0; i < CHANNEL_COUNT; i++)
         {
+            select(i);
+            esp_rom_delay_us(5); 
             Value raw_value;
-            if (adc_oneshot_read(adc_handle, ADC_CHANNEL_1, &raw_value) != ESP_OK)
+            if (adc_oneshot_read(adc_handle, ADC_CHANNEL_1, &raw_value) == ESP_OK)
             {
-                Log::Add(Log::Level::Error, TAG, "Failed to read ADC value");
-                // TODO : should we continue or break here?
+                int mv_value;
+                adc_cali_raw_to_voltage(cali_handle, raw_value, &mv_value);
+                voltages_buffer[i] += ANALOG_EMA_ALPHA * (mv_value - voltages_buffer[i]);
             }
-            raw_samples[i] = raw_value;
+            else
+            {
+                Log::Add(Log::Level::Error, TAG, "Failed to read ADC value on channel %d", i);
+            }
         }
-
-        std::sort(raw_samples, raw_samples + NB_SAMPLES);
-        Value raw_value_median = raw_samples[NB_SAMPLES / 2];
-
-        // map raw value to mV
-        adc_cali_raw_to_voltage(cali_handle, raw_value_median, (int*)&voltages_buffer[update_current_channel]);
-
-        // select next index (lets time to settle before next update)
-        update_current_channel = (update_current_channel + 1) % CHANNEL_COUNT;
-        select(update_current_channel);
+        return Error::None;
     }
 }

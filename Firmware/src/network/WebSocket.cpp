@@ -4,6 +4,35 @@
 #include "Robot.hpp"
 #include <esp_wifi.h>
 
+namespace WebSocketUtils
+{
+    struct AsyncWebsocketResponse {
+        httpd_handle_t hd;
+        int fd;
+        uint8_t* payload;
+        size_t len;
+    };
+
+    static void ws_async_send_worker(void *arg) {
+        AsyncWebsocketResponse* resp = static_cast<AsyncWebsocketResponse*>(arg);
+        
+        httpd_ws_frame_t ws_pkt;
+        memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
+        ws_pkt.type = HTTPD_WS_TYPE_BINARY;
+        ws_pkt.payload = resp->payload;
+        ws_pkt.len = resp->len;
+        ws_pkt.final = true;
+        
+        esp_err_t err = httpd_ws_send_frame_async(resp->hd, resp->fd, &ws_pkt);
+        if (err != ESP_OK) {
+            Log::Add(Log::Level::Error, "WebSocket", "Async send error: %d", err);
+        }
+        
+        free(resp->payload);
+        delete resp;
+    }
+}
+
 WebSocket::WebSocket(uint16_t port) : server_port(port)
 {
 }
@@ -17,6 +46,9 @@ Error WebSocket::init()
     config.ctrl_port = server_port + 1;
     config.max_open_sockets = 3;
     // config.lru_purge_enable = true;
+
+    // create the mutex
+    pending_requests_mutex = xSemaphoreCreateMutex();
 
     // start the server
     if (httpd_start(&server_handle, &config) != ESP_OK)
@@ -93,9 +125,9 @@ void WebSocket::on_disconnected()
     }
 }
 
-esp_err_t WebSocket::__ws_handler(httpd_req_t* req)
+esp_err_t WebSocket::__ws_handler(httpd_req_t* ws_req)
 {
-    if (req->method == HTTP_GET) {
+    if (ws_req->method == HTTP_GET) {
         // Handshake request, nothing to do
         return ESP_OK;
     }
@@ -103,7 +135,7 @@ esp_err_t WebSocket::__ws_handler(httpd_req_t* req)
     httpd_ws_frame_t ws_pkt;
     memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
     
-    esp_err_t ret = httpd_ws_recv_frame(req, &ws_pkt, 0);
+    esp_err_t ret = httpd_ws_recv_frame(ws_req, &ws_pkt, 0);
     if (ret != ESP_OK) {
         Log::Add(Log::Level::Error, TAG, "WebSocket receive error: %d", ret);
         return ret;
@@ -125,87 +157,146 @@ esp_err_t WebSocket::__ws_handler(httpd_req_t* req)
         return ESP_ERR_NO_MEM;
     }
 
-    ret = httpd_ws_recv_frame(req, &ws_pkt, ws_pkt.len);
-    if (ret == ESP_OK) {
-        ws_pkt.payload[ws_pkt.len] = 0;  // Null-terminate the payload for safety
+    ret = httpd_ws_recv_frame(ws_req, &ws_pkt, ws_pkt.len);
+    if (ret != ESP_OK) {
+        Log::Add(Log::Level::Error, TAG, "Error receiving websocket frame : 0x%X", ret);
+        free(ws_pkt.payload);
+        return ESP_FAIL;
+    }
 
-        Protocol::Request req_pkt;
-        req_pkt.id = (ws_pkt.payload[0] << 8) | ws_pkt.payload[1];
-        req_pkt.cmd = ws_pkt.payload[2];
-        uint8_t header_size = sizeof(req_pkt.id) + sizeof(req_pkt.cmd);
-        req_pkt.len = ws_pkt.len - header_size;
-        req_pkt.payload = &ws_pkt.payload[header_size];
+    ws_pkt.payload[ws_pkt.len] = 0;  // Null-terminate the payload for safety
 
-        // Store the pending request
-        bool stored = false;
-        for (uint8_t i = 0; i < PROTOCOL_MAX_PENDING_COMMANDS; ++i) {
-            if (pending_requests[i].id == 0) {
-                pending_requests[i].id = req_pkt.id;
-                pending_requests[i].req = req;
-                stored = true;
-                break;
-            }
+    Protocol::Request req;
+    req.id = (ws_pkt.payload[0] << 8) | ws_pkt.payload[1];
+    req.cmd = ws_pkt.payload[2];
+    uint8_t header_size = sizeof(req.id) + sizeof(req.cmd);
+    req.len = ws_pkt.len - header_size;
+    req.payload = &ws_pkt.payload[header_size];
+
+    // Extract the handle and file descriptor
+    httpd_handle_t hd = ws_req->handle;
+    int fd = httpd_req_to_sockfd(ws_req);
+
+    // Store the pending request
+    bool stored = false;
+    xSemaphoreTake(pending_requests_mutex, portMAX_DELAY);
+    for (uint8_t i = 0; i < PROTOCOL_MAX_PENDING_COMMANDS; ++i) {
+        if (pending_requests[i].id == 0) {
+            pending_requests[i].id = req.id;
+            pending_requests[i].hd = hd; // Store handle
+            pending_requests[i].fd = fd; // Store file descriptor
+            stored = true;
+            break;
         }
-        if (!stored) {
-            Log::Add(Log::Level::Error, TAG, "No space to store pending request ID: %d", req_pkt.id);
-            free(ws_pkt.payload);
-            return ESP_ERR_NO_MEM;
+    }
+    xSemaphoreGive(pending_requests_mutex);
+
+    if (!stored) {
+        Log::Add(Log::Level::Error, TAG, "No space to store pending request ID: %d", req.id);
+
+        // Respond error directly
+        size_t payload_len = sizeof(Protocol::Response::id) + sizeof(Protocol::Response::status);
+        uint8_t* payload = (uint8_t*) malloc(payload_len);
+        payload[0] = (req.id >> 8) & 0xFF;
+        payload[1] = req.id & 0xFF;
+        payload[2] = 0; // TODO : Replace with proper CHILL OUT error code
+        WebSocketUtils::AsyncWebsocketResponse* work_arg = new WebSocketUtils::AsyncWebsocketResponse{
+            .hd = hd,
+            .fd = fd,
+            .payload = payload,
+            .len = payload_len
+        };
+        if (httpd_queue_work(hd, WebSocketUtils::ws_async_send_worker, work_arg) != ESP_OK) {
+            Log::Add(Log::Level::Error, TAG, "Failed to queue work to HTTPD thread");
+            free(payload);
+            delete work_arg;
+        }
+        
+        free(ws_pkt.payload);
+        return ESP_OK;
+    }
+
+    Error err = Robot::GetInstance().getNetworkManager().getProtocol().handleRequest(req, [](const Protocol::Response& res) {
+        httpd_handle_t hd; int fd;
+        if (Robot::GetInstance().getNetworkManager().getWebSocket().find_pending_request(res.id, &hd, &fd) != Error::None) {
+            Log::Add(Log::Level::Warning, TAG, "No pending request found for response ID: %d", res.id);
+            if (res.payload) free(res.payload);
+            return;
         }
 
-        Error err = Robot::GetInstance().getProtocol().handleRequest(req_pkt, [](const Protocol::Response& res) {
-            httpd_req_t* req;
-            if (Robot::GetInstance().getNetworkManager().getWebSocket().find_pending_request(res.id, &req) != Error::None) {
-                Log::Add(Log::Level::Warning, TAG, "No pending request found for response ID: %d", res.id);
-                return;
-            }
+        size_t total_len = sizeof(res.id) + sizeof(res.status) + sizeof(res.len) + res.len;
+        uint8_t* payload_buffer = (uint8_t*) malloc(total_len);
 
-            httpd_ws_frame_t ws_res;
-            memset(&ws_res, 0, sizeof(httpd_ws_frame_t));
-            ws_res.payload = (uint8_t*) malloc(sizeof(res.id) + sizeof(res.status) + sizeof(res.len) + res.len);
-            if (!ws_res.payload) {
-                Log::Add(Log::Level::Error, TAG, "Memory allocation failed for response");
-                return;
-            }
-            ws_res.len = sizeof(res.id) + sizeof(res.status) + sizeof(res.len) + res.len;
-            ws_res.type = HTTPD_WS_TYPE_BINARY;
-            ws_res.payload[0] = (res.id >> 8) & 0xFF;
-            ws_res.payload[1] = res.id & 0xFF;
-            ws_res.payload[2] = res.status;
-            ws_res.payload[3] = res.len;
-            memcpy(&ws_res.payload[4], res.payload, res.len);
-            esp_err_t ret = httpd_ws_send_frame(req, &ws_res);
-            if (ret != ESP_OK) {
-                Log::Add(Log::Level::Error, TAG, "WebSocket send error: %d", ret);
-            }
-            free(ws_res.payload);
-        });
+        if (!payload_buffer) {
+            Log::Add(Log::Level::Error, WebSocket::TAG, "Memory allocation failed for response");
+            return;
+        }
 
-        if (err != Error::None) {
-            Log::Add(Log::Level::Error, TAG, "Protocol::Handle error: %s", ErrorToString(err));
-            char hex_str[WEBSOCKET_MAX_MSG_SIZE * 3 + 1] = {0}; // Each byte: "XX " + null terminator
-            size_t pos = 0;
-            for (size_t i = 0; i < ws_pkt.len && pos < sizeof(hex_str) - 4; ++i) {
-                pos += snprintf(hex_str + pos, sizeof(hex_str) - pos, "%02X ", ws_pkt.payload[i]);
-            }
-            Log::Add(Log::Level::Debug, TAG, "Request command: 0x%02X, length: %d, payload (hex): %s", req_pkt.cmd, req_pkt.len, hex_str);
-            ret = ESP_FAIL;
+        payload_buffer[0] = (res.id >> 8) & 0xFF;
+        payload_buffer[1] = res.id & 0xFF;
+        payload_buffer[2] = res.status;
+        payload_buffer[3] = res.len;
+        if (res.len > 0 && res.payload != nullptr) {
+            memcpy(&payload_buffer[4], res.payload, res.len);
+        }
+        WebSocketUtils::AsyncWebsocketResponse* work_arg = new WebSocketUtils::AsyncWebsocketResponse{
+            .hd = hd,
+            .fd = fd,
+            .payload = payload_buffer,
+            .len = total_len
+        };
+        if (httpd_queue_work(hd, WebSocketUtils::ws_async_send_worker, work_arg) != ESP_OK) {
+            Log::Add(Log::Level::Error, TAG, "Failed to queue work to HTTPD thread");
+            free(payload_buffer);
+            delete work_arg;
+        }
+    });
+
+    if (err != Error::None) {
+        Log::Add(Log::Level::Error, TAG, "Protocol::Handle error: %s", ErrorToString(err));
+        char hex_str[WEBSOCKET_MAX_MSG_SIZE * 3 + 1] = {0}; // Each byte: "XX " + null terminator
+        size_t pos = 0;
+        for (size_t i = 0; i < ws_pkt.len && pos < sizeof(hex_str) - 4; ++i) {
+            pos += snprintf(hex_str + pos, sizeof(hex_str) - pos, "%02X ", ws_pkt.payload[i]);
+        }
+        Log::Add(Log::Level::Debug, TAG, "Request command: 0x%02X, length: %d, payload (hex): %s", req.cmd, req.len, hex_str);
+        
+        // Respond error directly
+        size_t payload_len = sizeof(Protocol::Response::id) + sizeof(Protocol::Response::status);
+        uint8_t* payload = (uint8_t*) malloc(payload_len);
+        payload[0] = (req.id >> 8) & 0xFF;
+        payload[1] = req.id & 0xFF;
+        payload[2] = 0; // TODO : Replace with proper UNKNOWN error code
+        WebSocketUtils::AsyncWebsocketResponse* work_arg = new WebSocketUtils::AsyncWebsocketResponse{
+            .hd = hd,
+            .fd = fd,
+            .payload = payload,
+            .len = payload_len
+        };
+        if (httpd_queue_work(hd, WebSocketUtils::ws_async_send_worker, work_arg) != ESP_OK) {
+            Log::Add(Log::Level::Error, TAG, "Failed to queue work to HTTPD thread");
+            free(payload);
+            delete work_arg;
         }
     }
 
     free(ws_pkt.payload);
-    return ret;
+    return ESP_OK;
 }
 
-Error WebSocket::find_pending_request(uint16_t id, httpd_req_t** req)
+Error WebSocket::find_pending_request(uint16_t id, httpd_handle_t* hd, int* fd)
 {
+    xSemaphoreTake(pending_requests_mutex, portMAX_DELAY);
     for (uint8_t i = 0; i < PROTOCOL_MAX_PENDING_COMMANDS; ++i) {
         if (pending_requests[i].id == id) {
-            *req = pending_requests[i].req;
+            *hd = pending_requests[i].hd;
+            *fd = pending_requests[i].fd;
             // Clear the pending request entry (mark as free)
             pending_requests[i].id = 0;
-            pending_requests[i].req = nullptr;
+            xSemaphoreGive(pending_requests_mutex);
             return Error::None;
         }
     }
+    xSemaphoreGive(pending_requests_mutex);
     return Error::NotFound;
 }

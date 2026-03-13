@@ -339,7 +339,6 @@ void WiFiManager::on_ap_started()
 
 void WiFiManager::on_ap_stopped()
 {
-    Log::Add(Log::Level::Debug, TAG, "WiFiManager::on_ap_stopped");
     if (Error err = dns_server.deinit(); err != Error::None)
     {
         Log::Add(Log::Level::Error, TAG, "Failed to stop DNS server");
@@ -348,21 +347,17 @@ void WiFiManager::on_ap_stopped()
 
 void WiFiManager::on_ap_connected()
 {
-    Log::Add(Log::Level::Debug, TAG, "WiFiManager::on_ap_connected");
-    
     // Now that we are connected to a Wi-Fi network, check for updates if internet access is available
     // NOTE : Launching in a separate task to avoid overflowing the event handler stack
     xTaskCreate([](void* param) {
-        Robot::GetInstance().getUpdateManager().checkForUpdates();
+        Robot::GetInstance().getNetworkManager().getUpdateManager().checkForUpdates();
         vTaskDelete(nullptr);
     }, "UpdateCheckTask", 4096*4, nullptr, tskIDLE_PRIORITY + 1, nullptr);
 }
 
 void WiFiManager::on_ap_disconnected()
 {
-    Log::Add(Log::Level::Debug, TAG, "WiFiManager::on_ap_disconnected");
-
-    Log::Add(Log::Level::Debug, TAG, "Switching to AP mode");
+    Log::Add(Log::Level::Debug, TAG, "Disconnected from Access Point. Switching to AP mode");
     strcpy(ssid, WIFI_AP_SSID);
     strcpy(password, WIFI_AP_PASSWORD);
     __create_ap();

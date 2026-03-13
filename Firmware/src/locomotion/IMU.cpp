@@ -1,15 +1,15 @@
-#include "locomotion/IMUController.hpp"
+#include "locomotion/IMU.hpp"
 #include "drivers/IMUDriver.hpp"
 #include "common/config.hpp"
 #include "common/Log.hpp"
 
-IMUController::IMUController()
+IMU::IMU()
 : downVector(0.f, 0.f, -1.f)
 {
     
 }
 
-Error IMUController::init()
+Error IMU::init()
 {
     if (Error err = IMUDriver::Init(); err != Error::None)
     {
@@ -18,7 +18,7 @@ Error IMUController::init()
     return Error::None;
 }
 
-Error IMUController::deinit()
+Error IMU::deinit()
 {
     if (Error err = IMUDriver::Deinit(); err != Error::None)
     {
@@ -27,7 +27,7 @@ Error IMUController::deinit()
     return Error::None;
 }
 
-Error IMUController::update()
+Error IMU::update()
 {
     // Get the data
     IMUDriver::IMUData& data = IMUDriver::GetData();

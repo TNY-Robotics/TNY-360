@@ -107,10 +107,10 @@ namespace Menus
     void Menu::renderHeader()
     {
         uint8_t text_width = Draw::GetTextWidth(m_title);
-        Draw::RectFilled(0, 0, Screen::info.width, Menu::HEADER_HEIGHT, Screen::COLOR_BLACK);
-        Draw::Text<true>(m_title_shift - text_width / 2 + Screen::info.width / 2, 0, m_title, Screen::COLOR_WHITE);
-        Draw::Hline(0, Menu::HEADER_HEIGHT, Screen::info.width, Screen::COLOR_WHITE);
-        Draw::Blit(0, 0, 8, 8, (uint8_t*)m_icon, Screen::COLOR_WHITE, true);
+        Draw::RectFilled(0, 0, ScreenDriver::info.width, Menu::HEADER_HEIGHT, ScreenDriver::COLOR_BLACK);
+        Draw::Text<true>(m_title_shift - text_width / 2 + ScreenDriver::info.width / 2, 0, m_title, ScreenDriver::COLOR_WHITE);
+        Draw::Hline(0, Menu::HEADER_HEIGHT, ScreenDriver::info.width, ScreenDriver::COLOR_WHITE);
+        Draw::Blit(0, 0, 8, 8, (uint8_t*)m_icon, ScreenDriver::COLOR_WHITE, true);
     }
 
 

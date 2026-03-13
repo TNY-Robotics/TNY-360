@@ -2,19 +2,27 @@
 #include "locomotion/Leg.hpp"
 #include "locomotion/Joint.hpp"
 #include "common/geometry.hpp"
-#include "locomotion/IMUController.hpp"
-#include "locomotion/MovementPlanner.hpp"
+#include "locomotion/IMU.hpp"
+#include "locomotion/ControlLoop.hpp"
 
 class Body
 {
 public:
     constexpr static const char* TAG = "Body";
 
+    /**
+     * @brief Leg Index enum
+     */
     enum class LegIndex: uint8_t {
+        /// @brief  Front Left Leg
         FRONT_LEFT = 0,
+        /// @brief  Front Right Leg
         FRONT_RIGHT = 1,
+        /// @brief  Back Left Leg
         BACK_LEFT = 2,
+        /// @brief  Back Right Leg
         BACK_RIGHT = 3,
+        /// @brief  Total number of legs in the body
         COUNT = 4
     };
 
@@ -51,12 +59,6 @@ public:
     Error disable();
 
     /**
-     * @brief Starts the calibration process for all motors in the body.
-     * @return Error code indicating success or failure.
-     */
-    Error startCalibration();
-
-    /**
      * @brief Set the target position for the body.
      * @param target Target position for the body.
      * @return Error code indicating success or failure.
@@ -85,6 +87,13 @@ public:
      * @return Error code indicating success or failure.
      */
     Error getFeetPosition(LegIndex leg_index, Vec3f& position) const;
+
+    /**
+     * @brief Get a given leg from its index
+     * @param index The leg index, see Body::LegIndex.
+     * @return Reference to the Leg.
+     */
+    Leg& getLeg(LegIndex index) { return legs[static_cast<size_t>(index)]; }
 
     /**
      * @brief Get the front left leg.
@@ -126,23 +135,22 @@ public:
      * @brief Get the IMU controller.
      * @return Reference to the IMU controller.
      */
-    IMUController& getIMUController() { return imu_controller; }
+    IMU& getIMU() { return imu; }
 
     /**
-     * @brief Get the movement planner.
-     * @return Reference to the movement planner.
+     * @brief Get the BOdy's Control Loop object
+     * @return Reference to Control Loop's object
      */
-    MovementPlanner& getMovementPlanner() { return movement_planner; }
+    ControlLoop& getControlLoop() { return control_loop; }
 
 private:
     Leg legs[4]; // Array of 4 legs
     Joint ear_l; // Left Ear Joint
     Joint ear_r; // Right Ear Joint
 
-    IMUController imu_controller; // IMU Controller
-
-    // Movement planner, for walking and other complex movements
-    MovementPlanner movement_planner;
+    IMU imu;
+    
+    ControlLoop control_loop;
 
     // Kinematic parameters and state
     Vec3f local_hip_positions_mm[4]; // local to base_link (body center)

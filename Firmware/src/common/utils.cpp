@@ -12,6 +12,9 @@ const char* ErrorToString(Error err)
         case Error::NoMemory: return "NoMemory";
         case Error::HardwareFailure: return "HardwareFailure";
         case Error::SoftwareFailure: return "SoftwareFailure";
+        case Error::Unreachable: return "Unreachable";
+        case Error::OutOfBounds: return "OutOfBounds";
+        case Error::OutOfMemory: return "OutOfMemory";
         default: return "???";
     }
 }

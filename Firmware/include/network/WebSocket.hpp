@@ -1,6 +1,7 @@
 #pragma once
-#include "common/utils.hpp"
 #include "esp_http_server.h"
+#include <freertos/semphr.h>
+#include "common/utils.hpp"
 #include "common/config.hpp"
 
 class WebSocket
@@ -25,10 +26,11 @@ public:
     /**
      * @brief Find a pending request by its ID.
      * @param id The ID of the pending request.
-     * @param req Pointer to store the found request.
+     * @param hd Output server handle
+     * @param df Output socket file descriptor
      * @return Error code indicating success or failure.
      */
-    Error find_pending_request(uint16_t id, httpd_req_t** req);
+    Error find_pending_request(uint16_t id, httpd_handle_t* hd, int* fd);
 
     /**
      * @brief Internal WebSocket handler.
@@ -37,16 +39,18 @@ public:
     esp_err_t __ws_handler(httpd_req_t* req);
 
 private:
-    typedef struct PendingRequests
-    {
+    struct PendingRequest {
         uint16_t id;
-        httpd_req_t* req;
-    } PendingRequests;
+        httpd_handle_t hd; // Server handle
+        int fd;            // Socket file descriptor
+    };
 
-    PendingRequests pending_requests[PROTOCOL_MAX_PENDING_COMMANDS];
+    PendingRequest pending_requests[PROTOCOL_MAX_PENDING_COMMANDS];
     uint16_t server_port;
     int nb_connected_clients = 0;
     httpd_handle_t server_handle = nullptr;
+
+    SemaphoreHandle_t pending_requests_mutex; // request list mutex
 
     void on_connected();
     void on_disconnected();

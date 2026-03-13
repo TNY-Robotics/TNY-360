@@ -1,9 +1,7 @@
 #pragma once
 #include "locomotion/Body.hpp"
+#include "decision/DecisionLoop.hpp"
 #include "network/NetworkManager.hpp"
-#include "locomotion/Timer.hpp"
-#include "network/Protocol.hpp"
-#include "network/UpdateManager.hpp"
 #include "audio/AudioManager.hpp"
 #include "ui/UIManager.hpp"
 
@@ -32,6 +30,18 @@ public:
     Error deinit();
 
     /**
+     * @brief Starts the robot main loops
+     * @note : This starts loops on both cores : BRAIN + REFLEX
+     */
+    Error start();
+
+    /**
+     * @brief Stops the robot main loops
+     * @note : This stops loops on both cores : BRAIN + REFLEX
+     */
+    Error stop();
+
+    /**
      * @brief Get the robot's body.
      * @return Reference to the Body.
      */
@@ -44,31 +54,29 @@ public:
     NetworkManager& getNetworkManager() { return network_manager; }
 
     /**
-     * @brief Get the robot's protocol object.
-     * @return Reference to the Protocol.
-     */
-    Protocol& getProtocol() { return protocol; }
-
-    /**
      * @brief Get the robot's audio manager.
      * @return Reference to the AudioManager.
      */
     AudioManager& getAudioManager() { return audio_manager; }
 
     /**
-     * @brief Get the robot's update manager.
-     * @return Reference to the UpdateManager.
+     * @brief Get the robot's ui manager.
+     * @return Reference to the UIManager.
      */
-    UpdateManager& getUpdateManager() { return update_manager; }
+    UIManager& getUIManager() { return ui_manager; }
+
+    /**
+     * @brief Get the robot's decision loop object.
+     * @return Reference to the decision loop object.
+     */
+    DecisionLoop& getDecisionLoop() { return decision_loop; }
 
 private:
     static Robot* instance;
 
     Body body;
     NetworkManager network_manager;
-    UpdateManager update_manager;
-    Timer timer;
-    Protocol protocol;
     AudioManager audio_manager;
     UIManager ui_manager;
+    DecisionLoop decision_loop;
 };

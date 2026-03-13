@@ -1,4 +1,5 @@
 #include "locomotion/MovementPlanner.hpp"
+#include "common/Log.hpp"
 #include "Robot.hpp"
 #include <cmath>
 
@@ -18,7 +19,7 @@ MovementPlanner::MovementPlanner()
 void MovementPlanner::setVelocityCommand(float v_x, float v_y, float omega)
 {
     // Store the velocity command for use in the update loop
-    cmd_vel_linear = Vec2f(v_x, v_y);
+    cmd_vel_linear = Vec2f(v_x*1000, v_y*1000); // from m/s to mm/s
     cmd_vel_angular = omega;
 }
 
@@ -32,14 +33,16 @@ Error MovementPlanner::update()
             for (int i = 0; i < 4; i++) {
                 body.setFeetPosition((Body::LegIndex)i, leg_default_pos[i]);
             }
+            is_moving = false;
+            Log::Add(Log::Level::Info, TAG, "Just stopped. Resetting legs");
         }
-        is_moving = false;
         return Error::None;
     }
     if (!is_moving) // just started moving, reset gait phase
     {
         main_gait_phase = 0.0f;
         is_moving = true;
+        Log::Add(Log::Level::Info, TAG, "Started moving.");
     }
 
     // Advance the main gait phase

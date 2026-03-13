@@ -1,4 +1,4 @@
-#include "ui/Screen.hpp"
+#include "drivers/ScreenDriver.hpp"
 #include "common/I2C.hpp"
 #include "common/Log.hpp"
 #include "esp_lcd_panel_sh1106.h"
@@ -6,7 +6,7 @@
 #include <esp_lcd_panel_io.h>
 #include <esp_lcd_panel_ops.h>
 
-namespace Screen
+namespace ScreenDriver
 {
     Info info;
     
