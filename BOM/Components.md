@@ -4,7 +4,7 @@ Here's a list of all the components needed to build your TNY-360, and their link
 
 ### Assembly guide
 
-To learn how to fully assemble you TNY-360, check out the [TNY-360 Documentation](https://tny-robotics.com/docs/tny-360). A more user-friendly list of all the components needed is also available here. 
+To learn how to fully assemble you TNY-360, check out the [TNY-360 Documentation](http://localhost:3000/docs/tny-360/practical-guide/sourcing/). A more user-friendly list of all the components needed is also available here. 
 
 | Type      | Description                      | Quantity | Location     | Link                                                               |
 | :-------- | :------------------------------- | :------: | :----------- | :----------------------------------------------------------------- |

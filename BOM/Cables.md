@@ -6,7 +6,7 @@ A complete kit of JST-PH wires is also linked below for easier sourcing, instead
 
 ### Assembly guide
 
-To learn how to fully assemble you TNY-360, check out the [TNY-360 Documentation](https://tny-robotics.com/docs/tny-360). A more user-friendly list of all the cables needed is also available here.
+To learn how to fully assemble you TNY-360, check out the [TNY-360 Documentation](https://tny-robotics.com/docs/tny-360/practical-guide/sourcing/). A more user-friendly list of all the cables needed is also available here.
 
 | Type             | Pins | Length | Quantity | Location                         | Link                                                               |
 | :--------------- | :--: | :----- | :------: | :------------------------------- | :----------------------------------------------------------------- |
