@@ -88,7 +88,7 @@ To learn how to fully assemble you TNY-360, check out the [TNY-360 Documentation
 
 ### Complete kit
 
-To simplify cable sourcing, you can alternatively buy only one JST-PH cable kit, and some JST-XH pigtail cables.
+To simplify Screws and Inserts sourcing, you can alternatively buy only one complete kit of M2.5 screws and inserts.
 
 * Link to the [Screws / Inserts Kit](https://fr.aliexpress.com/item/1005007830491580.html).
 
