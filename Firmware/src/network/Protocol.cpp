@@ -15,6 +15,8 @@ Protocol::Protocol()
 
 Error Protocol::init()
 {
+    LOG_SCOPE(TAG, "Protocol::init");
+
     // Initialize pending commands array
     for (uint8_t i = 0; i < PROTOCOL_MAX_PENDING_COMMANDS; ++i) {
         pending_commands[i].id = 0;
@@ -24,22 +26,18 @@ Error Protocol::init()
     // Attach all registered handlers to the handlers list
     for (int i = 0; i < sizeof(systems)/sizeof(CommandHandler); i++)
     {
-        Log::Add(Log::Level::Info, TAG, "Registering [systems] command %x", systems[i].cmd);
         this->handlers[systems[i].cmd] = &systems[i];
     }
     for (int i = 0; i < sizeof(getters)/sizeof(CommandHandler); i++)
     {
-        Log::Add(Log::Level::Info, TAG, "Registering [getters] command %x", getters[i].cmd);
         this->handlers[getters[i].cmd] = &getters[i];
     }
     for (int i = 0; i < sizeof(setters)/sizeof(CommandHandler); i++)
     {
-        Log::Add(Log::Level::Info, TAG, "Registering [setters] command %x", setters[i].cmd);
         this->handlers[setters[i].cmd] = &setters[i];
     }
     for (int i = 0; i < sizeof(raws)/sizeof(CommandHandler); i++)
     {
-        Log::Add(Log::Level::Info, TAG, "Registering [raws] command %x", raws[i].cmd);
         this->handlers[raws[i].cmd]    = &raws[i];
     }
 
@@ -55,7 +53,7 @@ Error Protocol::handleRequest(const Request& req, HandleResponseCallback callbac
 {
     if (!callback)
     {
-        Log::Add(Log::Level::Error, TAG, "Invalid callback provided for request ID %d", req.id);
+        LOG_ERROR(TAG, "Invalid callback provided for request ID %d", req.id);
         return Error::InvalidParameters;
     }
 
@@ -71,7 +69,7 @@ Error Protocol::handleRequest(const Request& req, HandleResponseCallback callbac
     }
     if (!found) // No empty slot found
     {
-        Log::Add(Log::Level::Error, TAG, "No free slot available for pending command ID %d", req.id);
+        LOG_ERROR(TAG, "No free slot available for pending command ID %d", req.id);
         return Error::NoMemory;
     }
 
@@ -79,14 +77,14 @@ Error Protocol::handleRequest(const Request& req, HandleResponseCallback callbac
     CommandHandler* handler = this->handlers[req.cmd];
     if (handler == nullptr) // No handler found for this command
     {
-        Log::Add(Log::Level::Error, TAG, "No handler found for command 0x%02X", req.cmd);
+        LOG_ERROR(TAG, "No handler found for command 0x%02X", req.cmd);
         return Error::NotFound;
     }
 
     // Check if the length of the payload matches the expected length
     if (handler->len != req.len)
     {
-        Log::Add(Log::Level::Error, TAG, "Invalid payload length for command 0x%02X: expected %d, got %d", req.cmd, handler->len, req.len);
+        LOG_ERROR(TAG, "Invalid payload length for command 0x%02X: expected %d, got %d", req.cmd, handler->len, req.len);
         return Error::InvalidParameters;
     }
 
@@ -108,7 +106,7 @@ Error Protocol::resolveCommand(const Response& res)
             }
             else
             {
-                Log::Add(Log::Level::Error, TAG, "No callback found for pending command ID %d", res.id);
+                LOG_ERROR(TAG, "No callback found for pending command ID %d", res.id);
                 return Error::InvalidState;
             }
             // Clear the pending command slot

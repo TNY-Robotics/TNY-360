@@ -72,12 +72,16 @@ void DNSServer::__dns_server_task(void* parameter)
     
     socket_handle = socket(AF_INET, SOCK_DGRAM, 0);
     if (socket_handle < 0) {
-        Log::Add(Log::Level::Error, TAG, "Failed to create socket");
+        LOG_ERROR(TAG, "Failed to create socket");
         vTaskDelete(nullptr);
         return;
     }
     
     // Set socket options
+    struct timeval tv;
+    tv.tv_sec = 1; // 1 second timeout
+    tv.tv_usec = 0;
+    setsockopt(socket_handle, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
     int opt = 1;
     setsockopt(socket_handle, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
     
@@ -86,7 +90,7 @@ void DNSServer::__dns_server_task(void* parameter)
     server_addr.sin_addr.s_addr = INADDR_ANY;
     
     if (bind(socket_handle, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-        Log::Add(Log::Level::Error, TAG, "Failed to bind socket");
+        LOG_ERROR(TAG, "Failed to bind socket");
         close(socket_handle);
         socket_handle = -1;
         vTaskDelete(nullptr);
@@ -94,15 +98,13 @@ void DNSServer::__dns_server_task(void* parameter)
     }
             
     while (running) {
-        int len = recvfrom(socket_handle, buffer, sizeof(buffer), 0, 
-                        (struct sockaddr*)&client_addr, &client_addr_len);
+        int len = recvfrom(socket_handle, buffer, sizeof(buffer), 0, (struct sockaddr*)&client_addr, &client_addr_len);
         
         if (len > 0 && len >= 12) { // Minimum DNS header size
             // Create response that redirects all queries to our AP IP
             create_dns_response(buffer, len, response, &response_len);
             
-            sendto(socket_handle, response, response_len, 0, 
-                (struct sockaddr*)&client_addr, client_addr_len);
+            sendto(socket_handle, response, response_len, 0, (struct sockaddr*)&client_addr, client_addr_len);
         }
         
         vTaskDelay(pdMS_TO_TICKS(10));
@@ -129,9 +131,11 @@ DNSServer::DNSServer()
 
 Error DNSServer::init()
 {
+    running = true;
+
     if (xTaskCreate(server_task, "dns_server", 4096, this, 5, &task_handle) != pdPASS)
     {
-        Log::Add(Log::Level::Error, TAG, "Failed to create DNS server task");
+        LOG_ERROR(TAG, "Failed to create DNS server task");
         return Error::SoftwareFailure;
     }
 
@@ -141,11 +145,5 @@ Error DNSServer::init()
 Error DNSServer::deinit()
 {
     running = false;
-    if (task_handle)
-    {
-        vTaskDelete(task_handle);
-        task_handle = nullptr;
-    }
-
     return Error::None;
 }

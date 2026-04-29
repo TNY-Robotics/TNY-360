@@ -9,6 +9,8 @@
 class NetworkManager
 {
 public:
+    constexpr static const char* TAG = "NetworkManager";
+
     NetworkManager();
 
     /**
