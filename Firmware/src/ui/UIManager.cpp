@@ -24,12 +24,12 @@ Error UIManager::init()
         return err;
     }
 
-    // if (Error err = camera.init(); err != Error::None)
-    // {
-    //     LOG_WARNING(TAG, "Camera initialization failed. Camera features will be unavailable. Error: %s", ErrorToString(err));
-    //     // not critical, we can still use the ui without camera features
-    // }
-
+    if (Error err = camera.init(); err != Error::None)
+    {
+        LOG_WARNING(TAG, "Camera initialization failed. Camera features will be unavailable. Error: %s", ErrorToString(err));
+        // not critical, we can still use the ui without camera features
+    }
+    
     // Display splash screen
     Menus::SetCurrentMenu(Menus::GetMenuSplash());
 

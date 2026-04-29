@@ -22,6 +22,8 @@ public:
      */
     Error deinit();
 
+    CameraDriver& getCamera() { return camera; }
+
 private:
     CameraDriver camera;
 };

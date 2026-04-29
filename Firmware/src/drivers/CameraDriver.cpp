@@ -149,6 +149,8 @@ CameraDriver::~CameraDriver()
 
 Error CameraDriver::init()
 {
+    LOG_SCOPE(TAG, "CameraDriver::init");
+
     // initialize i2c for camera configuration
     if (Error err = I2C::Init(); err != Error::None)
     {
@@ -172,6 +174,22 @@ Error CameraDriver::init()
     sensor->set_vflip(sensor, true);
     sensor->set_hmirror(sensor, true);
 
+    return Error::None;
+}
+
+Error CameraDriver::deinit()
+{
+    if (esp_err_t err = esp_camera_deinit(); err != ESP_OK)
+    {
+        LOG_ERROR(TAG, "Failed to deinit camera : Error 0x%0x", err);
+        return Error::SoftwareFailure;
+    }
+
+    return Error::None;
+}
+
+Error CameraDriver::start()
+{
     // Start the camera stream server
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.server_port = 90; // FIXME : This port shouldn't be hardcoded
@@ -205,19 +223,12 @@ Error CameraDriver::init()
     return Error::None;
 }
 
-Error CameraDriver::deinit()
+Error CameraDriver::stop()
 {
-    if (esp_err_t err = esp_camera_deinit(); err != ESP_OK)
+    if (server)
     {
-        LOG_ERROR(TAG, "Failed to deinit camera : Error 0x%0x", err);
-        return Error::SoftwareFailure;
+        httpd_stop(server);
+        server = nullptr;
     }
-
-    if (esp_err_t err = esp_camera_deinit(); err != ESP_OK)
-    {
-        LOG_ERROR(TAG, "Failed to deinit camera : Error 0x%0x", err);
-        return Error::SoftwareFailure;
-    }
-
     return Error::None;
 }

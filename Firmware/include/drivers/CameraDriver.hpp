@@ -12,6 +12,9 @@ public:
     Error init();
     Error deinit();
 
+    Error start();
+    Error stop();
+
 private:
     sensor_t* sensor;
     httpd_handle_t server;

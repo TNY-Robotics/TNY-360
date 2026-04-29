@@ -1,6 +1,7 @@
 #include "network/NetworkManager.hpp"
 #include "network/Protocol.hpp"
 #include "common/Log.hpp"
+#include "Robot.hpp"
 
 NetworkManager::NetworkManager()
 {
@@ -42,6 +43,12 @@ Error NetworkManager::init()
     if (Error err = protocol.init(); err != Error::None)
     {
         ErrorHandle({ErrorCode::ProtocolInitFailed, "Failed to initialize Protocol system"});
+        return err;
+    }
+
+    // Start the camera server
+    if (Error err = Robot::GetInstance().getUIManager().getCamera().start(); err != Error::None)
+    {
         return err;
     }
 
