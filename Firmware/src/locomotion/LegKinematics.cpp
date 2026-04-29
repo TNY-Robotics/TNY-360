@@ -10,7 +10,7 @@ Error computeIK(const Vec3f& target, const LegGeometry& geo, LegAngles& out)
     float dist_zy = sqrt(dist_zy_raw * dist_zy_raw - geo.hip_offset * geo.hip_offset); // adjusted for hip offset
     if (dist_zy > (geo.length_thigh + geo.length_calf))
     {
-        Log::Add(Log::Level::Debug, TAG, "Target unreachable: dist_zy %.2f > max %.2f", dist_zy, geo.length_thigh + geo.length_calf);
+        LOG_DEBUG(TAG, "Target unreachable: dist_zy %.2f > max %.2f", dist_zy, geo.length_thigh + geo.length_calf);
         return Error::Unreachable; // Target is out of reach
     }
 
@@ -23,7 +23,7 @@ Error computeIK(const Vec3f& target, const LegGeometry& geo, LegAngles& out)
     float dist_leg = sqrt(dist_zy * dist_zy + target.x * target.x);
     if (dist_leg > (geo.length_thigh + geo.length_calf))
     {
-        Log::Add(Log::Level::Debug, TAG, "Target unreachable: dist_leg %.2f > max %.2f", dist_leg, geo.length_thigh + geo.length_calf);
+        LOG_DEBUG(TAG, "Target unreachable: dist_leg %.2f > max %.2f", dist_leg, geo.length_thigh + geo.length_calf);
         return Error::Unreachable; // Target is out of reach
     }
 

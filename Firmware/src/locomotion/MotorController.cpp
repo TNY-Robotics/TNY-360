@@ -30,13 +30,17 @@ MotorController::MotorController(MotorDriver::Channel motor_channel, AnalogDrive
 Error MotorController::init()
 {
     // Check if below drivers are initialized
+    LOG_SCOPE(TAG, "MotorController::init [driver=%u, reader=%u]", motor_channel, analog_channel);
+
     if (Error err = MotorDriver::Init(); err != Error::None)
     {
+        ErrorHandle({ErrorCode::DriverInitFailed, "Failed to initialize Motor Driver"});
         state = State::ERROR;
         return err;
     }
     if (Error err = AnalogDriver::Init(); err != Error::None)
     {
+        ErrorHandle({ErrorCode::ReaderInitFailed, "Failed to initialize Analog Reader"});
         state = State::ERROR;
         return err;
     }
@@ -56,7 +60,7 @@ Error MotorController::init()
     }
     if (nvshandle_ptr->get("calib_data", calibration_data) == Error::None)
     {
-        Log::Add(Log::Level::Info, TAG, "Calibration data loaded from NVS for motor channel %d", motor_channel);
+        LOG_INFO(TAG, "Calibration data loaded from NVS for motor channel %d", motor_channel);
         state = State::ENABLED;
         calibration_state = CalibrationState::CALIBRATED;
     }
@@ -100,11 +104,11 @@ Error MotorController::disable()
 
 Error MotorController::startCalibration()
 {
-    Log::Add(Log::Level::Info, TAG, "Starting motor calibration");
+    LOG_INFO(TAG, "Starting motor calibration");
 
     if (calibration_state == CalibrationState::CALIBRATING)
     {
-        Log::Add(Log::Level::Warning, TAG, "Motor is already in calibration mode");
+        LOG_WARNING(TAG, "Motor is already in calibration mode");
         return Error::InvalidState;
     }
 
@@ -115,24 +119,24 @@ Error MotorController::startCalibration()
             Error err = controller->run_calibration_sequence();
             if (err != Error::None)
             {
-                Log::Add(Log::Level::Error, TAG, "Motor calibration task failed with error %d", static_cast<uint8_t>(err));
+                LOG_ERROR(TAG, "Motor calibration task failed with error %d", static_cast<uint8_t>(err));
                 controller->calibration_state = CalibrationState::UNCALIBRATED;
             }
             else
             {
-                Log::Add(Log::Level::Info, TAG, "Motor calibration task completed successfully");
+                LOG_INFO(TAG, "Motor calibration task completed successfully");
                 controller->calibration_state = CalibrationState::CALIBRATED;
             }
             // disable motor for safety
             if (Error err = controller->disable(); err != Error::None)
             {
-                Log::Add(Log::Level::Error, TAG, "Failed to disable motor after calibration. Error: %d", static_cast<uint8_t>(err));
+                LOG_ERROR(TAG, "Failed to disable motor after calibration. Error: %d", static_cast<uint8_t>(err));
             }
             // clean up task handle
             vTaskDelete(nullptr);
         }, "MotorCalib", 4096, this, tskIDLE_PRIORITY + 1, &calibration_task_handle) != pdPASS)
     {
-        Log::Add(Log::Level::Error, TAG, "Failed to create motor calibration task");
+        LOG_ERROR(TAG, "Failed to create motor calibration task");
         return Error::SoftwareFailure;
     }
 
@@ -143,7 +147,7 @@ Error MotorController::stopCalibration()
 {
     if (calibration_state != MotorController::CalibrationState::CALIBRATING)
     {
-        Log::Add(Log::Level::Warning, TAG, "Motor is not in calibration mode");
+        LOG_WARNING(TAG, "Motor is not in calibration mode");
         return Error::InvalidState;
     }
 
@@ -163,7 +167,7 @@ Error MotorController::setCalibrationData(CalibrationData& data, bool save)
     {
         if (Error err = nvshandle_ptr->set("calib_data", calibration_data); err != Error::None)
         {
-            Log::Add(Log::Level::Error, TAG, "Failed to save calibration data to NVS. Error: %d", static_cast<uint8_t>(err));
+            LOG_ERROR(TAG, "Failed to save calibration data to NVS. Error: %d", static_cast<uint8_t>(err));
             return err;
         }
     }
@@ -178,7 +182,7 @@ Error MotorController::deleteCalibrationData(bool save)
     {
         if (Error err = nvshandle_ptr->erase("calib_data"); err != Error::None)
         {
-            Log::Add(Log::Level::Error, TAG, "Failed to delete calibration data from NVS. Error: %d", static_cast<uint8_t>(err));
+            LOG_ERROR(TAG, "Failed to delete calibration data from NVS. Error: %d", static_cast<uint8_t>(err));
             return err;
         }
     }
@@ -187,7 +191,7 @@ Error MotorController::deleteCalibrationData(bool save)
 
 Error MotorController::setCalibrationState(CalibrationState state)
 {
-    Log::Add(Log::Level::Warning, TAG, "Manually changing calibration state to %d. This could lead to unexpected behavior if not used correctly.", static_cast<uint8_t>(state));
+    LOG_WARNING(TAG, "Manually changing calibration state to %d. This could lead to unexpected behavior if not used correctly.", static_cast<uint8_t>(state));
     calibration_state = state;
     return Error::None;
 }
@@ -238,7 +242,7 @@ Error MotorController::__send_target_position()
 
     if (calibration_state != CalibrationState::CALIBRATING) // don't listen to anyone if calibrating
     {
-        // Log::Add(Log::Level::Debug, TAG, "Setting motor %d PWM to %d", motor_channel, pwm_value);
+        // LOG_DEBUG(TAG, "Setting motor %d PWM to %d", motor_channel, pwm_value);
         if (Error err = MotorDriver::SetPWM(motor_channel, pwm_value); err != Error::None)
         {
             return err;
@@ -252,7 +256,7 @@ Error MotorController::save_calibration_data()
 {
     if (Error err = nvshandle_ptr->set("calib_data", calibration_data); err != Error::None)
     {
-        Log::Add(Log::Level::Error, TAG, "Failed to save calibration data to NVS. Error: %d", static_cast<uint8_t>(err));
+        LOG_ERROR(TAG, "Failed to save calibration data to NVS. Error: %d", static_cast<uint8_t>(err));
         return err;
     }
     return Error::None;
