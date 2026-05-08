@@ -28,13 +28,13 @@ Error MotorController::init()
 
     if (Error err = MotorDriver::Init(); err != Error::None)
     {
-        ErrorHandle({ErrorCode::DriverInitFailed, "Failed to initialize Motor Driver"});
+        ErrorHandle(ErrorStruct::DriverInitFailed);
         state = State::ERROR;
         return err;
     }
     if (Error err = AnalogDriver::Init(); err != Error::None)
     {
-        ErrorHandle({ErrorCode::ReaderInitFailed, "Failed to initialize Analog Reader"});
+        ErrorHandle(ErrorStruct::ReaderInitFailed);
         state = State::ERROR;
         return err;
     }

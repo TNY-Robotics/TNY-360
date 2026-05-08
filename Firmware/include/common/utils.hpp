@@ -24,13 +24,7 @@ enum class Error: uint8_t {
 
 const char* ErrorToString(Error err);
 
-struct ErrorStruct
-{
-    uint8_t code;
-    const char* msg;
-};
-
-void ErrorHandle(ErrorStruct err);
+void ErrorHandle(ErrorStruct::ErrorStruct err);
 
 struct PerfMonitor
 {

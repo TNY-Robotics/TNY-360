@@ -73,7 +73,7 @@ namespace BootManager
         if (Error err = MotorDriver::Init(); err != Error::None)
         {
             LOG_ERROR(TAG, "Failed to initialize MotorDriver module");
-            LED::LoopErrorCode(ErrorCode::DriverInitFailed);
+            ErrorHandle(ErrorStruct::DriverInitFailed);
             return;
         }
 

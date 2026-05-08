@@ -14,35 +14,35 @@ Error NetworkManager::init()
     // Initialize the WiFi manager
     if (Error err = wifi_manager.init(); err != Error::None)
     {
-        ErrorHandle({ErrorCode::WiFiInitFailed, "Failed to initialize Wi-Fi"});
+        ErrorHandle(ErrorStruct::WiFiInitFailed);
         return err;
     }
 
     // Initialize the web interface
     if (Error err = web_interface.init(); err != Error::None)
     {
-        ErrorHandle({ErrorCode::WebInterfaceInitFailed, "Failed to initialize WebInterface"});
+        ErrorHandle(ErrorStruct::WebInterfaceInitFailed);
         return err;
     }
 
     // Initialize the websocket server
     if (Error err = web_socket.init(); err != Error::None)
     {
-        ErrorHandle({ErrorCode::WebSocketInitFailed, "Failed to initialize WebSocket"});
+        ErrorHandle(ErrorStruct::WebSocketInitFailed);
         return err;
     }
 
     // Initialize the update manager
     if (Error err = update_manager.init(); err != Error::None)
     {
-        ErrorHandle({ErrorCode::UpdateInitFailed, "Failed to initialize Update manager"});
+        ErrorHandle(ErrorStruct::UpdateInitFailed);
         return err;
     }
 
     // Initialize the protocol system
     if (Error err = Protocol::Init(); err != Error::None)
     {
-        ErrorHandle({ErrorCode::ProtocolInitFailed, "Failed to initialize Protocol system"});
+        ErrorHandle(ErrorStruct::ProtocolInitFailed);
         return err;
     }
 

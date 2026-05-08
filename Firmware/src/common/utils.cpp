@@ -21,7 +21,7 @@ const char* ErrorToString(Error err)
     }
 }
 
-void ErrorHandle(ErrorStruct err)
+void ErrorHandle(ErrorStruct::ErrorStruct err)
 {
     // Display error code on LED
     LED::LoopErrorCode(err.code);

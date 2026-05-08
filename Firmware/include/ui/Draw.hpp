@@ -323,7 +323,7 @@ namespace Draw
             if (x_coord >= ScreenDriver::info.width)
             {
                 x_coord = x;
-                y += 8;
+                y += 8+2; // 8 for font height + 2 for line spacing
             }
         }
     }

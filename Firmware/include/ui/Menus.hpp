@@ -100,7 +100,7 @@ namespace Menus
 
     void SetCurrentMenu(Menu* menu);
 
-    void DisplayError(ErrorStruct err);
+    void DisplayError(ErrorStruct::ErrorStruct err);
 
     /// MENU INSTANCES
 

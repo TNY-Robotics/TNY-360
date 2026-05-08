@@ -14,19 +14,19 @@ Error UIManager::init()
 {
     if (Error err = ScreenDriver::Init(); err != Error::None)
     {
-        ErrorHandle({ErrorCode::ScreenInitFailed, "Unable to initialize screen"});
+        ErrorHandle(ErrorStruct::ScreenInitFailed);
         return err;
     }
 
     if (Error err = Menus::Init(); err != Error::None)
     {
-        ErrorHandle({ErrorCode::MenusInitFailed, "Unable to initialize menus"});
+        ErrorHandle(ErrorStruct::MenusInitFailed);
         return err;
     }
 
     if (Error err = camera.init(); err != Error::None)
     {
-        LOG_WARNING(TAG, "Camera initialization failed. Camera features will be unavailable. Error: %s", ErrorToString(err));
+        ErrorHandle(ErrorStruct::CameraInitFailed);
         // not critical, we can still use the ui without camera features
     }
     

@@ -197,7 +197,7 @@ namespace Menus
         if (currentMenu) currentMenu->show();
     }
 
-    void DisplayError(ErrorStruct err)
+    void DisplayError(ErrorStruct::ErrorStruct err)
     {
         menuError.setError(err);
         SetCurrentMenu(&menuError);
