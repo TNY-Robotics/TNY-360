@@ -166,6 +166,14 @@ Error MotorController::run_calibration_sequence()
     }
     this->calibration_progress = 0.9f;
 
+    LOG_DEBUG(TAG, "Calibration complete, centering motor before disabling it");
+    {
+        RETURN_ERROR(MotorDriver::SetPWM(motor_channel, pwm_center))
+        RETURN_ERROR(MotorDriver::SendData());
+        vTaskDelay(pdMS_TO_TICKS(800));
+        RETURN_ERROR(MotorDriver::DisableAllMotors());
+    }
+
     // Save calibration data
     LOG_DEBUG(TAG, "Saving calibration data");
     {

@@ -108,11 +108,16 @@ Error MotorController::startCalibration()
 
     if (BaseType_t err = xTaskCreate([](void* param) {
             // Stop the control loop and take over for the calibration
-            LOG_DEBUG(TAG, "Disabling control loop");
-            if (Error err = Robot::GetInstance().getControlLoop().stop(); err != Error::None)
+            ControlLoop& ctrl = Robot::GetInstance().getControlLoop();
+            bool wasRunning = ctrl.isRunning();
+            if (wasRunning)
             {
-                LOG_ERROR(TAG, "Failed to stop control loop for motor calibration. Error [%s]", ErrorToString(err));
-                return;
+                LOG_DEBUG(TAG, "Disabling control loop");
+                if (Error err = ctrl.stop(); err != Error::None)
+                {
+                    LOG_ERROR(TAG, "Failed to stop control loop for motor calibration. Error [%s]", ErrorToString(err));
+                    return;
+                }
             }
 
             MotorController* controller = static_cast<MotorController*>(param);
@@ -135,11 +140,14 @@ Error MotorController::startCalibration()
             }
 
             // Restart the control loop (back to normal operation)
-            LOG_DEBUG(TAG, "Restarting control loop");
-            if (Error err = Robot::GetInstance().getControlLoop().start(); err != Error::None)
+            if (wasRunning)
             {
-                LOG_ERROR(TAG, "Failed to start control loop after motor calibration. Error [%s]", ErrorToString(err));
-                return;
+                LOG_DEBUG(TAG, "Restarting control loop");
+                if (Error err = Robot::GetInstance().getControlLoop().start(); err != Error::None)
+                {
+                    LOG_ERROR(TAG, "Failed to start control loop after motor calibration. Error [%s]", ErrorToString(err));
+                    return;
+                }
             }
 
             // clean up task handle

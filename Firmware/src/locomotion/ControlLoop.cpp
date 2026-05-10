@@ -148,6 +148,11 @@ Error ControlLoop::stop()
     return Error::None;
 }
 
+bool ControlLoop::isRunning() const
+{
+    return running;
+}
+
 
 Error ControlLoop::deinit()
 {

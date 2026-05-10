@@ -32,7 +32,7 @@ bool MenuBootCalibration::onSelect()
     if (page == Page::Intro)
     {
         page = Page::CalibMotor;
-        jointId = Joint::Id::FrontRightKneePitch;
+        jointId = (Joint::Id) 0;
         progress = 0;
         triggerRender();
     }
@@ -77,14 +77,25 @@ void MenuBootCalibration::onRender()
         }
         case Page::CalibMotor:
         {
+            Joint* joint = Joint::GetJoint(jointId);
+            if (joint && joint->getMotorController().getCalibrationState() == MotorController::CalibrationState::ERROR)
+            {
+                Draw::Text(16, 0, "Motor calib.");
+                Draw::Text(0, 12, "Sorry, an error occurred during motor calib.");
+                Draw::Text(0, 42, "Check wiring andtry again.");
+                return;
+            }
+
             Draw::Text(16, 0, "Motor calib.");
             {
                 char str[16+1];
                 sprintf(str, "Motor %u/14", static_cast<uint8_t>(jointId) + 1);
-                Draw::Text(0, 16, str);
+                int width = Draw::GetTextWidth(str);
+                Draw::Text((ScreenDriver::info.width - width) / 2, 18, str);
             }
-            Draw::RectFilled(4, 32, ScreenDriver::info.width - 8, 20, ScreenDriver::COLOR_WHITE);
-            Draw::RectFilled(6, 34, (ScreenDriver::info.width - 12) * (1 - progress), 16, ScreenDriver::COLOR_BLACK);
+            Draw::RectRounded(8, HEADER_HEIGHT + 30, ScreenDriver::info.width - 16, 16, 4);
+            Draw::RectRounded(9, HEADER_HEIGHT + 31, ScreenDriver::info.width - 18, 14, 3, ScreenDriver::COLOR_BLACK);
+            Draw::RectRounded(9, HEADER_HEIGHT + 31, (ScreenDriver::info.width - 18) * progress, 14, 3);
             break;
         }
         case Page::CalibIMU:
@@ -92,8 +103,9 @@ void MenuBootCalibration::onRender()
             Draw::Text(24, 0, "IMU calib.");
             Draw::Text(0, 12, "Place robot on  flat surface.");
             {
-                Draw::RectFilled(4, 32, ScreenDriver::info.width - 8, 20, ScreenDriver::COLOR_WHITE);
-                Draw::RectFilled(6, 34, (ScreenDriver::info.width - 12) * (1 - progress), 16, ScreenDriver::COLOR_BLACK);
+                Draw::RectRounded(8, HEADER_HEIGHT + 30, ScreenDriver::info.width - 16, 16, 4);
+                Draw::RectRounded(9, HEADER_HEIGHT + 31, ScreenDriver::info.width - 18, 14, 3, ScreenDriver::COLOR_BLACK);
+                Draw::RectRounded(9, HEADER_HEIGHT + 31, (ScreenDriver::info.width - 18) * progress, 14, 3);
             }
             break;
         }
@@ -134,13 +146,14 @@ void MenuBootCalibration::onUpdate()
             }
             else if (motorCalibState == MotorController::CalibrationState::CALIBRATED)
             {
-                // jointId = static_cast<Joint::Id>(static_cast<uint8_t>(jointId) + 1);
-                // if (jointId == Joint::Id::Count)
-                // {
-                //     page = Page::CalibIMU;
-                // }
-                // triggerRender();
+                jointId = static_cast<Joint::Id>(static_cast<uint8_t>(jointId) + 1);
+                if (jointId == Joint::Id::Count)
+                {
+                    page = Page::CalibIMU;
+                }
+                triggerRender();
             }
+            else triggerRender(); // to show error state
             break;
         }
         case Page::CalibIMU:

@@ -34,6 +34,12 @@ public:
     Error stop();
 
     /**
+     * @brief Checks if the control loop is currently running.
+     * @return true if the control loop is running, false otherwise.
+     */
+    bool isRunning() const;
+
+    /**
      * @brief Get the control loop's GaitPlanner object.
      */
     inline GaitPlanner& getGaitPlanner() { return gait_planner; }
