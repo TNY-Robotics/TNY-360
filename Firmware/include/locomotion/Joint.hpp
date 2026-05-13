@@ -158,6 +158,24 @@ public:
      */
     MotorController& getMotorController() { return motor_controller; }
 
+    /**
+     * @brief Get the minimum angle of the joint.
+     * @return Minimum angle in radians.
+     */
+    float getMinAngle() const { return min_angle_rad; }
+
+    /**
+     * @brief Get the maximum angle of the joint.
+     * @return Maximum angle in radians.
+     */
+    float getMaxAngle() const { return max_angle_rad; }
+
+    /**
+     * @brief Check if the joint is inverted.
+     * @return True if the joint is inverted, false otherwise.
+     */
+    bool isInverted() const { return inverted; }
+
 private:
     static Joint* joints[JOINT_COUNT]; // static array of all joints (index is motor channel)
     static float joint_velocity_clamp_rad_s; // static variable for global maximum joint velocity

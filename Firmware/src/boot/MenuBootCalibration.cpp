@@ -7,6 +7,23 @@
 #include "drivers/MotorDriver.hpp"
 #include "Robot.hpp"
 
+constexpr float JOINT_ANGLE[(int) Joint::Id::Count] = {
+    DEG_TO_RAD(0.f),  // FrontLeftHipRoll
+    DEG_TO_RAD(-135.f),    // FrontLeftHipPitch
+    DEG_TO_RAD(150.f),  // FrontLeftKneePitch
+    DEG_TO_RAD(0.f),  // BackLeftHipRoll
+    DEG_TO_RAD(-45.f),    // BackLeftHipPitch
+    DEG_TO_RAD(150.f),  // BackLeftKneePitch
+    DEG_TO_RAD(0.f),  // BackRightHipRoll
+    DEG_TO_RAD(-45.f),    // BackRightHipPitch
+    DEG_TO_RAD(150.f),  // BackRightKneePitch
+    DEG_TO_RAD(0.f),  // FrontRightHipRoll
+    DEG_TO_RAD(-135.f),    // FrontRightHipPitch
+    DEG_TO_RAD(150.f),  // FrontRightKneePitch
+    DEG_TO_RAD(0.f),    // EarLeft
+    DEG_TO_RAD(0.f)     // EarRight
+};
+
 bool MenuBootCalibration::onBack()
 {
     if (page == Page::Intro)
@@ -22,6 +39,15 @@ bool MenuBootCalibration::onBack()
 
         // Show done page
         page = Page::Done;
+        triggerRender();
+    }
+    if (page == Page::CalibMotor)
+    {
+        // Stop the motor calibration and go back to intro page
+        Joint* joint = Joint::GetJoint(jointId);
+        if (joint) joint->getMotorController().stopCalibration();
+        MotorDriver::DisableAllMotors();
+        page = Page::Intro;
         triggerRender();
     }
     return true;
@@ -54,6 +80,15 @@ void MenuBootCalibration::onShow()
 {
     triggerRender();
     Robot::GetInstance().getBody().init();
+    // reset all joints calibrations
+    for (int i = 0; i < (int) Joint::Id::Count; i++)
+    {
+        Joint* joint = Joint::GetJoint((Joint::Id)i);
+        if (joint)
+        {
+            joint->getMotorController().deleteCalibrationData(true);
+        }
+    }
 }
 
 void MenuBootCalibration::onHide()
@@ -146,8 +181,29 @@ void MenuBootCalibration::onUpdate()
             }
             else if (motorCalibState == MotorController::CalibrationState::CALIBRATED)
             {
+                // Move the joint to its rest angle (to provide space for the other joints calibrations)
+                if ((int)jointId < (int)Joint::Id::Count - 2) // -2 to skip ears
+                {
+                    LOG_DEBUG(TAG, "Motor calibration done for joint %d, moving to rest angle (%.1fdeg)", jointId, RAD_TO_DEG(JOINT_ANGLE[(int)jointId]));
+                    MotorController& ctrl = joint->getMotorController();
+                    float min_angle = joint->getMinAngle();
+                    float max_angle = joint->getMaxAngle();
+                    float rest_angle_progress = (JOINT_ANGLE[(int)jointId] - min_angle) / (max_angle - min_angle);
+                    if (joint->isInverted()) rest_angle_progress = 1 - rest_angle_progress; // invert progress if joint is inverted
+                    ctrl.setTargetPosition(rest_angle_progress);
+                    ctrl.enable();
+                    MotorDriver::SendData();
+                    // wait a bit for the motor to move
+                    vTaskDelay(pdMS_TO_TICKS(1000));
+                    // now disable it and move to the next one
+                    ctrl.disable();
+                    MotorDriver::DisableAllMotors();
+                }
+
+                // go to the next joint
                 jointId = static_cast<Joint::Id>(static_cast<uint8_t>(jointId) + 1);
-                if (jointId == Joint::Id::Count)
+
+                if ((int)jointId == (int)Joint::Id::Count - 2) // -2 to skip ears
                 {
                     page = Page::CalibIMU;
                 }

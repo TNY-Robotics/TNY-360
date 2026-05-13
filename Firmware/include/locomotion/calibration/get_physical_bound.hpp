@@ -34,7 +34,7 @@ struct PhysicalBoundParams
     /// @brief Number of consecutive detections before confirming the bound (slow approach)
     uint32_t debounce_count_slow = 2;
     /// @brief Multiplier for the standard deviation to trigger FAST approach detection
-    float snr_multiplier_fast = 5.0f;
+    float snr_multiplier_fast = 6.0f;
     /// @brief Multiplier for the standard deviation to trigger SLOW approach detection
     float snr_multiplier_slow = 3.0f;
     /// @brief Multiplier for the standard deviation to define the true base of the slope during rollback analysis
@@ -251,11 +251,6 @@ Error get_physical_bound(PhysicalBoundParams params, MotorDriver::Channel motor_
 
         // Disable motor to avoid stressing it
         RETURN_ERROR(MotorDriver::DisableAllMotors());
-
-        // TEMPORARY : Plot the buffer
-        for (int i = 0; i < samples_collected; i++) {
-            int debug_idx = (history_idx - samples_collected + i + params.history_buffer_size) % params.history_buffer_size;
-        }
 
         // Now rollback to find the exact moment where the bound is touched
         {
