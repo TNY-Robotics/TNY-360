@@ -32,4 +32,6 @@ private:
     static const char* get_mime_type(const char* filepath);
     static esp_err_t send_file_chunked(httpd_req_t *req, const char *filepath, const char *mime_type, bool is_gzip);
     static esp_err_t main_request_handler(httpd_req_t *req);
+    static esp_err_t safe_request_handler(httpd_req_t *req);
+    static esp_err_t connect_request_handler(httpd_req_t *req);
 };

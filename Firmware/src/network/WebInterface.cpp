@@ -3,7 +3,12 @@
 #include "common/Log.hpp"
 #include "common/LittleFS.hpp"
 #include "locomotion/MotorController.hpp"
+#include "ArduinoJson.hpp"
 #include "Robot.hpp"
+
+// Code-embeded safemode html page
+extern const uint8_t safemode_html_start[] asm("_binary_safemode_html_start");
+extern const uint8_t safemode_html_end[]   asm("_binary_safemode_html_end");
 
 
 WebInterface::WebInterface(uint16_t web_port)
@@ -35,12 +40,61 @@ Error WebInterface::init()
     }
     running = true;
 
+    // initialize storage
     if (Error err = LittleFS::Init(); err != Error::None)
     {
         return err;
     }
 
-    // FIXME : Should get the errors from here and handle them
+    // check if website files are present
+    bool files_present = false;
+    FILE* fd = fopen((std::string(MOUNT_POINT) + "/index.html").c_str(), "r");
+    if (!fd) {
+        fd = fopen((std::string(MOUNT_POINT) + "/index.html.gz").c_str(), "r");
+    }
+    if (fd) {
+        files_present = true;
+        fclose(fd);
+    }
+    if (!files_present)
+    {
+        LOG_ERROR(TAG, "Website files not found in LittleFS. Switching to safe mode.");
+
+        // Register safe-mode handlers (index page + connect api)
+        httpd_uri_t safe_uri = {
+            .uri       = "/",
+            .method    = HTTP_GET,
+            .handler   = safe_request_handler,
+            .user_ctx  = this,
+            .is_websocket = false,
+            .handle_ws_control_frames = false,
+            .supported_subprotocol = nullptr,
+        };
+        httpd_register_uri_handler(server, &safe_uri);
+        httpd_uri_t connect_uri = {
+            .uri       = "/connect",
+            .method    = HTTP_POST,
+            .handler   = connect_request_handler,
+            .user_ctx  = this,
+            .is_websocket = false,
+            .handle_ws_control_frames = false,
+            .supported_subprotocol = nullptr,
+        };
+        httpd_register_uri_handler(server, &connect_uri);
+        // redirection to web page for captive portal
+        httpd_register_err_handler(server, HTTPD_404_NOT_FOUND, [](httpd_req_t *req, httpd_err_code_t error) -> esp_err_t {
+            // return to homepage on 404 to let the SPA handle it + Captive portal support
+            char redirect_url[64];
+            snprintf(redirect_url, sizeof(redirect_url), "http://%s/", Robot::GetInstance().getNetworkManager().getWiFiManager().getIPAddr());
+
+            httpd_resp_set_status(req, "302 Temporary Redirect");
+            httpd_resp_set_hdr(req, "Location", redirect_url);
+            httpd_resp_send(req, "Redirecting...", HTTPD_RESP_USE_STRLEN);
+            return ESP_OK;
+        });
+        return Error::None;
+    }
+
     registerURIHandlers();
     return Error::None;
 }
@@ -212,4 +266,51 @@ esp_err_t WebInterface::main_request_handler(httpd_req_t *req)
     
     // Last option : serve the file directly
     return send_file_chunked(req, filepath.c_str(), get_mime_type(filepath.c_str()), false);
+}
+
+esp_err_t WebInterface::safe_request_handler(httpd_req_t *req)
+{
+    httpd_resp_set_type(req, "text/html");
+    return httpd_resp_send(req, (const char*)safemode_html_start, safemode_html_end - safemode_html_start);
+}
+
+esp_err_t WebInterface::connect_request_handler(httpd_req_t *req)
+{
+    // Parse the body as JSON to extract WiFi credentials
+    char buffer[512];
+
+    if (req->content_len >= sizeof(buffer))
+    {
+        return httpd_resp_send(req, "Payload too large", HTTPD_RESP_USE_STRLEN);
+    }
+    
+    if (httpd_req_recv(req, buffer, req->content_len) <= 0)
+    {
+        return httpd_resp_send(req, "Failed to receive data", HTTPD_RESP_USE_STRLEN);
+    }
+
+    ArduinoJson::JsonDocument json;
+
+    ArduinoJson::DeserializationError err = ArduinoJson::deserializeJson(json, buffer);
+    if (err)
+    {
+        return httpd_resp_send(req, "Invalid JSON", HTTPD_RESP_USE_STRLEN);
+    }
+
+    const char* ssid = json["ssid"];
+    const char* password = json["password"];
+
+    if (!ssid || !password)
+    {
+        return httpd_resp_send(req, "Missing ssid or password", HTTPD_RESP_USE_STRLEN);
+    }
+
+    // Attempt to connect to the new WiFi network
+    Error wifi_err = Robot::GetInstance().getNetworkManager().getWiFiManager().connect(ssid, password);
+    if (wifi_err != Error::None)
+    {
+        return httpd_resp_send(req, "Failed to connect to WiFi", HTTPD_RESP_USE_STRLEN);
+    }
+
+    return httpd_resp_send(req, "Connecting to WiFi...", HTTPD_RESP_USE_STRLEN);
 }

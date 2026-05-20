@@ -4,5 +4,5 @@
 FILE(GLOB_RECURSE app_sources ${CMAKE_SOURCE_DIR}/src/*.*)
 
 idf_component_register(SRCS ${app_sources}
-                       EMBED_TXTFILES "certs/root_ca.pem"
+                       EMBED_TXTFILES "certs/root_ca.pem" "data/safemode.html"
                        REQUIRES arduinojson) # esp_littlefs

@@ -45,6 +45,17 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install platformio
+      
+      - name: Install node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Build Web Portal
+        run: |
+          cd extras/WebPortal
+          npm install
+          npm run generate
 
       - name: Build Firmware
         run: pio run -e $PIO_ENV

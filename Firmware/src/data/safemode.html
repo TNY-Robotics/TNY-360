@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            .main {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            .inputs {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 1em 0.5em;
+            }
+            p {
+                margin: 0.25em;
+            }
+        </style>
+    </head>
+    <body style="font-family: Arial, Helvetica, sans-serif;">
+        <div class="main">
+            <h1>TNY-360 Safe Mode</h1>
+            <p> Web Dashboard files are missing from storage. </p>
+            <p> Please connect to a Wi-Fi network and update the firmware to download them. </p>
+            <div class="inputs">
+                <input style="margin: 0.25em;" type="text" id="ssid" placeholder="SSID">
+                <input style="margin: 0.25em;" type="password" id="password" placeholder="Password">
+                <button style="margin: 0.25em;" onclick="submitCredentials()">Connect</button>
+            </div>
+        </div>
+        <script>
+            function submitCredentials() {
+                const ssid = document.getElementById('ssid').value;
+                const password = document.getElementById('password').value;
+
+                fetch('/connect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ssid, password })
+                }).then(response => {
+                    if (response.ok) {
+                        alert('Credentials submitted successfully. The device will attempt to connect to the Wi-Fi network.');
+                    } else {
+                        alert('Failed to submit credentials. Please try again.');
+                    }
+                }).catch(error => {
+                    console.error('Error submitting credentials:', error);
+                    alert('An error occurred while submitting credentials. Please try again.');
+                });
+            }
+        </script>
+    </body>
+</html>
