@@ -1,5 +1,6 @@
 #pragma once
 #include "network/protocol/Protocol.hpp"
+#include "Robot.hpp"
 #include <esp_system.h>
 
 namespace Protocol
@@ -22,14 +23,14 @@ namespace IMU
 
     static void GetDownVector(const RequestContext& ctx, const uint8_t* payload)
     {
-        ctx.respond(ResponseStatus::Ok);
-        // TODO : Implement
+        const Vec3f& vec = Robot::GetInstance().getDecisionLoop().getRobotState().imu_down_vector;
+        ctx.respond(ResponseStatus::Ok, (uint8_t*) &vec, sizeof(vec));
     }
 
     static void GetOrientation(const RequestContext& ctx, const uint8_t* payload)
     {
-        ctx.respond(ResponseStatus::Ok);
-        // TODO : Implement
+        const Vec3f& orient = Robot::GetInstance().getDecisionLoop().getRobotState().body_orientation;
+        ctx.respond(ResponseStatus::Ok, (uint8_t*) &orient, sizeof(orient));
     }
 
     static void GetCalibrationState(const RequestContext& ctx, const uint8_t* payload)

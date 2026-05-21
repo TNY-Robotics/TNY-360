@@ -49,7 +49,7 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Build Web Portal
         run: |

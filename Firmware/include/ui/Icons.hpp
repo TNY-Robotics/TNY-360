@@ -102,6 +102,17 @@ namespace Icons
         0b11000011,
     };
 
+    constexpr uint8_t PowerMenu[8] = {
+        0b00001100,
+        0b00011100,
+        0b00111000,
+        0b01111000,
+        0b00011110,
+        0b00011100,
+        0b00111000,
+        0b00110000,
+    };
+
     constexpr uint8_t MotorMenu[8] = {
         0b00111100,
         0b01001110,

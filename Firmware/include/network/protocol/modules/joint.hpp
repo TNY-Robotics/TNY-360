@@ -178,6 +178,43 @@ namespace Joint
         ctx.respond(ResponseStatus::Ok, (uint8_t*) &estimatedAngle, sizeof(estimatedAngle));
     }
 
+    static void SetJointAngles(const RequestContext& ctx, const uint8_t* payload)
+    {
+        LOG_DEBUG("joint", "SetJointAngles");
+        BinaryReader reader(payload, ctx.expected_len);
+
+        float angles[14];
+        for (int i = 0; i < 14; i++)
+        {
+            if (reader.read(angles[i]) != Error::None)
+            {
+                ctx.respond(ResponseStatus::InvalidParameters);
+                return;
+            }
+        }
+
+        for (int i = 0; i < 14; i++)
+        {
+            if (Robot::GetInstance().getDecisionLoop().askJointAngle((::Joint::Id) i, angles[i]) != Error::None)
+            {
+                ctx.respond(ResponseStatus::InvalidParameters);
+                return;
+            }
+        }
+        ctx.respond(ResponseStatus::Ok);
+    }
+
+    static void GetJointAngles(const RequestContext& ctx, const uint8_t* payload)
+    {
+        LOG_DEBUG("joint", "GetJointAngles");
+        float angles[14];
+        for (int i = 0; i < 14; i++)
+        {
+            angles[i] = Robot::GetInstance().getDecisionLoop().getRobotState().joints[i].feedback_angle_rad;
+        }
+        ctx.respond(ResponseStatus::Ok, (uint8_t*) angles, sizeof(angles));
+    }
+
 
     static ActionCallback actions[] = {
         SetEnabled,                // 0x00
@@ -187,6 +224,8 @@ namespace Joint
         GetFeedbackAngle,          // 0x04
         GetModelAngle,             // 0x05
         GetEstimatedAngle,         // 0x06
+        SetJointAngles,            // 0x07
+        GetJointAngles             // 0x08
     };
 
     static void Register(Dispatcher& dispatcher)

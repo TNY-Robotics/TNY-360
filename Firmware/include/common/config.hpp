@@ -139,7 +139,7 @@ constexpr int SCREEN_REFRESH_RATE = 30;
 /** Buttons **/
 constexpr gpio_num_t BTN_LEFT_PIN = GPIO_NUM_11;
 constexpr gpio_num_t BTN_RIGHT_PIN = GPIO_NUM_10;
-constexpr uint16_t BTN_LONG_PRESS_MS = 500; // ms
+constexpr uint16_t BTN_LONG_PRESS_MS = 300; // ms
 // Buttons polling interval in milliseconds
 constexpr uint16_t BTN_POLL_INT_MS = 50; // ms
 

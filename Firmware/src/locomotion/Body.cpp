@@ -138,6 +138,12 @@ Error Body::deinit()
 
 Error Body::estimateState(float dt)
 {
+    // update IMU
+    if (Error err = imu.estimateState(dt); err != Error::None)
+    {
+        return err;
+    }
+
     // update legs
     for (size_t i = 0; i < static_cast<size_t>(Leg::Id::Count); i++)
     {

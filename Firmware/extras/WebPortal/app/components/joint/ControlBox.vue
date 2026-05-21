@@ -2,11 +2,8 @@
     <div class="flex flex-col space-y-6 border-2 border-slate-200 dark:border-slate-700 p-4 rounded-lg">
         <div class="flex justify-between items-center space-x-4">
             <p class="text-lg font-semibold"> {{ name }} </p>
-            <UButton v-if="enabled" color="success" variant="soft" @click="toggleEnabled" icon="i-lucide-check" trailing>
-                Enabled
-            </UButton>
-            <UButton v-if="!enabled" color="error" variant="soft" @click="toggleEnabled" icon="i-lucide-x" trailing>
-                Disabled
+            <UButton :color="enabledLoading? 'neutral' : (enabled? 'success': 'error')" variant="soft" @click="toggleEnabled" :icon="enabled? 'i-lucide-check' : 'i-lucide-x'" trailing :loading="enabledLoading">
+                {{ enabled? 'Enabled' : 'Disabled' }}
             </UButton>
         </div>
         <div class="flex flex-col space-y-3">
@@ -57,12 +54,15 @@ const props = defineProps<{
 }>();
 
 const enabled = ref(false);
-function toggleEnabled() {
+const enabledLoading = ref(false);
+async function toggleEnabled() {
     enabled.value = !enabled.value;
-    sendEnabled(props.index, enabled.value);
+    await sendEnabled(props.index, enabled.value);
 }
 async function sendEnabled(jointIndex: number, enabled: boolean) {
+    enabledLoading.value = true;
     await tny.value?.joint.setEnabled(jointIndex, enabled, true);
+    enabledLoading.value = false;
 }
 
 const targetAngle = ref(Math.round(((props.range[0]||0) + (props.range[1]||0)) / 2));

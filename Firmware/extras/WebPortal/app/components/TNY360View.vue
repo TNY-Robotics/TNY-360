@@ -1,6 +1,6 @@
 <template>
     <!-- Camera setup -->
-    <TresPerspectiveCamera :position="[7, 7, 7]" :look-at="[0, 0, 0]" />
+    <TresPerspectiveCamera :position="[7, 7, 7]" :look-at="[0, 0, 0]" :up="[0, 0, 1]" />
 
     <!-- Scene -->
     <TresAmbientLight :intensity="2" />
@@ -8,7 +8,7 @@
 
     <!-- Visual Helpers -->
     <TresAxesHelper />
-    <TresGridHelper />
+    <TresGridHelper :rotation="[-Math.PI / 2, 0, 0]" :args="[10, 10]" />
     <TresOrbitControls
         v-if="camera"
         :args="[camera, renderer?.domElement]"
@@ -78,25 +78,13 @@ const modelLoadingToast = toast.add({
     duration: 0, // Make it persistent until manually dismissed
 });
 const { state: model, isLoading, error } = useLoader(GLTFLoader, '/TNY-360.glb');
-// watchEffect(() => {
-//     if (error.value) {
-//         toast.add({
-//             title: 'Error Loading Model',
-//             description: 'There was an error loading the 3D model.',
-//             duration: 5000,
-//         });
-//         console.error('Error loading model:', error.value);
-//     } else if (!isLoading.value && model.value) {
-//         
-//     }
-// });
 watchEffect(() => {
   if (!isLoading.value && model.value) {
     model.value.scene.traverse((child) => {
         if ((child as THREE.Mesh).isMesh) {
             const mesh = child as THREE.Mesh;
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
+            mesh.castShadow = false;
+            mesh.receiveShadow = false;
         }
         if ((child as THREE.Bone).isBone) {
             const bone = child as THREE.Bone;
@@ -126,31 +114,33 @@ watchEffect(() => {
   }
 });
 
-const jointAngles = ref<number[]>(Array(12).fill(0));
-const bodyOrientation = ref<THREE.Quaternion>(new THREE.Quaternion());
 let shouldFetch = false;
 
+const lastJointAngles = Array(12).fill(0);
+const currentJointAngles = Array(12).fill(0);
+const lastOrientation = { x: 0, y: 0, z: 0 };
+const currentOrientation = { x: 0, y: 0, z: 0 };
+
 async function fetchAngleContinuous() {
-    for (let i = 0; i < jointAngles.value.length; i++) {
-        try {
-            jointAngles.value[i] = (await tny.value?.joint.getFeedbackAngle(i) ?? 0) * RAD2DEG;
-        } catch (err) { console.warn(`Could not get joint id=${i} feedback angle`, err); }
-    }
+    try {
+        const angles = await tny.value?.joint.getJointAngles();
+        if (angles) {
+            for (let i = 0; i < angles.length; i++) {
+                lastJointAngles[i] = (angles[i] ?? 0) * RAD2DEG;
+            }
+        }
+    } catch (err) { console.warn('Could not get joint angles', err); }
 
     try {
-        const orientation = await tny.value?.imu.getOrientation() ?? { x: 0, y: 0, z: 0, w: 1 };
+        const orientation = await tny.value?.imu.getOrientation() ?? { x_rad: 0, y_rad: 0, z_rad: 0 };
         if (model.value) {
-            const quat = new THREE.Quaternion(
-                orientation.x,
-                orientation.y,
-                orientation.z,
-                orientation.w
-            ).normalize();
-            bodyOrientation.value = quat;
+            lastOrientation.x = orientation.x_rad;
+            lastOrientation.y = orientation.y_rad;
+            lastOrientation.z = orientation.z_rad;
         }
     } catch (err) { console.warn('Could not get imu orientation', err); }
 
-    if (shouldFetch) setTimeout(fetchAngleContinuous, 100);
+    if (shouldFetch) setTimeout(fetchAngleContinuous, 1);
 } 
 
 onMounted(() => {
@@ -169,25 +159,39 @@ function DEG_TO_RAD(deg: number): number {
 }
 
 onBeforeRender(({ elapsed }) => {
-    for (const boneStruct of bones) {
-        const targetAngle = jointAngles.value[boneStruct.motorIndex] || 0;
-        // Smooth interpolation
-        boneStruct.angle += (targetAngle - boneStruct.angle) * 0.3;
-        const rad = boneStruct.angle * (Math.PI / 180);
-        const rotation = (boneStruct.invert ? -rad : rad);
-        boneStruct.bone.rotation.set(
-            (boneStruct.rotationAxis === 'x' ? rotation : 0) + DEG_TO_RAD(boneStruct.offsets?.x || 0),
-            (boneStruct.rotationAxis === 'y' ? rotation : 0) + DEG_TO_RAD(boneStruct.offsets?.y || 0),
-            (boneStruct.rotationAxis === 'z' ? rotation : 0) + DEG_TO_RAD(boneStruct.offsets?.z || 0),
-        );
+
+    // Update orientation and joints
+    const alpha = 0.2;
+    currentOrientation.x += (lastOrientation.x - currentOrientation.x) * alpha;
+    currentOrientation.y += (lastOrientation.y - currentOrientation.y) * alpha;
+    currentOrientation.z += (lastOrientation.z - currentOrientation.z) * alpha;
+    for (let i = 0; i < lastJointAngles.length; i++) {
+        currentJointAngles[i] += (lastJointAngles[i] - currentJointAngles[i]) * alpha;
+        const boneStruct = bones.find(b => b.motorIndex === i);
+        if (boneStruct) {
+            boneStruct.angle = currentJointAngles[i];
+        }
     }
+
+    // apply to model
     if (model.value) {
-        model.value.scene.quaternion.set(
-            bodyOrientation.value.x,
-            bodyOrientation.value.y,
-            bodyOrientation.value.z,
-            bodyOrientation.value.w
+        model.value.scene.quaternion.setFromEuler(
+            new THREE.Euler(
+                currentOrientation.x,
+                currentOrientation.y,
+                currentOrientation.z,
+                'XYZ'
+            )
         );
+        for (const boneStruct of bones) {
+            const rad = boneStruct.angle * (Math.PI / 180);
+            const rotation = (boneStruct.invert ? -rad : rad);
+            boneStruct.bone.rotation.set(
+                (boneStruct.rotationAxis === 'x' ? rotation : 0) + DEG_TO_RAD(boneStruct.offsets?.x || 0),
+                (boneStruct.rotationAxis === 'y' ? rotation : 0) + DEG_TO_RAD(boneStruct.offsets?.y || 0),
+                (boneStruct.rotationAxis === 'z' ? rotation : 0) + DEG_TO_RAD(boneStruct.offsets?.z || 0),
+            );
+        }
     }
 });
 </script>
