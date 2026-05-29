@@ -20,13 +20,12 @@
 
 Everything you need to build this robot is 100% free and open-source. Instead of getting lost in the folders, we highly recommend following our official, step-by-step wiki:
 
-<center>
+<div align="center">
 
 > ### **[👉 START HERE: The Official Step-by-Step Guide 👈](https://tny-robotics.com/docs/tny-360/practical-guide/sourcing)**
 > *From ordering the first screw to the assembing the last part, this guide covers it all.*
 
-</center>
-
+</div>
 
 ### 🗂️ Quick Links (For Advanced Makers)
 If you know what you are doing and just want the raw files, here is your toolkit:
@@ -39,12 +38,12 @@ If you know what you are doing and just want the raw files, here is your toolkit
 
 ## ✨ Features
 
-* 🧬 **Dual-Core Architecture:** A segregated system using the ESP32-S3. Core 0 ("Reflex") runs a strict 200Hz kinematics/control loop, while Core 1 ("Brain") handles WebSockets, UI, and orchestration.
-* 🔄 **Closed-Loop at 200Hz:** We ditched blind PWM. The TNY-360 uses digital MG996R servos modified with a custom **Op-Amp buffer PCB** for noise-free, high-speed position feedback.
-* ⚡ **Zero Cable Spaghetti:** A fully modular hardware ecosystem. Dedicated PCBs (Control, Sensor, Brain, Power, etc.) communicate cleanly via standardized JST-PH cables.
-* 🛠️ **Smart Auto-Calibration:** Features mechanical endstops for assembly validation and runtime algorithms that compensate for backlash and actuator latency.
-* 🧩 **STEM & Expansion Ready:** Program the robot using [TNY-Coder](https://github.com/TNY-Robotics/TNY-Coder) (our block-based web app) or build custom hardware modules using the dorsal I2C/Power expansion port.
-* 🔋 **Industrial Power:** A custom 3S 18650 battery pack capable of 15A continuous discharge, featuring an integrated BMS and Fuse, for 1h+ of runtime.
+* 🧬 **Dual-Core Architecture:**<br> A segregated system using the ESP32-S3. Core 0 ("Reflex") runs a strict 200Hz kinematics/control loop, while Core 1 ("Brain") handles WebSockets, UI, and orchestration.
+* 🔄 **Closed-Loop at 200Hz:**<br> We ditched blind PWM. The TNY-360 uses digital MG996R servos modified with a custom **Op-Amp buffer PCB** for noise-free, high-speed position feedback.
+* ⚡ **Zero Cable Spaghetti:**<br> A fully modular hardware ecosystem. Dedicated PCBs (Control, Sensor, Brain, Power, etc.) communicate cleanly via standardized JST-PH cables.
+* 🛠️ **Smart Auto-Calibration:**<br> Features mechanical endstops for assembly validation and runtime algorithms that compensate for backlash and actuator latency.
+* 🧩 **STEM & Expansion Ready:**<br> Program the robot using [TNY-Coder](https://github.com/TNY-Robotics/TNY-Coder) (our block-based web app) or build custom hardware modules using the dorsal I2C/Power expansion port.
+* 🔋 **Industrial Power:**<br> A custom 3S 18650 battery pack capable of 15A continuous discharge, featuring an integrated BMS and Fuse, for 1h+ of runtime.
 
 ## 🧠 The Engineering: Beyond a Budget Robot
 
