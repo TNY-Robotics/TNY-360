@@ -16,19 +16,26 @@
 
 ---
 
-## 🚀 Start Building
+## 🚀 How to Build Your Own TNY-360
 
-Everything you need to build the TNY-360 is completely free and open-source.
-Follow the links below to find the technical files and documentation you need to get started!
+Everything you need to build this robot is 100% free and open-source. Instead of getting lost in the folders, we highly recommend following our official, step-by-step wiki:
 
-| Resource                | Description                                               | Location                                                                                       |
-| :---------------------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------- |
-| **💻 Firmware**        | ESP-IDF source code and drivers.                          | [`/Firmware`](./Firmware)                                                                      |
-| **📐 CAD & 3D Files**  | FreeCAD source files and STLs.                            | [`/CAD`](./CAD)                                                                                |
-| **📘 Servo Mod Guide** | Discover the Op-Amp buffer trick and mod your MG996R.     | [📖 Read Documentation](https://tny-robotics.com/docs/tny-360/anatomy/electronics/mg996r-mod) |
-| **📖 Assembly Guide**  | Full visual build manual, from PCB wiring to calibration. | [📖 Read Documentation](https://tny-robotics.com/docs/tny-360/practical-guide/)               |
-| **⚡ PCB Design**       | All PCBs Gerber, BOM, and Pick'n'Place files.             | [`/Electronics/PCBs`](./Electronics/PCBs)                                                      |
+<center>
 
+> ### **[👉 START HERE: The Official Step-by-Step Guide 👈](https://tny-robotics.com/docs/tny-360/practical-guide/sourcing)**
+> *From ordering the first screw to the assembing the last part, this guide covers it all.*
+
+</center>
+
+
+### 🗂️ Quick Links (For Advanced Makers)
+If you know what you are doing and just want the raw files, here is your toolkit:
+
+* 🛒 **[Bill of Materials (BOM)](https://tny-robotics.com/docs/tny-360/practical-guide/1.sourcing/)** - What to buy, tools needed, and where to find them.
+* 📐 **[CAD & 3D Files](./CAD)** - Grab the `.STL` and `.3MF` files for your 3D printer.
+* ⚡ **[PCB Designs (Gerbers)](./Electronics/PCBs)** - Files to order the custom PCBs used in the robot.
+* 🧠 **[ESP32 Firmware](./Firmware)** - The ESP-IDF C++ firmware & drivers powering the robot.
+* 🛠️ **[Servo Modding Tutorial](https://tny-robotics.com/docs/tny-360/anatomy/electronics/mg996r-mod)** - Learn the Op-Amp trick to get position-feedback on MG996R servos.
 
 ## ✨ Features
 
