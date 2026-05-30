@@ -93,7 +93,7 @@ constexpr float CONTROL_LOOP_DT_S = 1.0f / CONTROL_LOOP_FREQ_HZ;
 constexpr int CONTROL_LOOP_DT_MS = static_cast<int>(CONTROL_LOOP_DT_S * 1000);
 
 // Decision loop frequency
-constexpr int DECISION_LOOP_FREQ_HZ = 10; // Hz
+constexpr int DECISION_LOOP_FREQ_HZ = 30; // Hz
 constexpr float DECISION_LOOP_DT_S = 1.0f / DECISION_LOOP_FREQ_HZ;
 constexpr int DECISION_LOOP_DT_MS = static_cast<int>(DECISION_LOOP_DT_S * 1000);
 

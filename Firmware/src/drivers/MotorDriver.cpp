@@ -37,7 +37,7 @@ namespace MotorDriver
             esp_err_t err = pca9685_create(I2C::handle_primary, pca_info, &pca_handle);
             if (err != ESP_OK)
             {
-                LOG_ERROR(TAG, "Failed to create PCA9685 handle");
+                LOG_ERROR(TAG, "Failed to create PCA9685 handle with error : 0x%0x", err);
                 ErrorHandle(ErrorStruct::DriverInitFailed);
                 return Error::HardwareFailure;
             }
@@ -48,7 +48,7 @@ namespace MotorDriver
             esp_err_t err = pca9685_reset(pca_handle);
             if (err != ESP_OK)
             {
-                LOG_ERROR(TAG, "Failed to reset PCA9685");
+                LOG_ERROR(TAG, "Failed to reset PCA9685 with error : 0x%0x", err);
                 ErrorHandle(ErrorStruct::DriverInitFailed);
                 return Error::HardwareFailure;
             }
@@ -62,7 +62,7 @@ namespace MotorDriver
             esp_err_t err = pca9685_config(pca_handle, pca_config);
             if (err != ESP_OK)
             {
-                LOG_ERROR(TAG, "Failed to configure PCA9685");
+                LOG_ERROR(TAG, "Failed to configure PCA9685 with error : 0x%0x", err);
                 ErrorHandle(ErrorStruct::DriverInitFailed);
                 return Error::HardwareFailure;
             }
@@ -73,7 +73,7 @@ namespace MotorDriver
             esp_err_t err = pca9685_wake_up(pca_handle);
             if (err != ESP_OK)
             {
-                LOG_ERROR(TAG, "Failed to wake up PCA9685");
+                LOG_ERROR(TAG, "Failed to wake up PCA9685 with error : 0x%0x", err);
                 ErrorHandle(ErrorStruct::DriverInitFailed);
                 return Error::HardwareFailure;
             }
@@ -156,9 +156,9 @@ namespace MotorDriver
     
     Error SendData()
     {
-        if (pca9685_set_pwms(pca_handle, pwm_buffer) != ESP_OK)
+        if (esp_err_t err = pca9685_set_pwms(pca_handle, pwm_buffer); err != ESP_OK)
         {
-            LOG_ERROR(TAG, "Failed to set PWM values");
+            LOG_ERROR(TAG, "Failed to set PWM values with error : 0x%0x", err);
             return Error::HardwareFailure;
         }
         return Error::None;
