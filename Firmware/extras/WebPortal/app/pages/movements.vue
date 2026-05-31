@@ -5,7 +5,7 @@
             <div class="flex flex-col space-y-2 p-2">
                 <p class="text-xl">Translation X</p>
                 <div class="flex space-x-4">
-                    <USlider v-model="body.pos_x" :min="-20" :max="20" :step="1" class="w-lg" />
+                    <USlider v-model="body.pos_x" :min="-20" :max="20" :step="0.1" class="w-lg" />
                     <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.pos_x }}</code>
                     <p>cm</p>
                 </div>
@@ -13,7 +13,7 @@
             <div class="flex flex-col space-y-2 p-2">
                 <p class="text-xl">Translation Y</p>
                 <div class="flex space-x-4">
-                    <USlider v-model="body.pos_y" :min="-20" :max="20" :step="1" class="w-lg" />
+                    <USlider v-model="body.pos_y" :min="-20" :max="20" :step="0.1" class="w-lg" />
                     <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.pos_y }}</code>
                     <p>cm</p>
                 </div>
@@ -21,7 +21,7 @@
             <div class="flex flex-col space-y-2 p-2">
                 <p class="text-xl">Translation Z</p>
                 <div class="flex space-x-4">
-                    <USlider v-model="body.pos_z" :min="0" :max="20" :step="1" class="w-lg" />
+                    <USlider v-model="body.pos_z" :min="0" :max="20" :step="0.1" class="w-lg" />
                     <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.pos_z }}</code>
                     <p>cm</p>
                 </div>
@@ -29,7 +29,7 @@
             <div class="flex flex-col space-y-2 p-2">
                 <p class="text-xl">Rotation X</p>
                 <div class="flex space-x-4">
-                    <USlider v-model="body.rot_x" :min="-45" :max="45" :step="1" class="w-lg" />
+                    <USlider v-model="body.rot_x" :min="-45" :max="45" :step="0.1" class="w-lg" />
                     <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.rot_x }}</code>
                     <p>deg</p>
                 </div>
@@ -37,7 +37,7 @@
             <div class="flex flex-col space-y-2 p-2">
                 <p class="text-xl">Rotation Y</p>
                 <div class="flex space-x-4">
-                    <USlider v-model="body.rot_y" :min="-45" :max="45" :step="1" class="w-lg" />
+                    <USlider v-model="body.rot_y" :min="-45" :max="45" :step="0.1" class="w-lg" />
                     <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.rot_y }}</code>
                     <p>deg</p>
                 </div>
@@ -45,7 +45,7 @@
             <div class="flex flex-col space-y-2 p-2">
                 <p class="text-xl">Rotation Z</p>
                 <div class="flex space-x-4">
-                    <USlider v-model="body.rot_z" :min="-45" :max="45" :step="1" class="w-lg" />
+                    <USlider v-model="body.rot_z" :min="-45" :max="45" :step="0.1" class="w-lg" />
                     <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.rot_z }}</code>
                     <p>deg</p>
                 </div>
@@ -64,7 +64,7 @@
             <div class="flex flex-col space-y-2 p-2">
                 <p class="text-xl">Rotation speed</p>
                 <div class="flex space-x-4">
-                    <USlider v-model="rotation_speed" :min="0" :max="90" :step="5" class="w-lg" />
+                    <USlider v-model="rotation_speed" :min="0" :max="180" :step="5" class="w-lg" />
                     <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ rotation_speed }}</code>
                     <p>deg/s</p>
                 </div>
@@ -83,14 +83,14 @@ import { DEG2RAD } from 'three/src/math/MathUtils';
 
 const tny = useTNY360();
 
-const DEFAULT_HEIGHT = 13; // cm
+const DEFAULT_HEIGHT = 12; // cm
 
 // body control
 const body = reactive({
-    pos_x: 0,
+    pos_x: 1.5, // cm
     pos_y: 0,
     pos_z: DEFAULT_HEIGHT,
-    rot_x: 0,
+    rot_x: 0, // deg
     rot_y: 0,
     rot_z: 0,
 });
@@ -117,8 +117,8 @@ const keys = {
     pz: false,
     mz: false,
 };
-const translation_speed = ref(0.10); // m/s
-const rotation_speed = ref(45); // deg/s
+const translation_speed = ref(0.25); // m/s
+const rotation_speed = ref(80); // deg/s
 
 onMounted(() => {
     window.addEventListener('keydown', (event) => {
@@ -248,7 +248,7 @@ async function pollGamepad(gamepad: Gamepad) {
         const dpadLeft = gp.buttons[14]?.pressed;
         const dpadRight = gp.buttons[15]?.pressed;
 
-        const bodyAngle = 5; // degrees
+        const bodyAngle = 15; // degrees
         const bodyAngleY = ((dpadUp ? 1 : 0) + (dpadDown ? -1 : 0)) * bodyAngle;
         const bodyAngleX = ((dpadLeft ? -1 : 0) + (dpadRight ? 1 : 0)) * bodyAngle;
         try {
@@ -261,11 +261,6 @@ async function pollGamepad(gamepad: Gamepad) {
                 0,
             );
         } catch (err) {}
-
-        console.group(`Movement infos`);
-        console.log(`movement: x=${movement.x.toFixed(2)} m/s, y=${movement.y.toFixed(2)} m/s, z=${movement.z.toFixed(2)} deg/s`)
-        console.log(`posture: rot_x=${bodyAngleX} deg, rot_y=${bodyAngleY} deg`);
-        console.groupEnd();
     }
 
     if (shouldPoll) setTimeout(() => pollGamepad(gamepad), 100);

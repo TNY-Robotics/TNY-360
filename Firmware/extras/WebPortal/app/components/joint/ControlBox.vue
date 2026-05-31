@@ -27,8 +27,8 @@
                 </div>
             </div>
         </div>
-        <div class="flex flex-col space-y-3">
-            <!-- <div class="flex space-x-8 justify-between items-center">
+        <!-- <div class="flex flex-col space-y-3">
+            <div class="flex space-x-8 justify-between items-center">
                 <p> Calibration </p>
                 <UButton variant="soft" disabled :color="getCalibColor(calibrationState)" :label="calibrationState"/>
             </div>
@@ -36,8 +36,8 @@
                 <UButton variant="soft" label="Calibrate" icon="i-lucide-ruler" @click="onCalibrateClicked" />
                 <UButton v-if="calibrationState === 'CALIBRATED'" variant="soft" color="error" :loading="deleteCalibBtnLoading"
                     label="Delete Calibration" icon="i-lucide-trash" trailing @click="onDeleteCalibrationClicked" />
-            </div> -->
-        </div>
+            </div>
+        </div> -->
     </div>
     <!-- <JointCalibrationModal :index="index" :name="name" v-model:open="calibrationModalOpen" /> -->
 </template>
@@ -121,7 +121,7 @@ async function fetchInfosContinuous() {
         predictedAngle.value = Math.round((await tny.value?.joint.getEstimatedAngle(props.index) ?? 0) * RAD2DEG);
     } catch (err) { console.warn('Failed to get joint infos', err); }
 
-    if (shouldFetchInfos) setTimeout(fetchInfosContinuous, 1000);
+    if (shouldFetchInfos) setTimeout(fetchInfosContinuous, 500);
 }
 
 onMounted(async () => {
