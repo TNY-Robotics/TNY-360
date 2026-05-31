@@ -20,12 +20,14 @@ namespace IMUDriver
             return err;
         }
 
-        mpu6050_info_t mpu_info = MPU6050_DEFAULT_INFO();
-        mpu_info.clock_speed = 400'000; // Fast-mode
+        mpu6050_info_t mpu_info = {
+            .address = IMU_I2C_ADDR,
+            .clock_speed = IMU_I2C_CLOCK
+        };
 
         if (esp_err_t err = mpu6050_create(I2C::handle_primary, mpu_info, &mpu_handle); err != ESP_OK)
         {
-            LOG_ERROR(TAG, "Failed to create MPU6050 handle");
+            LOG_ERROR(TAG, "Failed to create MPU6050 handle with error: 0x%0x", err);
             ErrorHandle(ErrorStruct::IMUInitFailed);
             return Error::HardwareFailure;
         }
@@ -33,7 +35,7 @@ namespace IMUDriver
         // Note : Resetting it so it's in a known state
         if (esp_err_t err = mpu6050_reset(mpu_handle); err != ESP_OK)
         {
-            LOG_ERROR(TAG, "Failed to reset MPU6050");
+            LOG_ERROR(TAG, "Failed to reset MPU6050 with error: 0x%0x", err);
             ErrorHandle(ErrorStruct::IMUInitFailed);
             return Error::HardwareFailure;
         }
@@ -43,14 +45,14 @@ namespace IMUDriver
 
         if (esp_err_t err = mpu6050_config(&mpu_handle, mpu_config); err != ESP_OK)
         {
-            LOG_ERROR(TAG, "Failed to configure MPU6050");
+            LOG_ERROR(TAG, "Failed to configure MPU6050 with error: 0x%0x", err);
             ErrorHandle(ErrorStruct::IMUInitFailed);
             return Error::HardwareFailure;
         }
 
         if (esp_err_t err = mpu6050_wake_up(mpu_handle); err != ESP_OK)
         {
-            LOG_ERROR(TAG, "Failed to wake up MPU6050");
+            LOG_ERROR(TAG, "Failed to wake up MPU6050 with error: 0x%0x", err);
             ErrorHandle(ErrorStruct::IMUInitFailed);
             return Error::HardwareFailure;
         }
@@ -63,7 +65,7 @@ namespace IMUDriver
     {
         if (esp_err_t err = mpu6050_delete(mpu_handle); err != ESP_OK)
         {
-            LOG_ERROR(TAG, "Failed to delete MPU6050 handle");
+            LOG_ERROR(TAG, "Failed to delete MPU6050 handle with error: 0x%0x", err);
             return Error::HardwareFailure;
         }
         initialized = false;
@@ -77,7 +79,7 @@ namespace IMUDriver
 
         if (esp_err_t err = mpu6050_get_all(mpu_handle, &accel, &gyro, nullptr); err != ESP_OK)
         {
-            LOG_ERROR(TAG, "Failed to read sensor data from MPU6050");
+            LOG_ERROR(TAG, "Failed to read sensor data from MPU6050 with error: 0x%0x", err);
             return Error::HardwareFailure;
         }
 

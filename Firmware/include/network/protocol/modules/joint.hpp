@@ -180,7 +180,6 @@ namespace Joint
 
     static void SetJointAngles(const RequestContext& ctx, const uint8_t* payload)
     {
-        LOG_DEBUG("joint", "SetJointAngles");
         BinaryReader reader(payload, ctx.expected_len);
 
         float angles[14];
@@ -206,7 +205,6 @@ namespace Joint
 
     static void GetJointAngles(const RequestContext& ctx, const uint8_t* payload)
     {
-        LOG_DEBUG("joint", "GetJointAngles");
         float angles[14];
         for (int i = 0; i < 14; i++)
         {

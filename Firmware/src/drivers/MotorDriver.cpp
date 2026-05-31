@@ -32,7 +32,7 @@ namespace MotorDriver
         {
             pca9685_info_t pca_info = {
                 .address = MOTOR_DRIVER_I2C_ADDR,
-                .clock_speed = 1'000'000, // Fast-mode+ (1Mhz)
+                .clock_speed = MOTOR_DRIVER_I2C_CLOCK,
             };
             esp_err_t err = pca9685_create(I2C::handle_primary, pca_info, &pca_handle);
             if (err != ESP_OK)

@@ -114,7 +114,7 @@ constexpr float LEG_GROUNDED_THRESHOLD_V = 2.0f;
 // I2C address for the IMU (MPU6050)
 constexpr uint8_t IMU_I2C_ADDR = 0x68;
 // I2C clock speed for IMU communication
-constexpr uint32_t IMU_I2C_CLOCK = 100000; // 100kHz, could be up to 400kHz but i'm not 100% confident in the wiring
+constexpr uint32_t IMU_I2C_CLOCK = 400'000; // Hz
 // number of samples to gather for calibration
 constexpr uint16_t IMU_NB_CALIB_SAMPLES = 100;
 // NOTE : Internal robot imu update is driven by the main timer at 200Hz
@@ -124,7 +124,7 @@ constexpr uint16_t IMU_NB_CALIB_SAMPLES = 100;
 // I2C address for the motor driver (PCA9685)
 constexpr uint8_t MOTOR_DRIVER_I2C_ADDR = 0x40;
 // I2C clock speed for motor driver communication
-constexpr uint32_t MOTOR_DRIVER_I2C_CLOCK = 400'000; // Hz
+constexpr uint32_t MOTOR_DRIVER_I2C_CLOCK = 1'000'000; // Hz
 // PWM frequency for the motor driver (standard servo frequency)
 constexpr uint16_t MOTOR_DRIVER_PWM_FREQUENCY_HZ = 200; // In Hz.
 // NOTE : Internal robot motor update is driven by the main timer at CONTROL_LOOP_FREQ_HZ
