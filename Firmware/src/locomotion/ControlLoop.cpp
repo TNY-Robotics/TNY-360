@@ -294,8 +294,31 @@ Error ControlLoop::control_task()
     gait_planner.update(CONTROL_LOOP_DT_S, cartesian_state);
     perf_gait.stop();
 
-    // Animation override (breathing and all)
-    // TODO
+    // Animation override (leg override + body override)
+    for (uint8_t leg_id = 0; leg_id < (uint8_t) Leg::Id::Count; leg_id++)
+    {
+        IPC::LegOverride& leg_override = intent.leg_overrides[leg_id];
+        if (leg_override.mode == IPC::OverrideMode::None) continue;
+        else if (leg_override.mode == IPC::OverrideMode::Absolute)
+        {
+            cartesian_state.legs[leg_id].target_pos = leg_override.value_pos;
+        }
+        else if (leg_override.mode == IPC::OverrideMode::Relative)
+        {
+            cartesian_state.legs[leg_id].target_pos += leg_override.value_pos;
+        }
+    }
+    IPC::BodyOverride& body_override = intent.body_override;
+    if (body_override.mode == IPC::OverrideMode::Absolute)
+    {
+        cartesian_state.body_pos = body_override.value_pos;
+        cartesian_state.body_rot = body_override.value_rot;
+    }
+    else if (body_override.mode == IPC::OverrideMode::Relative)
+    {
+        cartesian_state.body_pos += body_override.value_pos;
+        cartesian_state.body_rot += body_override.value_rot;
+    }
 
     /*** 3 - CONVERT CARTESIAN CONTROL TO JOINT CONTROL ***/
 
@@ -305,13 +328,7 @@ Error ControlLoop::control_task()
     perf_ik.start();
     if (Error err = kinematics_engine.computeBodyIK(cartesian_state, joint_state); err != Error::None)
     {
-        LOG_ERROR(TAG, "KinematicsEngine failed to calculate body IK");
-        // LOG_DEBUG(TAG, "Body position = (%2.1f, %2.1f, %2.1f)", cartesian_state.body_pos.x, cartesian_state.body_pos.y, cartesian_state.body_pos.z);
-        // LOG_DEBUG(TAG, "Body rotation = (%2.1f, %2.1f, %2.1f)", cartesian_state.body_rot.x, cartesian_state.body_rot.y, cartesian_state.body_rot.z);
-        // LOG_DEBUG(TAG, "Feet FL position = (%2.1f, %2.1f, %2.1f)", cartesian_state.legs[(int) Leg::Id::FrontLeft].target_pos.x, cartesian_state.legs[(int) Leg::Id::FrontLeft].target_pos.y, cartesian_state.legs[(int) Leg::Id::FrontLeft].target_pos.z);
-        // LOG_DEBUG(TAG, "Feet BL position = (%2.1f, %2.1f, %2.1f)", cartesian_state.legs[(int) Leg::Id::BackLeft].target_pos.x, cartesian_state.legs[(int) Leg::Id::BackLeft].target_pos.y, cartesian_state.legs[(int) Leg::Id::BackLeft].target_pos.z);
-        // LOG_DEBUG(TAG, "Feet BR position = (%2.1f, %2.1f, %2.1f)", cartesian_state.legs[(int) Leg::Id::BackRight].target_pos.x, cartesian_state.legs[(int) Leg::Id::BackRight].target_pos.y, cartesian_state.legs[(int) Leg::Id::BackRight].target_pos.z);
-        // LOG_DEBUG(TAG, "Feet FR position = (%2.1f, %2.1f, %2.1f)", cartesian_state.legs[(int) Leg::Id::FrontRight].target_pos.x, cartesian_state.legs[(int) Leg::Id::FrontRight].target_pos.y, cartesian_state.legs[(int) Leg::Id::FrontRight].target_pos.z);
+        LOG_ERROR(TAG, "KinematicsEngine failed to calculate body IK with error: %s", ErrorToString(err));
         return err;
     }
     perf_ik.stop();
@@ -361,7 +378,7 @@ Error ControlLoop::control_task()
     perf_driver.start();
     if (Error err = MotorDriver::SendData(); err != Error::None)
     {
-        LOG_ERROR(TAG, "Error sending MotorDriver data");
+        LOG_ERROR(TAG, "Error sending MotorDriver data with error: %s", ErrorToString(err));
     }
     perf_driver.stop();
 

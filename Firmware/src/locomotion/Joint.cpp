@@ -218,7 +218,8 @@ Error Joint::setVelocity(float velocity_rad_s)
     // clamp velocity to allowed range
     if (velocity_rad_s < 0.f || velocity_rad_s > MAX_VELOCITY_RAD_S)
     {
-        LOG_ERROR(TAG, "JOINT %d - Requested velocity %.2f rad/s is out of bounds (0 - %.2f rad/s)", id, velocity_rad_s, MAX_VELOCITY_RAD_S);
+        // NOTE : Not logging error because we are in the control loop (200Hz) and we don't want to slow it down with logging
+        // LOG_ERROR(TAG, "JOINT %d - Requested velocity %.2f rad/s is out of bounds (0 - %.2f rad/s)", id, velocity_rad_s, MAX_VELOCITY_RAD_S);
         return Error::InvalidParameters;
     }
     
