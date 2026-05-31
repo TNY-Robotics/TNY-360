@@ -142,7 +142,7 @@ private:
     Vec3f askedBodyVel;
     Vec3f askedBodyRot;
     Vec3f askedBodyPos;
-    GaitPlanner::GaitType askedGait;
+    GaitPlanner::GaitType askedGait = GaitPlanner::GaitType::Walk;
     IPC::LegOverride askedLegOverrides[(int) Leg::Id::Count];
     IPC::JointOverride askedJointAngles[(int) Joint::Id::Count];
     uint32_t last_ask_timestamp_ms = 0;
