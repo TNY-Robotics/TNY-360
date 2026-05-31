@@ -174,10 +174,16 @@ float blink_duration = 150.f; // in ms
 bool is_blinking = false;
 uint32_t last_look_move = 0;
 uint32_t look_move_wait_time = 0;
+uint32_t last_smalllook_move = 0;
+uint32_t smalllook_move_wait_time = 0;
 float last_look_x_shift = 0.0f;
 float last_look_y_shift = 0.0f;
 float look_x_shift = 0.0f;
 float look_y_shift = 0.0f;
+float smalllook_x_shift = 0.0f;
+float smalllook_y_shift = 0.0f;
+float last_smalllook_x_shift = 0.0f;
+float last_smalllook_y_shift = 0.0f;
 
 void Behavior_Blink(FaceEyesInfo& eyes_info, uint32_t time_ms)
 {
@@ -226,16 +232,30 @@ void Behavior_Idle(FaceEyesInfo& eyes_info, uint32_t time_ms)
     if ((time_ms - last_look_move) > look_move_wait_time)
     {
         last_look_move = time_ms;
-        look_move_wait_time = 1000 + (esp_random() % 4000); // next move in 1-5s
+        look_move_wait_time = 2000 + (esp_random() % 4000); // next move in 2-6s
 
-        // Random look position between -1.0 and 1.0
-        look_x_shift = ((esp_random() % 2000) / 1000.0f) - 1.0f;
-        look_y_shift = ((esp_random() % 2000) / 1000.0f) - 1.0f;
+        // Random look position between -0.9 and 0.9
+        look_x_shift = ((esp_random() % 1800) / 1000.0f) - 0.9f;
+        look_y_shift = ((esp_random() % 1800) / 1000.0f) - 0.9f;
+    }
+
+    // Move eyes every 1 to 5 seconds
+    if ((time_ms - last_smalllook_move) > smalllook_move_wait_time)
+    {
+        last_smalllook_move = time_ms;
+        smalllook_move_wait_time = 300 + (esp_random() % 500); // next move in 300-800ms
+
+        // Random look position between -0.1 and 0.1
+        smalllook_x_shift = ((esp_random() % 200) / 1000.0f) - 0.1f;
+        smalllook_y_shift = ((esp_random() % 200) / 1000.0f) - 0.1f;
     }
 
     last_look_x_shift += (look_x_shift - last_look_x_shift) * 0.1f;
     last_look_y_shift += (look_y_shift - last_look_y_shift) * 0.1f;
 
-    eyes_info.look_x += last_look_x_shift;
-    eyes_info.look_y += last_look_y_shift;
+    last_smalllook_x_shift += (smalllook_x_shift - last_smalllook_x_shift) * 0.5f;
+    last_smalllook_y_shift += (smalllook_y_shift - last_smalllook_y_shift) * 0.5f;
+
+    eyes_info.look_x += last_look_x_shift + last_smalllook_x_shift;
+    eyes_info.look_y += last_look_y_shift + last_smalllook_y_shift;
 }
