@@ -124,6 +124,17 @@ Error get_physical_bound(PhysicalBoundParams params, MotorDriver::Channel motor_
     AnalogDriver::internal::select(analog_channel);
     vTaskDelay(pdMS_TO_TICKS(1));
 
+    if (params.pwm_faststep <= 0)
+    {
+        LOG_DEBUG("get_physical_bound", "Invalid fast step, defaulting to 1");
+        params.pwm_faststep = 1;
+    }
+    if (params.pwm_slowstep <= 0)
+    {
+        LOG_DEBUG("get_physical_bound", "Invalid slow step, defaulting to 1");
+        params.pwm_slowstep = 1;
+    }
+
     // =========================================================================
     // STEP 0 : Profiling inside Safe Zone
     // =========================================================================

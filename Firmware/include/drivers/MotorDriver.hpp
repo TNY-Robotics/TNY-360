@@ -15,7 +15,7 @@ namespace MotorDriver
      */
     constexpr static Value MS_TO_PWM(float ms)
     {
-        return 4096.f * ms / (1000.f / MOTOR_DRIVER_PWM_FREQUENCY_HZ);
+        return 4096.f * ms / (1000.f / (float)MOTOR_DRIVER_PWM_FREQUENCY_HZ);
     }
 
     /**
@@ -25,7 +25,7 @@ namespace MotorDriver
      */
     constexpr static float PWM_TO_MS(Value pwm)
     {
-        return pwm * (1000.f / MOTOR_DRIVER_PWM_FREQUENCY_HZ) / 4096.f;
+        return pwm * (1000.f / (float)MOTOR_DRIVER_PWM_FREQUENCY_HZ) / 4096.f;
     }
 
     /**
