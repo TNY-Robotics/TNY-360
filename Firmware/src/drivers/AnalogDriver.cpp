@@ -171,7 +171,7 @@ namespace AnalogDriver
         for (size_t i = 0; i < static_cast<size_t>(CHANNEL_COUNT); i++)
         {
             outVoltages[i] = voltages_buffer[i];
-        }
+        } // maybe memcpy?
         return Error::None;
     }
 

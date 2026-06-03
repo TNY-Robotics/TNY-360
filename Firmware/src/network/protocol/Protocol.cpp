@@ -9,6 +9,8 @@
 #include "network/protocol/modules/joint.hpp"
 #include "network/protocol/modules/motor.hpp"
 #include "network/protocol/modules/imu.hpp"
+#include "network/protocol/modules/power.hpp"
+#include "network/protocol/modules/adc.hpp"
 #include "network/protocol/modules/wifi.hpp"
 
 namespace Protocol
@@ -26,6 +28,8 @@ Error Protocol::Init()
     Joint::Register(dispatcher);
     Motor::Register(dispatcher);
     IMU::Register(dispatcher);
+    Power::Register(dispatcher);
+    ADC::Register(dispatcher);
     WiFi::Register(dispatcher);
     // ErrorHandle(ErrorStruct::ProtocolInitFailed);
     return Error::None;
