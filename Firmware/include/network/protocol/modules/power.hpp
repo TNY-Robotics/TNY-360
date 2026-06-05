@@ -12,7 +12,7 @@ namespace Power
     static void GetVoltage(const RequestContext& ctx, const uint8_t* payload)
     {
         if (Error err = PowerDriver::ReadData(); err != Error::None) {
-            ctx.respond(ResponseStatus::UnnkownError);
+            ctx.respond(ResponseStatus::UnknownError);
             return;
         }
         PowerDriver::Data data = PowerDriver::GetData();
@@ -22,7 +22,7 @@ namespace Power
     static void GetCurrent(const RequestContext& ctx, const uint8_t* payload)
     {
         if (Error err = PowerDriver::ReadData(); err != Error::None) {
-            ctx.respond(ResponseStatus::UnnkownError);
+            ctx.respond(ResponseStatus::UnknownError);
             return;
         }
         PowerDriver::Data data = PowerDriver::GetData();
@@ -32,7 +32,7 @@ namespace Power
     static void GetPower(const RequestContext& ctx, const uint8_t* payload)
     {
         if (Error err = PowerDriver::ReadData(); err != Error::None) {
-            ctx.respond(ResponseStatus::UnnkownError);
+            ctx.respond(ResponseStatus::UnknownError);
             return;
         }
         PowerDriver::Data data = PowerDriver::GetData();

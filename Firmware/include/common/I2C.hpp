@@ -17,4 +17,8 @@ namespace I2C
     Error Init();
 
     Error ProbeAddress(i2c_master_bus_handle_t handle, uint8_t address);
+
+    Error WriteRegisters(i2c_master_bus_handle_t handle, uint8_t address, uint8_t reg_address, const uint8_t* data, size_t length);
+
+    Error ReadRegisters(i2c_master_bus_handle_t handle, uint8_t address, uint8_t reg_address, uint8_t* data, size_t length);
 }

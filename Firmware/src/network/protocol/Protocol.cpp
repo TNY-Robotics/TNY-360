@@ -11,6 +11,7 @@
 #include "network/protocol/modules/imu.hpp"
 #include "network/protocol/modules/power.hpp"
 #include "network/protocol/modules/adc.hpp"
+#include "network/protocol/modules/i2c.hpp"
 #include "network/protocol/modules/wifi.hpp"
 
 namespace Protocol
@@ -30,6 +31,7 @@ Error Protocol::Init()
     IMU::Register(dispatcher);
     Power::Register(dispatcher);
     ADC::Register(dispatcher);
+    I2C::Register(dispatcher);
     WiFi::Register(dispatcher);
     // ErrorHandle(ErrorStruct::ProtocolInitFailed);
     return Error::None;

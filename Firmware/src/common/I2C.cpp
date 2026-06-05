@@ -2,6 +2,7 @@
 #include "common/Log.hpp"
 #include "common/config.hpp"
 #include "common/LED.hpp"
+#include <memory.h>
 
 namespace I2C
 {
@@ -76,5 +77,58 @@ namespace I2C
             return Error::None;
         }
         return Error::NotFound;
+    }
+
+    Error WriteRegisters(i2c_master_bus_handle_t handle, uint8_t address, uint8_t reg_address, const uint8_t* data, size_t length)
+    {
+        i2c_device_config_t dev_cfg = {};
+        dev_cfg.dev_addr_length = I2C_ADDR_BIT_LEN_7;
+        dev_cfg.device_address = address;
+        dev_cfg.scl_speed_hz = 400'000; // TODO : Maybe this should be configurable later?
+
+        i2c_master_dev_handle_t dev_handle;
+        if (i2c_master_bus_add_device(handle, &dev_cfg, &dev_handle) != ESP_OK) {
+            return Error::SoftwareFailure;
+        }
+
+        uint8_t* buffer = (uint8_t*)malloc(length + 1);
+        if (buffer == nullptr) {
+            i2c_master_bus_rm_device(dev_handle);
+            return Error::OutOfMemory;
+        }
+        
+        buffer[0] = reg_address;
+        memcpy(&buffer[1], data, length);
+
+        esp_err_t err = i2c_master_transmit(dev_handle, buffer, length + 1, 1000); // Timeout 1000ms
+
+        free(buffer);
+        i2c_master_bus_rm_device(dev_handle);
+
+        return (err == ESP_OK) ? Error::None : Error::SoftwareFailure;
+    }
+
+    Error ReadRegisters(i2c_master_bus_handle_t handle, uint8_t address, uint8_t reg_address, uint8_t* data, size_t length)
+    {
+        i2c_device_config_t dev_cfg = {};
+        dev_cfg.dev_addr_length = I2C_ADDR_BIT_LEN_7;
+        dev_cfg.device_address = address;
+        dev_cfg.scl_speed_hz = 400'000; // TODO : Maybe this should be configurable later?
+
+        i2c_master_dev_handle_t dev_handle;
+        if (i2c_master_bus_add_device(handle, &dev_cfg, &dev_handle) != ESP_OK) {
+            return Error::SoftwareFailure;
+        }
+
+        esp_err_t err = i2c_master_transmit_receive(
+            dev_handle, 
+            &reg_address, 1,
+            data, length,
+            1000
+        );
+
+        i2c_master_bus_rm_device(dev_handle);
+
+        return (err == ESP_OK) ? Error::None : Error::SoftwareFailure;
     }
 }
