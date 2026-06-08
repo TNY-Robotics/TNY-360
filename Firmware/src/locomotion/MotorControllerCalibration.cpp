@@ -122,8 +122,8 @@ Error MotorController::run_calibration_sequence()
     {
         PhysicalBoundParams params;
         params.pwm_center = pwm_center;
-        params.pwm_max = MotorDriver::MS_TO_PWM(2.8);
-        params.pwm_min = MotorDriver::MS_TO_PWM(0.2);
+        params.pwm_max = MotorDriver::MS_TO_PWM(2.9);
+        params.pwm_min = MotorDriver::MS_TO_PWM(0.1);
         params.pwm_safe = MotorDriver::MS_TO_PWM(0.3);
         params.direction = -1;
         if (Error err = get_physical_bound(params, motor_channel, analog_channel, min_bound); err != Error::None)
@@ -140,8 +140,8 @@ Error MotorController::run_calibration_sequence()
     {
         PhysicalBoundParams params;
         params.pwm_center = pwm_center;
-        params.pwm_max = MotorDriver::MS_TO_PWM(2.8);
-        params.pwm_min = MotorDriver::MS_TO_PWM(0.2);
+        params.pwm_max = MotorDriver::MS_TO_PWM(2.9);
+        params.pwm_min = MotorDriver::MS_TO_PWM(0.1);
         params.pwm_safe = MotorDriver::MS_TO_PWM(0.3);
         params.direction = 1;
         if (Error err = get_physical_bound(params, motor_channel, analog_channel, max_bound); err != Error::None)
