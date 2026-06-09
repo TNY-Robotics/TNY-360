@@ -29,6 +29,7 @@ const pages = [
     { name: 'Joints', path: '/joints' },
     { name: 'Movements', path: '/movements' },
     { name: 'View', path: '/view' },
+    { name: 'Advanced', path: '/advanced' },
 ];
 const selected = (path: string) => {
     return path === useRoute().path;

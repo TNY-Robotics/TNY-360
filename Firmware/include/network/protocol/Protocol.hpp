@@ -12,6 +12,9 @@ namespace Protocol
         UnknownModule,
         UnknownAction,
         InvalidParameters,
+        UnknownError,
+        NotFound,
+        OutOfMemory
     };
 
     enum class MessageType: uint8_t

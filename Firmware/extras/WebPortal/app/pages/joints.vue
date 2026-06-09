@@ -1,6 +1,5 @@
 <template>
     <div>
-        
         <div v-for="leg in joints" :key="leg.name" class="p-4">
             <div class="flex items-center justify-start space-x-4">
                 <h2 class="font-bold text-xl"> {{ leg.name }} </h2>
@@ -14,7 +13,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 </template>
 

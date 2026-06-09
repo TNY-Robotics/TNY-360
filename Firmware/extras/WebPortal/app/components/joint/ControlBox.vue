@@ -27,22 +27,23 @@
                 </div>
             </div>
         </div>
-        <!-- <div class="flex flex-col space-y-3">
+        <div class="flex flex-col space-y-3">
             <div class="flex space-x-8 justify-between items-center">
                 <p> Calibration </p>
-                <UButton variant="soft" disabled :color="getCalibColor(calibrationState)" :label="calibrationState"/>
+                <UButton variant="soft" disabled :color="getCalibColor(calibrationState)" :label="getCalibLabel(calibrationState)"/>
             </div>
             <div class="flex justify-between items-center">
                 <UButton variant="soft" label="Calibrate" icon="i-lucide-ruler" @click="onCalibrateClicked" />
-                <UButton v-if="calibrationState === 'CALIBRATED'" variant="soft" color="error" :loading="deleteCalibBtnLoading"
-                    label="Delete Calibration" icon="i-lucide-trash" trailing @click="onDeleteCalibrationClicked" />
+                <!-- <UButton v-if="calibrationState === 'CALIBRATED'" variant="soft" color="error" :loading="deleteCalibBtnLoading"
+                    label="Delete Calibration" icon="i-lucide-trash" trailing @click="onDeleteCalibrationClicked" /> -->
             </div>
-        </div> -->
+        </div>
     </div>
-    <!-- <JointCalibrationModal :index="index" :name="name" v-model:open="calibrationModalOpen" /> -->
+    <JointCalibrationModal :index="index" :name="name" v-model:open="calibrationModalOpen" />
 </template>
 
 <script lang="ts" setup>
+import { MotorCalibrationState } from '@tny-robotics/sdk';
 import { RAD2DEG } from 'three/src/math/MathUtils';
 
 const tny = useTNY360();
@@ -80,25 +81,34 @@ watch(targetAngle, (newAngle) => {
     }, 100);
 });
 
-// const calibrationState = ref<CalibrationState>('UNCALIBRATED');
-// function getCalibColor(state: CalibrationState) {
-//     return ({
-//         UNCALIBRATED: 'error',
-//         CALIBRATING: 'warning',
-//         CALIBRATED: 'success',
-//     }[state]) as 'error'|'warning'|'success';
-// }
+const calibrationState = ref<MotorCalibrationState>(MotorCalibrationState.Uncalibrated);
+function getCalibColor(state: MotorCalibrationState) {
+    return ({
+        [MotorCalibrationState.Uncalibrated]: 'error',
+        [MotorCalibrationState.Calibrating]: 'warning',
+        [MotorCalibrationState.Calibrated]: 'success',
+        [MotorCalibrationState.Error]: 'error',
+    }[state]) as 'error'|'warning'|'success';
+}
+function getCalibLabel(state: MotorCalibrationState) {
+    return ({
+        [MotorCalibrationState.Uncalibrated]: 'Uncalibrated',
+        [MotorCalibrationState.Calibrating]: 'Calibrating',
+        [MotorCalibrationState.Calibrated]: 'Calibrated',
+        [MotorCalibrationState.Error]: 'Error',
+    }[state]) as string;
+}
 
-// const calibrationModalOpen = ref(false);
-// function onCalibrateClicked() {
-//     calibrationModalOpen.value = true;
-// }
+const calibrationModalOpen = ref(false);
+function onCalibrateClicked() {
+    calibrationModalOpen.value = true;
+}
 
 // const deleteCalibBtnLoading = ref(false);
 // async function onDeleteCalibrationClicked() {
 //     deleteCalibBtnLoading.value = true;
 //     try {
-//         await remote.deleteJointCalibration(props.index);
+//         // await tny.value?.motor.setCalibrationData(props.index);
 //     } catch (err) {
 //         console.error("Error deleting calibration data :", err);
 //     }
@@ -106,16 +116,16 @@ watch(targetAngle, (newAngle) => {
 //     calibrationState.value = await remote.getJointCalibrationState(props.index);
 // }
 
-// watch(calibrationModalOpen, async (newVal) => {
-//     calibrationState.value = await remote.getJointCalibrationState(props.index);
-//     enabled.value = await remote.getJointState(props.index);
-// });
+watch(calibrationModalOpen, async (newVal) => {
+    calibrationState.value = await tny.value?.motor.getCalibrationState(props.index) || MotorCalibrationState.Uncalibrated;
+    enabled.value = await tny.value?.joint.getEnabled(props.index) || false;
+});
 
 let shouldFetchInfos = false;
 async function fetchInfosContinuous() {
     try {
         enabled.value = await tny.value?.joint.getEnabled(props.index) || false;
-        // calibrationState.value = await tny.value?.joint.getCalibrationState(props.index) || 'UNCALIBRATED';
+        calibrationState.value = await tny.value?.motor.getCalibrationState(props.index) || MotorCalibrationState.Uncalibrated;
         modelAngle.value = Math.round((await tny.value?.joint.getModelAngle(props.index) ?? 0) * RAD2DEG);
         feedbackAngle.value = Math.round((await tny.value?.joint.getFeedbackAngle(props.index) ?? 0) * RAD2DEG);
         predictedAngle.value = Math.round((await tny.value?.joint.getEstimatedAngle(props.index) ?? 0) * RAD2DEG);
