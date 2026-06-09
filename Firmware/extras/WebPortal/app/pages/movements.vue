@@ -1,60 +1,60 @@
 <template>
     <div class="relative">
         <div class="flex flex-col space-y-4 p-4">
-            <h1 class="text-2xl font-bold">Body control</h1>
+            <h2>Body control</h2>
             <div class="flex flex-col space-y-2 p-2">
-                <p class="text-xl">Translation X</p>
+                <p class="text-lg">Translation X</p>
                 <div class="flex space-x-4">
-                    <USlider v-model="body.pos_x" :min="-20" :max="20" :step="0.1" class="w-lg" />
+                    <USlider v-model="body.pos_x" :min="-10" :max="10" :step="0.5" class="w-lg" />
                     <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.pos_x }}</code>
                     <p>cm</p>
                 </div>
             </div>
             <div class="flex flex-col space-y-2 p-2">
-                <p class="text-xl">Translation Y</p>
+                <p class="text-lg">Translation Y</p>
                 <div class="flex space-x-4">
-                    <USlider v-model="body.pos_y" :min="-20" :max="20" :step="0.1" class="w-lg" />
+                    <USlider v-model="body.pos_y" :min="-10" :max="10" :step="0.5" class="w-lg" />
                     <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.pos_y }}</code>
                     <p>cm</p>
                 </div>
             </div>
             <div class="flex flex-col space-y-2 p-2">
-                <p class="text-xl">Translation Z</p>
+                <p class="text-lg">Translation Z</p>
                 <div class="flex space-x-4">
-                    <USlider v-model="body.pos_z" :min="0" :max="20" :step="0.1" class="w-lg" />
+                    <USlider v-model="body.pos_z" :min="5" :max="20" :step="0.5" class="w-lg" />
                     <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.pos_z }}</code>
                     <p>cm</p>
                 </div>
             </div>
             <div class="flex flex-col space-y-2 p-2">
-                <p class="text-xl">Rotation X</p>
+                <p class="text-lg">Rotation X</p>
                 <div class="flex space-x-4">
-                    <USlider v-model="body.rot_x" :min="-45" :max="45" :step="0.1" class="w-lg" />
+                    <USlider v-model="body.rot_x" :min="-45" :max="45" :step="1" class="w-lg" />
                     <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.rot_x }}</code>
                     <p>deg</p>
                 </div>
             </div>
             <div class="flex flex-col space-y-2 p-2">
-                <p class="text-xl">Rotation Y</p>
+                <p class="text-lg">Rotation Y</p>
                 <div class="flex space-x-4">
-                    <USlider v-model="body.rot_y" :min="-45" :max="45" :step="0.1" class="w-lg" />
+                    <USlider v-model="body.rot_y" :min="-45" :max="45" :step="1" class="w-lg" />
                     <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.rot_y }}</code>
                     <p>deg</p>
                 </div>
             </div>
             <div class="flex flex-col space-y-2 p-2">
-                <p class="text-xl">Rotation Z</p>
+                <p class="text-lg">Rotation Z</p>
                 <div class="flex space-x-4">
-                    <USlider v-model="body.rot_z" :min="-45" :max="45" :step="0.1" class="w-lg" />
+                    <USlider v-model="body.rot_z" :min="-45" :max="45" :step="1" class="w-lg" />
                     <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ body.rot_z }}</code>
                     <p>deg</p>
                 </div>
             </div>
         </div>
         <div class="flex flex-col space-y-4 p-4">
-            <h1 class="text-2xl font-bold">Movement Control</h1>
+            <h2>Movement Control</h2>
             <div class="flex flex-col space-y-2 p-2">
-                <p class="text-xl">Translation speed</p>
+                <p class="text-lg">Translation speed</p>
                 <div class="flex space-x-4">
                     <USlider v-model="translation_speed" :min="0.0" :max="0.8" :step="0.05" class="w-lg" />
                     <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ translation_speed }}</code>
@@ -62,7 +62,7 @@
                 </div>
             </div>
             <div class="flex flex-col space-y-2 p-2">
-                <p class="text-xl">Rotation speed</p>
+                <p class="text-lg">Rotation speed</p>
                 <div class="flex space-x-4">
                     <USlider v-model="rotation_speed" :min="0" :max="180" :step="5" class="w-lg" />
                     <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ rotation_speed }}</code>
@@ -83,7 +83,7 @@ import { DEG2RAD } from 'three/src/math/MathUtils';
 
 const tny = useTNY360();
 
-const DEFAULT_HEIGHT = 12; // cm
+const DEFAULT_HEIGHT = 12.5; // cm
 
 // body control
 const body = reactive({

@@ -2,7 +2,7 @@
     <UModal :title="`Calibration - ${name}`" v-model:open="choiceModalOpen">
         <template #body>
             <div class="flex w-full h-full space-x-8">
-                <button class="calib-choice-btn flex flex-col space-y-4 text-center" @click="manualModalOpen = true">
+                <button disabled class="calib-choice-btn-disabled flex flex-col space-y-4 text-center" @click="manualModalOpen = true">
                     <div class="flex space-x-2 items-center">
                         <UIcon name="lucide:settings-2" class="w-8 h-8" />
                         <p class="text-xl font-semibold"> Manual </p>
@@ -23,7 +23,7 @@
             </div>
         </template>
     </UModal>
-    <UModal :title="`Manual Calibration - ${name}`" v-model:open="manualModalOpen" :close="false" :dismissible="false">
+    <!-- <UModal :title="`Manual Calibration - ${name}`" v-model:open="manualModalOpen" :close="false" :dismissible="false">
         <template #body>
             <div class="space-y-2">
                 <div class="flex space-x-4 justify-between w-full items-center">
@@ -62,13 +62,13 @@
                 <UButton :loading="manualModalSaveLoading" label="Save" variant="soft" color="primary" icon="lucide:check" trailing @click="onManualModalSaveClicked" />
             </div>
         </template>
-    </UModal>
+    </UModal> -->
     <UModal :title="`Automatic Calibration - ${name}`" v-model:open="automaticModalOpen" :close="false" :dismissible="false">
         <template #body>
             <div class="space-y-4">
                 <div class="flex justify-between w-full">
-                    <h2 class="text-xl font-semibold"> {{ autoModalData.topMessage }} </h2>
-                    <h2 class="text-xl font-semibold"> {{ autoModalData.topProgress }} </h2>
+                    <h3> {{ autoModalData.topMessage }} </h3>
+                    <p> {{ autoModalData.topProgress }} </p>
                 </div>
                 <span class="flex w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700">
                     <span ref="autoModalProgress" class="flex h-full rounded-full bg-primary-500 dark:bg-primary-500"
@@ -89,7 +89,9 @@
 </template>
 
 <script setup lang="ts">
-const remote = useRemote();
+import { MotorCalibrationState } from '@tny-robotics/sdk';
+
+const tny = useTNY360();
 
 const props = defineProps<{
     index: number,
@@ -126,39 +128,39 @@ function onModalChanged(newVal: boolean) {
 watch(manualModalOpen, onModalChanged);
 watch(automaticModalOpen, onModalChanged);
 
-watch(manualModalOpen, (newVal) => { if (newVal) onManualCalibrationNModalOpened() });
+// watch(manualModalOpen, (newVal) => { if (newVal) onManualCalibrationNModalOpened() });
 watch(automaticModalOpen, (newVal) => { if (newVal) onAutomaticCalibrationNModalOpened() });
 
 /// MANUAL CALIBRATION MODAL ///
-const manualModalData = reactive({
-    calib_data: {
-        min_pwm: 0,
-        max_pwm: 0,
-        min_voltage: 0,
-        max_voltage: 0,
-        feedback_noise: 0,
-        pwm_deadband: 0,
-        feedback_latency_ms: 0,
-    } as CalibrationData
-});
-const manualModalSaveLoading = ref(false);
-async function onManualCalibrationNModalOpened() {
-    manualModalData.calib_data = await remote.getJointCalibrationData(props.index);
-}
-async function onManualModalCancelClicked() {
-    manualModalOpen.value = false;
-}
-async function onManualModalSaveClicked() {
-    manualModalSaveLoading.value = true;
-    try {
-        await remote.setJointCalibrationData(props.index, manualModalData.calib_data);
-    } catch (err) {
-        console.error("Error saving joint calibration data : ", err);
-    }
-    manualModalSaveLoading.value = false;
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    manualModalOpen.value = false;
-}
+// const manualModalData = reactive({
+//     calib_data: {
+//         min_pwm: 0,
+//         max_pwm: 0,
+//         min_voltage: 0,
+//         max_voltage: 0,
+//         feedback_noise: 0,
+//         pwm_deadband: 0,
+//         feedback_latency_ms: 0,
+//     } as CalibrationData
+// });
+// const manualModalSaveLoading = ref(false);
+// async function onManualCalibrationNModalOpened() {
+//     manualModalData.calib_data = await remote.getJointCalibrationData(props.index);
+// }
+// async function onManualModalCancelClicked() {
+//     manualModalOpen.value = false;
+// }
+// async function onManualModalSaveClicked() {
+//     manualModalSaveLoading.value = true;
+//     try {
+//         await remote.setJointCalibrationData(props.index, manualModalData.calib_data);
+//     } catch (err) {
+//         console.error("Error saving joint calibration data : ", err);
+//     }
+//     manualModalSaveLoading.value = false;
+//     await new Promise((resolve) => setTimeout(resolve, 200));
+//     manualModalOpen.value = false;
+// }
 
 /// AUTOMATIC CALIBRATION MODAL ///
 
@@ -179,7 +181,7 @@ async function onAutomaticCalibrationNModalOpened() {
     autoModalData.description = '';
 
     try {
-        await remote.startJointCalibration(props.index);
+        await tny.value?.motor.startCalibration(props.index, true);
         autoModalCalibPollingInterval = setInterval(() => {
             fetchAutoCalibProgress();
         }, 500);
@@ -188,21 +190,21 @@ async function onAutomaticCalibrationNModalOpened() {
     }
 }
 async function fetchAutoCalibProgress() {
-    const progress = await remote.getJointCalibrationProgress(props.index);
-    const status = await remote.getJointCalibrationState(props.index);
+    const progress = await tny.value?.motor.getCalibrationProgress(props.index) || 0;
+    const status = await tny.value?.motor.getCalibrationState(props.index);
 
     autoModalData.topMessage = 'Calibrating ...';
     autoModalData.description = 'Joint calibration can take up to 2 minutes.';
     autoModalData.topProgress = `${Math.round(progress*100)}%`;
     if (autoModalProgress.value) autoModalProgress.value.style.width = `${Math.round(progress*100)}%`;
 
-    if (status === 'UNCALIBRATED') { // error
+    if (status === MotorCalibrationState.Error) { // error
         autoModalData.topMessage = 'Something went wrong :/';
         autoModalData.description = 'The calibration failed. Please refer to the documentation for troubleshooting.';
         autoModalData.topProgress = '';
     }
     
-    if (status === 'CALIBRATED') { // success !
+    if (status === MotorCalibrationState.Calibrated) { // success !
         autoModalData.topMessage = 'Calibration complete!';
         autoModalData.description = 'All done!';
         autoModalData.topProgress = '100%';
@@ -214,7 +216,7 @@ async function fetchAutoCalibProgress() {
     }
 }
 async function onAutoModalCancelClicked() {
-    await remote.stopJointCalibration(props.index);    
+    await tny.value?.motor.stopCalibration(props.index);
     automaticModalOpen.value = false;
 }
 function onAutoModalDoneClicked() { // already saved at the end, just close
@@ -227,8 +229,13 @@ function onAutoModalDoneClicked() { // already saved at the end, just close
 @import 'tailwindcss';
 
 .calib-choice-btn {
-    @apply flex justify-center items-center w-1/2 h-full aspect-square p-4
-           border-dashed border-2 border-slate-400 dark:border-slate-500 hover:bg-slate-50 hover:dark:bg-slate-800;
+    @apply flex justify-center items-center w-1/2 h-full aspect-square p-4 border-dashed border-2
+        border-slate-400 dark:border-slate-500 hover:bg-slate-50 hover:dark:bg-slate-800;
+    border-radius: 1em;
+}
+.calib-choice-btn-disabled {
+    @apply flex justify-center items-center w-1/2 h-full aspect-square p-4 border-dashed border-2
+        border-slate-300 dark:border-slate-600 text-slate-400 dark:text-slate-600 ;
     border-radius: 1em;
 }
 </style>
