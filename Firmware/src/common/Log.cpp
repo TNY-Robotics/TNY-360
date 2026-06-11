@@ -44,8 +44,12 @@ void Log::internal::AddV(Log::Level level, const char* tag, const char* fmt, va_
     xSemaphoreTake(logMutex, portMAX_DELAY);
 
     LineInfo& curLine = logBuffer[logIndex];
+    curLine.timestampMs = esp_timer_get_time() / 1000; // us to ms
     curLine.level = level;
-    
+    curLine.indent = logIndent;
+    strncpy(curLine.tag, tag, LOG_MAX_TAG_LEN - 1);
+    curLine.tag[LOG_MAX_TAG_LEN - 1] = '\0';
+
     vsnprintf(curLine.message, LOG_MAX_MSG_LEN, fmt, args);
     
     logIndex = (logIndex + 1) % LOG_MAX_LINES;
@@ -61,7 +65,11 @@ void Log::internal::AddV(Log::Level level, const char* tag, const char* fmt, va_
     // Log the message to serial for immediate feedback
     // This is useful for debugging during development
     const char* levelStr = LevelToString(level);
-    printf("[%s] %*s[%s] %s\n", levelStr, (int)(curIndent * 2), "", tag, curLine.message);
+    // Print timestamp (mm:ss:ms), level, indent, tag and message
+    uint32_t minutes = curLine.timestampMs / 60000;
+    uint32_t seconds = (curLine.timestampMs % 60000) / 1000;
+    uint32_t milliseconds = curLine.timestampMs % 1000;
+    printf("[%02lu:%02lu:%03lu] [%s] %*s[%s] %s\n", minutes, seconds, milliseconds, levelStr, (int)(curIndent * 2), "", tag, curLine.message);
 #endif
 }
 
@@ -76,7 +84,7 @@ void Log::internal::Add(Log::Level level, const char* tag, const char* fmt, ...)
 const Log::LineInfo& Log::GetLine(uint16_t index)
 {
     if (index >= LOG_MAX_LINES) {
-        static LineInfo emptyLine = { Log::Level::Info, "" };
+        static LineInfo emptyLine = { 0, Log::Level::Info, 0, "", "" };
         return emptyLine; // Return an empty line if index is out of bounds
     }
     // loop back in the index to get the correct line

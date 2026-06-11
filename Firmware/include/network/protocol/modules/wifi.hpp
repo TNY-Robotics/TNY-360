@@ -29,8 +29,6 @@ namespace WiFi
             return;
         }
 
-        LOG_DEBUG("ConnectToAP", "SSID = %s, Password = %s", ssid, password);
-
         Error err = Robot::GetInstance().getNetworkManager().getWiFiManager().connect(ssid, password);
         ctx.respond(err == Error::None ? ResponseStatus::Ok : ResponseStatus::InvalidParameters);
     }

@@ -59,35 +59,11 @@ Error ControlLoop::init()
         },
     });
 
-    // Create the control loop task ON REFLEX CORE
-    BaseType_t err = xTaskCreatePinnedToCore([](void* PvParams){
-        ControlLoop* control_loop = static_cast<ControlLoop*>(PvParams);
-        running = true;
-        
-        // Main loop
-        while (running)
-        {
-            // wait for timer interrupt notification
-            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
-            control_loop->control_task();
-        }
-
-        // clean up and delete task
-        running = false;
-        if (timer_task_handle != nullptr)
-        {
-            vTaskDelete(nullptr);
-            timer_task_handle = nullptr;
-        }
-    },  "timer_task", 8192, this, configMAX_PRIORITIES - 1, &timer_task_handle, CORE_REFLEX);
-
-    if (err != pdPASS)
+    if (Error err = create_internal_task(); err != Error::None)
     {
-        LOG_ERROR(TAG, "Failed to create timer task");
-        ErrorHandle(ErrorStruct::ControlLoopInitFailed);
-        return Error::SoftwareFailure;
+        return err;
     }
+    running = true; // allow the control loop task to run
 
     // Configure the timer
     gptimer_config_t timer_config = {
@@ -141,6 +117,12 @@ Error ControlLoop::init()
 
 Error ControlLoop::start()
 {
+    if (Error err = create_internal_task(); err != Error::None)
+    {
+        return err;
+    }
+    running = true; // allow the control loop task to run
+
     if (esp_err_t err = gptimer_start(timer); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Error starting Control Loop timer : 0x%0X", err);
@@ -153,6 +135,7 @@ Error ControlLoop::start()
 
 Error ControlLoop::stop()
 {
+    running = false; // ask the control loop to end
     if (esp_err_t err = gptimer_stop(timer); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Error stopping Control Loop timer : 0x%0X", err);
@@ -166,7 +149,6 @@ bool ControlLoop::isRunning() const
 {
     return running;
 }
-
 
 Error ControlLoop::deinit()
 {
@@ -400,7 +382,10 @@ Error ControlLoop::control_task()
         float ms_command = perf_command.get_avg_ms();
         float ms_driver = perf_driver.get_avg_ms();
 
-        LOG_DEBUG(TAG, "Control loop perfs:\n| Global | Reader |  IMU   | Estim  |  Gait  |   IK   |Command | Driver |\n|--------|--------|--------|--------|--------|--------|--------|--------|\n| %5.2f  | %5.2f  | %5.2f  | %5.2f  | %5.2f  | %5.2f  | %5.2f  | %5.2f  |\n", ms_global, ms_reader, ms_imu, ms_estimation, ms_gait, ms_ik, ms_command, ms_driver);
+        // LOG_DEBUG(TAG, "Control loop perfs:");
+        // LOG_DEBUG(TAG, "| Global | Reader |  IMU   | Estim  |  Gait  |   IK   |Command | Driver |");
+        // LOG_DEBUG(TAG, "|--------|--------|--------|--------|--------|--------|--------|--------|");
+        // LOG_DEBUG(TAG, "| %5.2f  | %5.2f  | %5.2f  | %5.2f  | %5.2f  | %5.2f  | %5.2f  | %5.2f  |", ms_global, ms_reader, ms_imu, ms_estimation, ms_gait, ms_ik, ms_command, ms_driver);
         perf_counter = 0;
         perf_global.reset();
         perf_reader.reset();
@@ -410,6 +395,41 @@ Error ControlLoop::control_task()
         perf_ik.reset();
         perf_command.reset();
         perf_driver.reset();
+    }
+
+    return Error::None;
+}
+
+Error ControlLoop::create_internal_task()
+{
+    // Create the control loop task ON REFLEX CORE
+    BaseType_t err = xTaskCreatePinnedToCore([](void* PvParams){
+        ControlLoop* control_loop = static_cast<ControlLoop*>(PvParams);
+        running = true;
+        
+        // Main loop
+        while (running)
+        {
+            // wait for timer interrupt notification
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+            control_loop->control_task();
+        }
+
+        // clean up and delete task
+        running = false;
+        if (timer_task_handle != nullptr)
+        {
+            vTaskDelete(nullptr);
+            timer_task_handle = nullptr;
+        }
+    },  "timer_task", 8192, this, configMAX_PRIORITIES - 1, &timer_task_handle, CORE_REFLEX);
+
+    if (err != pdPASS)
+    {
+        LOG_ERROR(TAG, "Failed to create timer task");
+        ErrorHandle(ErrorStruct::ControlLoopInitFailed);
+        return Error::SoftwareFailure;
     }
 
     return Error::None;

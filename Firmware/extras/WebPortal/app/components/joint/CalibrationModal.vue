@@ -2,7 +2,7 @@
     <UModal :title="`Calibration - ${name}`" v-model:open="choiceModalOpen">
         <template #body>
             <div class="flex w-full h-full space-x-8">
-                <button disabled class="calib-choice-btn-disabled flex flex-col space-y-4 text-center" @click="manualModalOpen = true">
+                <button class="calib-choice-btn flex flex-col space-y-4 text-center" @click="manualModalOpen = true">
                     <div class="flex space-x-2 items-center">
                         <UIcon name="lucide:settings-2" class="w-8 h-8" />
                         <p class="text-xl font-semibold"> Manual </p>
@@ -23,36 +23,52 @@
             </div>
         </template>
     </UModal>
-    <!-- <UModal :title="`Manual Calibration - ${name}`" v-model:open="manualModalOpen" :close="false" :dismissible="false">
+    <UModal :title="`Manual Calibration - ${name}`" v-model:open="manualModalOpen" :close="false" :dismissible="false">
         <template #body>
-            <div class="space-y-2">
+            <div v-if="manualModalData.calib_data === undefined" class="flex flex-col space-y-2 grow justify-center items-center">
+                <p class="text-xl font-semibold"> Loading ... </p>
+                <p> Loading calibration data </p>
+            </div>
+            <div v-else-if="manualModalData.calib_data === null" class="flex flex-col space-y-2 grow justify-center items-center">
+                <p class="text-xl font-semibold"> Failed to load calibration data :/ </p>
+                <p> Please try again later. </p>
+            </div>
+            <div v-else class="space-y-2">
                 <div class="flex space-x-4 justify-between w-full items-center">
-                    <p> min_pwm </p>
-                    <UInput class="max-w-48" type="number" v-model="manualModalData.calib_data.min_pwm" />
+                    <p> Min. Duty Cycle </p>
+                    <UInput class="max-w-48" type="number" v-model="manualModalData.calib_data.dc_min" />
                 </div>
                 <div class="flex space-x-4 justify-between w-full items-center">
-                    <p> max_pwm </p>
-                    <UInput class="max-w-48" type="number" v-model="manualModalData.calib_data.max_pwm" />
+                    <p> Max. Duty Cycle </p>
+                    <UInput class="max-w-48" type="number" v-model="manualModalData.calib_data.dc_max" />
                 </div>
                 <div class="flex space-x-4 justify-between w-full items-center">
-                    <p> min_voltage </p>
-                    <UInput class="max-w-48" type="number" v-model="manualModalData.calib_data.min_voltage" />
+                    <p> Duty Cycle Deadband </p>
+                    <UInput class="max-w-48" type="number" v-model="manualModalData.calib_data.dc_deadband" />
                 </div>
                 <div class="flex space-x-4 justify-between w-full items-center">
-                    <p> max_voltage </p>
-                    <UInput class="max-w-48" type="number" v-model="manualModalData.calib_data.max_voltage" />
+                    <p> Min. Feedback Voltage (V) </p>
+                    <UInput class="max-w-48" type="number" v-model="manualModalData.calib_data.feedback_min" />
                 </div>
                 <div class="flex space-x-4 justify-between w-full items-center">
-                    <p> feedback_noise </p>
+                    <p> Max. Feedback Voltage (V) </p>
+                    <UInput class="max-w-48" type="number" v-model="manualModalData.calib_data.feedback_max" />
+                </div>
+                <div class="flex space-x-4 justify-between w-full items-center">
+                    <p> Feedback Noise (V) </p>
                     <UInput class="max-w-48" type="number" v-model="manualModalData.calib_data.feedback_noise" />
                 </div>
                 <div class="flex space-x-4 justify-between w-full items-center">
-                    <p> pwm_deadband </p>
-                    <UInput class="max-w-48" type="number" v-model="manualModalData.calib_data.pwm_deadband" />
+                    <p> Feedback Latency (ms) </p>
+                    <UInput class="max-w-48" type="number" v-model="manualModalData.calib_data.feedback_latency_ms" />
                 </div>
                 <div class="flex space-x-4 justify-between w-full items-center">
-                    <p> feedback_latency_ms </p>
-                    <UInput class="max-w-48" type="number" v-model="manualModalData.calib_data.feedback_latency_ms" />
+                    <p> Feedback Inverted </p>
+                    <USwitch v-model="manualModalData.calib_data.feedback_inverted" />
+                </div>
+                <div class="flex space-x-4 justify-between w-full items-center">
+                    <p> Maximum Speed (range/s) </p>
+                    <UInput class="max-w-48" type="number" v-model="manualModalData.calib_data.max_speed" />
                 </div>
             </div>
         </template>
@@ -62,7 +78,7 @@
                 <UButton :loading="manualModalSaveLoading" label="Save" variant="soft" color="primary" icon="lucide:check" trailing @click="onManualModalSaveClicked" />
             </div>
         </template>
-    </UModal> -->
+    </UModal>
     <UModal :title="`Automatic Calibration - ${name}`" v-model:open="automaticModalOpen" :close="false" :dismissible="false">
         <template #body>
             <div class="space-y-4">
@@ -89,7 +105,8 @@
 </template>
 
 <script setup lang="ts">
-import { MotorCalibrationState } from '@tny-robotics/sdk';
+import { MotorCalibrationState, type MotorCalibrationData } from '@tny-robotics/sdk';
+import { toRaw } from 'vue';
 
 const tny = useTNY360();
 
@@ -128,39 +145,48 @@ function onModalChanged(newVal: boolean) {
 watch(manualModalOpen, onModalChanged);
 watch(automaticModalOpen, onModalChanged);
 
-// watch(manualModalOpen, (newVal) => { if (newVal) onManualCalibrationNModalOpened() });
-watch(automaticModalOpen, (newVal) => { if (newVal) onAutomaticCalibrationNModalOpened() });
+watch(manualModalOpen, (newVal) => { if (newVal) onManualCalibrationModalOpened() });
+watch(automaticModalOpen, (newVal) => { if (newVal) onAutomaticCalibrationModalOpened() });
 
 /// MANUAL CALIBRATION MODAL ///
-// const manualModalData = reactive({
-//     calib_data: {
-//         min_pwm: 0,
-//         max_pwm: 0,
-//         min_voltage: 0,
-//         max_voltage: 0,
-//         feedback_noise: 0,
-//         pwm_deadband: 0,
-//         feedback_latency_ms: 0,
-//     } as CalibrationData
-// });
-// const manualModalSaveLoading = ref(false);
-// async function onManualCalibrationNModalOpened() {
-//     manualModalData.calib_data = await remote.getJointCalibrationData(props.index);
-// }
-// async function onManualModalCancelClicked() {
-//     manualModalOpen.value = false;
-// }
-// async function onManualModalSaveClicked() {
-//     manualModalSaveLoading.value = true;
-//     try {
-//         await remote.setJointCalibrationData(props.index, manualModalData.calib_data);
-//     } catch (err) {
-//         console.error("Error saving joint calibration data : ", err);
-//     }
-//     manualModalSaveLoading.value = false;
-//     await new Promise((resolve) => setTimeout(resolve, 200));
-//     manualModalOpen.value = false;
-// }
+const manualModalData = reactive({
+    calib_data: undefined as MotorCalibrationData|undefined|null
+});
+const manualModalSaveLoading = ref(false);
+async function onManualCalibrationModalOpened() {
+    manualModalData.calib_data = undefined;
+    try {
+        manualModalData.calib_data = await tny.value?.motor.getCalibrationData(props.index);
+        // little fix for long float values : round to 4 decimals
+        for (const key in manualModalData.calib_data) {
+            if (typeof manualModalData.calib_data[key as keyof MotorCalibrationData] === 'number') {
+                (manualModalData.calib_data as any)[key as keyof MotorCalibrationData] = Math.round((manualModalData.calib_data[key as keyof MotorCalibrationData] as number) * 10000) / 10000;
+            }
+        }
+        console.log("Calibration data : ", toRaw(manualModalData.calib_data));
+    } catch (err) {
+        console.error("Error fetching joint calibration data : ", err);
+        manualModalData.calib_data = null;
+    }
+}
+async function onManualModalCancelClicked() {
+    manualModalOpen.value = false;
+}
+async function onManualModalSaveClicked() {
+    if (!manualModalData.calib_data) return;
+
+    manualModalSaveLoading.value = true;
+    try {
+        await tny.value?.motor.setCalibrationData(props.index, toRaw(manualModalData.calib_data), true);
+        console.log("Calibration data saved : ", toRaw(manualModalData.calib_data));
+    } catch (err) {
+        console.error("Error saving joint calibration data : ", err);
+    }
+    manualModalSaveLoading.value = false;
+
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    manualModalOpen.value = false;
+}
 
 /// AUTOMATIC CALIBRATION MODAL ///
 
@@ -173,7 +199,7 @@ const autoModalProgress = ref<HTMLSpanElement|null>(null);
 const autoModalDoneDisabled = ref(true);
 const autoModalCancelDisabled = ref(true);
 let autoModalCalibPollingInterval: number | null = null;
-async function onAutomaticCalibrationNModalOpened() {
+async function onAutomaticCalibrationModalOpened() {
     autoModalDoneDisabled.value = true;
     autoModalCancelDisabled.value = false;
     autoModalData.topMessage = 'Starting Automatic Calibration ...';

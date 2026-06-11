@@ -34,9 +34,11 @@ constexpr float DEFAULT_FEET_SPREAD_Y_M = 0.100f; // in meters, from body center
 
 /** LOGGING **/
 // Maximum number of log lines to store
-constexpr int LOG_MAX_LINES = 20;
+constexpr int LOG_MAX_LINES = 32;
 // Maximum length of each log message
-constexpr int LOG_MAX_MSG_LEN = 256;
+constexpr int LOG_MAX_MSG_LEN = 160;
+// Maximum length of log tag
+constexpr int LOG_MAX_TAG_LEN = 16;
 
 /** FILESYSTEM **/
 // Maximum path length for file operations
@@ -126,7 +128,7 @@ constexpr uint8_t MOTOR_DRIVER_I2C_ADDR = 0x40;
 // I2C clock speed for motor driver communication
 constexpr uint32_t MOTOR_DRIVER_I2C_CLOCK = 400'000; // 1'000'000; // Hz
 // PWM frequency for the motor driver (standard servo frequency)
-constexpr uint16_t MOTOR_DRIVER_PWM_FREQUENCY_HZ = 200; // In Hz.
+constexpr float MOTOR_DRIVER_PWM_FREQUENCY_HZ = 200.f; // In Hz.
 // NOTE : Internal robot motor update is driven by the main timer at CONTROL_LOOP_FREQ_HZ
 
 

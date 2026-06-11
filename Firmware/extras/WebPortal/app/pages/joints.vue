@@ -8,8 +8,8 @@
                 </UButton>
             </div>
             <div class="flex justify-evenly">
-                <div v-for="joint in leg.joints" :key="joint.index" class="p-4">
-                    <JointControlBox :index="joint.index" :name="joint.name" :range="joint.range" />
+                <div v-for="joint in leg.joints" :key="joint.driverIndex" class="p-4">
+                    <JointControlBox :driverIndex="joint.driverIndex" :readerIndex="joint.readerIndex" :name="joint.name" :range="joint.range" :shouldUpdate="shouldUpdate" v-model:blockUpdates="joint.blockUpdates" />
                 </div>
             </div>
         </div>
@@ -21,52 +21,58 @@ import { LegJointFlag } from '@tny-robotics/sdk';
 
 const robot = useTNY360();
 
+const shouldUpdate = ref(true);
 const joints = reactive([
     {
         index: 0,
         name: 'Front Left Leg',
         joints: [
-            { index: 0, name: 'Hip Roll', range: [-45, 45] },
-            { index: 1, name: 'Hip Pitch', range: [-135, 45] },
-            { index: 2, name: 'Knee Pitch', range: [0, 135] },
+            { driverIndex: 0, readerIndex: 0, name: 'Hip Roll', range: [-45, 45], blockUpdates: false },
+            { driverIndex: 1, readerIndex: 1, name: 'Hip Pitch', range: [-135, 45], blockUpdates: false },
+            { driverIndex: 2, readerIndex: 2, name: 'Knee Pitch', range: [0, 135], blockUpdates: false },
         ],
         enabled: false,
-        enableLoading: false
+        enableLoading: false,
     },
     {
         index: 1,
         name: 'Back Left Leg',
         joints: [
-            { index: 3, name: 'Hip Roll', range: [-45, 45] },
-            { index: 4, name: 'Hip Pitch', range: [-135, 45] },
-            { index: 5, name: 'Knee Pitch', range: [0, 135] },
+            { driverIndex: 3, readerIndex: 4, name: 'Hip Roll', range: [-45, 45], blockUpdates: false },
+            { driverIndex: 4, readerIndex: 5, name: 'Hip Pitch', range: [-135, 45], blockUpdates: false },
+            { driverIndex: 5, readerIndex: 6, name: 'Knee Pitch', range: [0, 135], blockUpdates: false },
         ],
         enabled: false,
-        enableLoading: false
+        enableLoading: false,
     },
     {
         index: 2,
         name: 'Back Right Leg',
         joints: [
-            { index: 6, name: 'Hip Roll', range: [-45, 45] },
-            { index: 7, name: 'Hip Pitch', range: [-135, 45] },
-            { index: 8, name: 'Knee Pitch', range: [0, 135] },
+            { driverIndex: 6, readerIndex: 8, name: 'Hip Roll', range: [-45, 45], blockUpdates: false },
+            { driverIndex: 7, readerIndex: 9, name: 'Hip Pitch', range: [-135, 45], blockUpdates: false },
+            { driverIndex: 8, readerIndex: 10, name: 'Knee Pitch', range: [0, 135], blockUpdates: false },
         ],
         enabled: false,
-        enableLoading: false
+        enableLoading: false,
     },
     {
         index: 3,
         name: 'Front Right Leg',
         joints: [
-            { index: 9, name: 'Hip Roll', range: [-45, 45] },
-            { index: 10, name: 'Hip Pitch', range: [-135, 45] },
-            { index: 11, name: 'Knee Pitch', range: [0, 135] },
+            { driverIndex: 9, readerIndex: 12, name: 'Hip Roll', range: [-45, 45], blockUpdates: false },
+            { driverIndex: 10, readerIndex: 13, name: 'Hip Pitch', range: [-135, 45], blockUpdates: false },
+            { driverIndex: 11, readerIndex: 14, name: 'Knee Pitch', range: [0, 135], blockUpdates: false },
         ],
         enabled: false,
-        enableLoading: false
+        enableLoading: false,
     },
 ]);
+
+watch(joints, () => {
+    // for all joints, if one asks to block, we block
+    shouldUpdate.value = !joints.some(leg => leg.joints.some(joint => joint.blockUpdates));
+}, { deep: true });
 
 async function toggleLegEnabled(leg: any) {
     leg.enableLoading = true;

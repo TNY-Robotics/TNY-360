@@ -1,5 +1,18 @@
 <template>
     <div class="p-4 space-y-4">
+        <h2>Loop Control</h2>
+        <div class="space-y-8">
+            <div class="flex space-x-4">
+                <p class="text-lg font-semibold">Control Loop</p>
+                <UButton :label="controlLoopEnabled ? 'Enabled' : 'Disabled'" :icon="controlLoopEnabled? 'lucide:check': 'lucide:x'" :color="controlLoopLoading? 'neutral' : (controlLoopEnabled? 'success' : 'error')"
+                    @click="onControlLoopToggle" :loading="controlLoopLoading" variant="subtle" trailing />
+            </div>
+            <div class="flex space-x-4">
+                <p class="text-lg font-semibold">Decision Loop</p>
+                <UButton :label="decisionLoopEnabled ? 'Enabled' : 'Disabled'" :icon="decisionLoopEnabled? 'lucide:check': 'lucide:x'" :color="decisionLoopLoading? 'neutral' : (decisionLoopEnabled? 'success' : 'error')"
+                    @click="onDecisionLoopToggle" :loading="decisionLoopLoading" variant="subtle" trailing />
+            </div>
+        </div>
         <h2>ADC Voltages</h2>
         <div class="space-y-8">
             <div class="pl-4">
@@ -93,8 +106,61 @@
 <script lang="ts" setup>
 const tny = useTNY360();
 
+const controlLoopEnabled = ref(false);
+const controlLoopLoading = ref(false);
+const decisionLoopEnabled = ref(false);
+const decisionLoopLoading = ref(false);
+
+let shouldFetchInfos = false;
+
+async function onControlLoopToggle() {
+    controlLoopLoading.value = true;
+    try {
+        await tny.value?.system.setControlLoopEnabled(!controlLoopEnabled.value);
+        controlLoopEnabled.value = !controlLoopEnabled.value;
+    } catch (error) {
+        console.error('Error toggling control loop:', error);
+    }
+    controlLoopLoading.value = false;
+}
+
+async function onDecisionLoopToggle() {
+    decisionLoopLoading.value = true;
+    try {
+        await tny.value?.system.setDecisionLoopEnabled(!decisionLoopEnabled.value);
+        decisionLoopEnabled.value = !decisionLoopEnabled.value;
+    } catch (error) {
+        console.error('Error toggling decision loop:', error);
+    }
+    decisionLoopLoading.value = false;
+}
+
+async function fetchLoopStates() {
+    controlLoopLoading.value = true;
+    decisionLoopLoading.value = true;
+    try {
+        const controlState = await tny.value?.system.getControlLoopEnabled();
+        if (controlState !== undefined) {
+            controlLoopEnabled.value = controlState;
+        }
+        controlLoopLoading.value = false;
+    } catch (error) {
+        console.error('Error fetching control loop state:', error);
+    }
+    try {
+        const decisionState = await tny.value?.system.getDecisionLoopEnabled();
+        if (decisionState !== undefined) {
+            decisionLoopEnabled.value = decisionState;
+        }
+        decisionLoopLoading.value = false;
+    } catch (error) {
+        console.error('Error fetching decision loop state:', error);
+    }
+}
+
 const adcVoltages = ref<number[][]>(Array.from({ length: 16 }, () => []));
-async function fetchInfos() {
+async function fetchADCChannels() {
+    console.log('fetching adc')
     try {
         const values = await tny.value?.adc.getAllChannels();
         for (let i = 0; i < 16; i++) {
@@ -103,18 +169,26 @@ async function fetchInfos() {
                 adcVoltages.value[i]?.shift();
             }
         }
-    } catch (error) { console.error('Error fetching ADC voltages:', error); }
+    } catch (error) {
+        if ((error as Error).message.toLowerCase().includes('timed out')) {
+            // robot is overloaded, wait a bit
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            console.warn('Timed out while fetching ADC channels, retrying...');
+        } else {
+            console.error('Error fetching ADC channels:', error);
+        }
+    }
+    if (shouldFetchInfos) setTimeout(fetchADCChannels, 1);
 }
 
-let fetchInterval: number | null = null;
 onMounted(() => {
-    fetchInterval = setInterval(fetchInfos, 100);
+    shouldFetchInfos = true;
+    fetchADCChannels();
+    fetchLoopStates();
 });
 
 onUnmounted(() => {
-    if (fetchInterval !== null) {
-        clearInterval(fetchInterval);
-    }
+    shouldFetchInfos = false;
 });
 
 </script>

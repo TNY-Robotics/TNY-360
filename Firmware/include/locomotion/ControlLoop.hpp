@@ -56,6 +56,8 @@ public:
     Error control_task();
     
 private:
+    Error create_internal_task();
+
     bool initialized;
     gptimer_handle_t timer = NULL;
 

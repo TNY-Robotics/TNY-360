@@ -17,8 +17,8 @@ MotorController::MotorController(MotorDriver::Channel motor_channel, AnalogDrive
       nvshandle_ptr(nullptr)
 {
     // set default pwm bounds to motor attributes
-    calibration_data.pwm_min = motor_attributes.pwm_min;
-    calibration_data.pwm_max = motor_attributes.pwm_max;
+    calibration_data.dc_min = motor_attributes.dc_min;
+    calibration_data.dc_max = motor_attributes.dc_max;
     disable(); // make sure motor is off by default
 }
 
@@ -195,8 +195,8 @@ Error MotorController::setCalibrationData(CalibrationData& data, bool save)
 Error MotorController::deleteCalibrationData(bool save)
 {
     calibration_state = CalibrationState::UNCALIBRATED;
-    calibration_data.pwm_min = motor_attributes.pwm_min;
-    calibration_data.pwm_max = motor_attributes.pwm_max;
+    calibration_data.dc_min = motor_attributes.dc_min;
+    calibration_data.dc_max = motor_attributes.dc_max;
     if (save)
     {
         if (Error err = delete_calibration_data(); err != Error::None)
@@ -261,18 +261,18 @@ Error MotorController::getCurrentPosition(float& result) const
 
 Error MotorController::__send_target_position()
 {
-    MotorDriver::Value pwm_value = 0;
+    MotorDriver::Value dc_value = 0;
     if (state == State::ENABLED)
     {
-        pwm_value = static_cast<MotorDriver::Value>(
-            calibration_data.pwm_min +
-            target_position * (calibration_data.pwm_max - calibration_data.pwm_min)
+        dc_value = static_cast<MotorDriver::Value>(
+            calibration_data.dc_min +
+            target_position * (calibration_data.dc_max - calibration_data.dc_min)
         );
     }
 
     if (calibration_state != CalibrationState::CALIBRATING) // don't listen to anyone if calibrating
     {
-        if (Error err = MotorDriver::SetPWM(motor_channel, pwm_value); err != Error::None)
+        if (Error err = MotorDriver::SetDutyCycle(motor_channel, dc_value); err != Error::None)
         {
             return err;
         }

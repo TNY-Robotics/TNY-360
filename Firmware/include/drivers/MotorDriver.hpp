@@ -5,27 +5,27 @@
 namespace MotorDriver
 {
     using Channel = uint8_t;
-    using Value = int;
+    using Value = float;
     constexpr Channel CHANNEL_COUNT = 16;
 
     /**
-     * @brief Converts milliseconds to the corresponding PWM value for the PCA9685.
-     * @param ms Time in milliseconds (e.g., 1.0 for 1ms).
+     * @brief Converts duty cycle in milliseconds to the corresponding PWM value for the PCA9685.
+     * @param dc Duty cycle in milliseconds (e.g., 1.0 for 1ms).
      * @return Corresponding PWM value (0-4096) for the PCA9685 at the defined frequency.
      */
-    constexpr static Value MS_TO_PWM(float ms)
+    constexpr static Value DC_TO_PWM(float dc)
     {
-        return 4096.f * ms / (1000.f / (float)MOTOR_DRIVER_PWM_FREQUENCY_HZ);
+        return (dc * 4096.f) * (MOTOR_DRIVER_PWM_FREQUENCY_HZ / 1000.f);
     }
 
     /**
-     * @brief Converts a PWM value to the corresponding time in milliseconds for the PCA9685.
+     * @brief Converts a PWM value to the corresponding duty cycle in milliseconds for the PCA9685.
      * @param pwm PWM value (0-4096).
-     * @return Corresponding time in milliseconds (e.g., 1.0 for 1ms).
+     * @return Corresponding duty cycle in milliseconds (e.g., 1.0 for 1ms).
      */
-    constexpr static float PWM_TO_MS(Value pwm)
+    constexpr static float PWM_TO_DC(Value pwm)
     {
-        return pwm * (1000.f / (float)MOTOR_DRIVER_PWM_FREQUENCY_HZ) / 4096.f;
+        return (pwm / 4096.f) * (1000.f / MOTOR_DRIVER_PWM_FREQUENCY_HZ);
     }
 
     /**
@@ -41,23 +41,23 @@ namespace MotorDriver
     Error Deinit();
 
     /**
-    * @brief Sets the PWM value for a motor.
+    * @brief Sets the duty cycle for a motor.
     * @param id Motor identifier.
-    * @param pwm PWM value (0-4096).
+    * @param duty_cycle Duty cycle value in milliseconds.
     * @return Error code.
     */
-    Error SetPWM(Channel id, Value pwm);
+    Error SetDutyCycle(Channel id, Value duty_cycle);
 
     /**
-     * @brief Gets the current PWM value for a motor.
+     * @brief Gets the current duty cycle for a motor.
      * @param id Motor identifier.
-     * @param pwm Reference to store the PWM value (0-4096).
+     * @param duty_cycle Reference to store the duty cycle value in milliseconds.
      * @return Error code.
      */
-    Error GetPWM(Channel id, Value &pwm);
+    Error GetDutyCycle(Channel id, Value &duty_cycle);
 
     /**
-     * @brief Disables all motors by setting their PWM to 0.
+     * @brief Disables all motors by setting their duty cycle to 0.
      * @return Error code.
      */
     Error DisableAllMotors();

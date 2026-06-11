@@ -7,11 +7,11 @@
 
 struct FeedbackInversionParams
 {
-    /// @brief PWM Value to use to set servomotor to its center position
-    MotorDriver::Value pwm_center = MotorDriver::MS_TO_PWM(1.5);
-    /// @brief PWM gap to apply to the center position to move the motor in each direction
-    MotorDriver::Value pwm_delta = MotorDriver::MS_TO_PWM(0.2);
-    /// @brief Motor's feedback noise (to detect if pwm_delta isn't big enough)
+    /// @brief Duty cycle value to use to set servomotor to its center position
+    MotorDriver::Value dc_center = 1.5;
+    /// @brief Duty cycle gap to apply to the center position to move the motor in each direction
+    MotorDriver::Value dc_delta = 0.2;
+    /// @brief Motor's feedback noise (to detect if dc_delta isn't big enough)
     AnalogDriver::Value feedback_noise;
     /// @brief Number of subsamples to take for each sample
     uint16_t nb_subsamples = 10;
@@ -37,13 +37,13 @@ Error check_feedback_inversion(FeedbackInversionParams params, MotorDriver::Chan
     vTaskDelay(pdMS_TO_TICKS(1)); // Ensure stabilization
 
     // Move the motor to center and wait a bit
-    RETURN_ERROR(MotorDriver::SetPWM(motor_channel, params.pwm_center));
+    RETURN_ERROR(MotorDriver::SetDutyCycle(motor_channel, params.dc_center));
     RETURN_ERROR(MotorDriver::SendData());
     vTaskDelay(pdMS_TO_TICKS(params.base_delay_ms));
 
     // Move forward, wait a bit, and take feedback
     AnalogDriver::Value feedback_forward;
-    RETURN_ERROR(MotorDriver::SetPWM(motor_channel, params.pwm_center + params.pwm_delta));
+    RETURN_ERROR(MotorDriver::SetDutyCycle(motor_channel, params.dc_center + params.dc_delta));
     RETURN_ERROR(MotorDriver::SendData());
     vTaskDelay(pdMS_TO_TICKS(params.feedback_delay_ms));
     RETURN_ERROR(AnalogDriver::internal::read_subsampled(feedback_forward, params.nb_subsamples));
@@ -51,7 +51,7 @@ Error check_feedback_inversion(FeedbackInversionParams params, MotorDriver::Chan
 
     // Move forward, wait a bit, and take feedback
     AnalogDriver::Value feedback_backward;
-    RETURN_ERROR(MotorDriver::SetPWM(motor_channel, params.pwm_center - params.pwm_delta));
+    RETURN_ERROR(MotorDriver::SetDutyCycle(motor_channel, params.dc_center - params.dc_delta));
     RETURN_ERROR(MotorDriver::SendData());
     vTaskDelay(pdMS_TO_TICKS(params.feedback_delay_ms));
     RETURN_ERROR(AnalogDriver::internal::read_subsampled(feedback_backward, params.nb_subsamples));
@@ -61,6 +61,7 @@ Error check_feedback_inversion(FeedbackInversionParams params, MotorDriver::Chan
     AnalogDriver::Value abs_diff = std::abs(feedback_forward - feedback_backward);
     if (abs_diff <= params.feedback_noise)
     {
+        LOG_ERROR("FDB_INV", "Feedback inversion test failed: no significant feedback change detected (abs diff: %f, noise: %f)", abs_diff, params.feedback_noise);
         return Error::HardwareFailure;
     }
 

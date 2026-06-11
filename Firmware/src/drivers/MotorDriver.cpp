@@ -57,7 +57,7 @@ namespace MotorDriver
         // Configure PCA9685
         {
             pca9685_config_t pca_config = {
-                .frequency_hz = MOTOR_DRIVER_PWM_FREQUENCY_HZ
+                .frequency_hz = (uint16_t) MOTOR_DRIVER_PWM_FREQUENCY_HZ
             };
             esp_err_t err = pca9685_config(pca_handle, pca_config);
             if (err != ESP_OK)
@@ -96,7 +96,7 @@ namespace MotorDriver
         return Error::None;
     }
 
-    Error SetPWM(Channel id, Value pwm)
+    Error SetDutyCycle(Channel id, Value duty_cycle)
     {
         if (!initialized)
         {
@@ -110,9 +110,10 @@ namespace MotorDriver
             return Error::InvalidParameters;
         }
 
+        uint16_t pwm = DC_TO_PWM(duty_cycle);
         if (pwm > 4096)
         {
-            LOG_ERROR(TAG, "Invalid PWM value: %d", pwm);
+            LOG_ERROR(TAG, "Invalid duty cycle value: %f", duty_cycle);
             return Error::InvalidParameters;
         }
 
@@ -120,7 +121,7 @@ namespace MotorDriver
         return Error::None;
     }
 
-    Error GetPWM(Channel id, Value &pwm)
+    Error GetDutyCycle(Channel id, Value &duty_cycle)
     {
         if (!initialized)
         {
@@ -134,7 +135,7 @@ namespace MotorDriver
             return Error::InvalidParameters;
         }
 
-        pwm = pwm_buffer[id];
+        duty_cycle = PWM_TO_DC(pwm_buffer[id]);
         return Error::None;
     }
 

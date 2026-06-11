@@ -25,34 +25,43 @@ public:
 
     struct MotorAttributes
     {
-        MotorDriver::Value pwm_min;
-        MotorDriver::Value pwm_max;
+        MotorDriver::Value dc_min;
+        MotorDriver::Value dc_max;
         bool has_feedback;
     };
 
     constexpr static MotorAttributes MOTOR_ATTR_MG996R = {
-        .pwm_min = MotorDriver::MS_TO_PWM(0.5f), // 0.5us duty cycle
-        .pwm_max = MotorDriver::MS_TO_PWM(2.5f), // 2.5us duty cycle
+        .dc_min = 0.5f, // 0.5us duty cycle
+        .dc_max = 2.5f, // 2.5us duty cycle
         .has_feedback = true
     };
 
     constexpr static MotorAttributes MOTOR_ATTR_SG90 = {
-        .pwm_min = MotorDriver::MS_TO_PWM(1.0f), // 1.0us duty cycle
-        .pwm_max = MotorDriver::MS_TO_PWM(2.0f), // 2.0us duty cycle
+        .dc_min = 1.0f, // 1.0us duty cycle
+        .dc_max = 2.0f, // 2.0us duty cycle
         .has_feedback = false
     };
 
     struct CalibrationData
     {
-        MotorDriver::Value pwm_min = 0;
-        MotorDriver::Value pwm_max = 0;
-        MotorDriver::Value pwm_deadband = 0;
+        /// @brief Minimum Duty Cycle value corresponding to the minimum physical position of the motor
+        MotorDriver::Value dc_min = 0.5f;
+        /// @brief Maximum Duty Cycle value corresponding to the maximum physical position of the motor
+        MotorDriver::Value dc_max = 2.5f;
+        /// @brief Deadband width in Duty Cycle unit
+        MotorDriver::Value dc_deadband = 0;
+        /// @brief Feedback value corresponding to the minimum physical position of the motor
         AnalogDriver::Value feedback_min = 0.5f;
-        AnalogDriver::Value feedback_max = 2.8f; // default to 0-3.3V range (with some margin)
+        /// @brief Feedback value corresponding to the maximum physical position of the motor
+        AnalogDriver::Value feedback_max = 2.8f;
+        /// @brief Feedback noise level in Volt (standard deviation)
         AnalogDriver::Value feedback_noise = 0;
-        int feedback_latency_ms = 0;
+        /// @brief Latency between command and movement in ms
+        float feedback_latency_ms = 0;
+        /// @brief Flag indicating whether the feedback is inverted (low voltage for max position, high voltage for min position)
         bool feedback_inverted = false;
-        float max_speed = 0.f; // in progress per second
+        /// @brief Maximum speed of the motor (in progress per second, where progress is the distance between min and max bound)
+        float max_speed = 0.f;
     };
 
     MotorController();

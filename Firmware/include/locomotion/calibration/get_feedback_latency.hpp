@@ -12,10 +12,10 @@ constexpr int LATENCY_TIMEOUT_MS = 1000;
 struct FeedbackLatencyParams
 {
     /// @brief PWM Value to use to set servomotor to its center position
-    MotorDriver::Value pwm_center = MotorDriver::MS_TO_PWM(1.5);
-    /// @brief PWM gap to apply to the center position to see a feedback difference
-    MotorDriver::Value pwm_delta = MotorDriver::MS_TO_PWM(0.2);
-    /// @brief Motor's feedback noise (to detect if pwm_delta isn't big enough)
+    MotorDriver::Value dc_center = 1.5;
+    /// @brief Duty cycle gap to apply to the center position to see a feedback difference
+    MotorDriver::Value dc_delta = 0.2;
+    /// @brief Motor's feedback noise (to detect if dc_delta isn't big enough)
     AnalogDriver::Value feedback_noise;
     /// @brief Number of test for latency estimation
     uint16_t nb_samples = 10;
@@ -41,7 +41,7 @@ Error get_feedback_latency(FeedbackLatencyParams params, MotorDriver::Channel mo
     vTaskDelay(pdMS_TO_TICKS(1)); // Ensure stabilization
 
     // Move motor to center and wait a bit
-    RETURN_ERROR(MotorDriver::SetPWM(motor_channel, params.pwm_center));
+    RETURN_ERROR(MotorDriver::SetDutyCycle(motor_channel, params.dc_center));
     RETURN_ERROR(MotorDriver::SendData());
     vTaskDelay(pdMS_TO_TICKS(params.base_delay_ms));
 
@@ -55,7 +55,7 @@ Error get_feedback_latency(FeedbackLatencyParams params, MotorDriver::Channel mo
 
         // Get current time (now to take into account I2C latency + calculations) and move motor
         TickType_t start_tick = xTaskGetTickCount();
-        RETURN_ERROR(MotorDriver::SetPWM(motor_channel, params.pwm_center + params.pwm_delta));
+        RETURN_ERROR(MotorDriver::SetDutyCycle(motor_channel, params.dc_center + params.dc_delta));
         RETURN_ERROR(MotorDriver::SendData());
         // Loop until we see a change in feedback or timeout is reached
         TickType_t now_tick;
@@ -79,11 +79,12 @@ Error get_feedback_latency(FeedbackLatencyParams params, MotorDriver::Channel mo
         if (start_tick + LATENCY_TIMEOUT_MS <= now_tick)
         {
             // timeout, return error
+            LOG_ERROR("FDB_LAT", "Latency test timeout: no feedback change detected after %d ms", LATENCY_TIMEOUT_MS);
             return Error::HardwareFailure;
         }
 
         // move to center, wait a bit and continue latency testing
-        RETURN_ERROR(MotorDriver::SetPWM(motor_channel, params.pwm_center));
+        RETURN_ERROR(MotorDriver::SetDutyCycle(motor_channel, params.dc_center));
         RETURN_ERROR(MotorDriver::SendData());
         vTaskDelay(pdMS_TO_TICKS(params.test_delay_ms));
     }

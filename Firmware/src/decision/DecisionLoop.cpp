@@ -23,6 +23,8 @@ Error DecisionLoop::deinit()
 
 Error DecisionLoop::start()
 {
+    loop_running = true;
+
     BaseType_t err = xTaskCreatePinnedToCore([](void* pvParams){
         DecisionLoop* decision_loop = (DecisionLoop*) pvParams;
         decision_loop->decision_loop();
@@ -30,6 +32,7 @@ Error DecisionLoop::start()
 
     if (err != pdPASS)
     {
+        loop_running = false;
         LOG_ERROR(TAG, "Error creating DecisionLoop task");
         return Error::Unknown;
     }
@@ -45,6 +48,11 @@ Error DecisionLoop::stop()
     vTaskDelay(pdMS_TO_TICKS(DECISION_LOOP_DT_MS * 2));
 
     return Error::None;
+}
+
+bool DecisionLoop::isRunning() const
+{
+    return loop_running;
 }
 
 Error DecisionLoop::setAutoLifeLevel(uint8_t level)
@@ -108,7 +116,6 @@ Error DecisionLoop::askJointAngle(Joint::Id joint_id, float angle_rad, IPC::Over
 
 void DecisionLoop::decision_loop()
 {
-    loop_running = true;
     TickType_t xLastWakeTime = xTaskGetTickCount();
     const TickType_t xFrequency = pdMS_TO_TICKS(DECISION_LOOP_DT_MS);
 

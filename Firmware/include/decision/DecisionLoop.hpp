@@ -58,6 +58,12 @@ public:
     Error stop();
 
     /**
+     * @brief Checks if the decision loop is currently running.
+     * @return true if the decision loop is running, false otherwise.
+     */
+    bool isRunning() const;
+
+    /**
      * @brief Sets the auto life level (See AutoLifeLevel and AutoLifeFlags for available features and levels)
      * @param level The auto life level to set
      * @return Error code indicating success or failure of the operation
