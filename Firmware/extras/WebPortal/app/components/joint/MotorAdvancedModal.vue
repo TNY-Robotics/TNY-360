@@ -12,10 +12,10 @@
                     <div class="flex space-x-4">
                         <UInput v-model="sliderMin" class="flex w-16" />
                         <div class="flex w-full relative">
-                            <div class="absolute w-full h-0 top-6 left-0" :style="{ transform: `translateX(${((sliderValue - sliderMin) / (sliderMax - sliderMin)) * 96 + 2}%)` }">
+                            <div class="absolute w-full h-0 top-6 left-0" :style="{ transform: `translateX(${((sliderValue - sliderMinNbr) / (sliderMaxNbr - sliderMinNbr)) * 96 + 2}%)` }">
                                 <p :style="{ transform: 'translateX(-50%)' }" class="w-fit">{{ sliderValue.toFixed(2) }}</p>
                             </div>
-                            <USlider :min="sliderMin" :max="sliderMax" :step="0.01" v-model="sliderValue" />
+                            <USlider :min="sliderMinNbr" :max="sliderMaxNbr" :step="0.01" v-model="sliderValue" />
                         </div>
                         <UInput v-model="sliderMax" class="flex w-16" />
                     </div>
@@ -46,9 +46,12 @@ const props = defineProps<{
 
 const modelOpen = defineModel<boolean>('open');
 
-const sliderMin = ref(0.5);
-const sliderMax = ref(2.5);
+const sliderMin = ref("0.5");
+const sliderMax = ref("2.5");
 const sliderValue = ref(1.5);
+
+const sliderMinNbr = computed(() => parseFloat(sliderMin.value));
+const sliderMaxNbr = computed(() => parseFloat(sliderMax.value));
 
 const motorEnabled = ref(false);
 const adcVoltages = ref<number[]>([]);
@@ -75,7 +78,3 @@ async function updateLoop() {
 }
 
 </script>
-
-<style scoped>
-
-</style>
