@@ -9,6 +9,14 @@ namespace Motor
 {
     constexpr uint8_t MODULE_ID = 0x06;
 
+    /** <API_REF>
+     * @module motor 0x06
+     * @action setDutyCycle 0x00
+     * @desc Sets the duty cycle of a motor.
+     * @arg joint_id uint8 ID of the joint to set the duty cycle for.
+     * @arg duty_cycle float32 Duty cycle to set in ms (between 0.0 and 5.0).
+     * @impl done
+     */
     static void SetDutyCycle(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);
@@ -49,6 +57,14 @@ namespace Motor
         ctx.respond(ResponseStatus::Ok);
     }
 
+    /** <API_REF>
+     * @module motor 0x06
+     * @action getDutyCycle 0x01
+     * @desc Gets the current duty cycle of a motor.
+     * @arg joint_id uint8 ID of the joint to get the duty cycle for.
+     * @result duty_cycle float32 Current duty cycle in ms (between 0.0 and 5.0).
+     * @impl done
+     */
     static void GetDutyCycle(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);
@@ -78,6 +94,14 @@ namespace Motor
         ctx.respond(ResponseStatus::Ok, (uint8_t*) &duty_cycle, sizeof(duty_cycle));
     }
 
+    /** <API_REF>
+     * @module motor 0x06
+     * @action getCalibrationState 0x02
+     * @desc Gets the current calibration state of a motor.
+     * @arg joint_id uint8 ID of the joint to get the calibration state for.
+     * @result calib_state uint8 Current calibration state (0 = Not Calibrated, 1 = Calibrating, 2 = Calibrated).
+     * @impl done
+     */
     static void GetCalibrationState(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);
@@ -101,6 +125,14 @@ namespace Motor
         ctx.respond(ResponseStatus::Ok, (uint8_t*) &calib_state, sizeof(calib_state));
     }
 
+    /** <API_REF>
+     * @module motor 0x06
+     * @action getCalibrationData 0x03
+     * @desc Gets the calibration data of a motor.
+     * @arg joint_id uint8 ID of the joint to get the calibration data for.
+     * @result calib_data CalibrationData Current calibration data.
+     * @impl done
+     */
     static void GetCalibrationData(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);
@@ -123,6 +155,14 @@ namespace Motor
         ctx.respond(ResponseStatus::Ok, (uint8_t*) &motor.getCalibrationData(), sizeof(::MotorController::CalibrationData));
     }
 
+    /** <API_REF>
+     * @module motor 0x06
+     * @action setCalibrationData 0x04
+     * @desc Sets the calibration data of a motor.
+     * @arg joint_id uint8 ID of the joint to set the calibration data for.
+     * @arg calib_data CalibrationData New calibration data.
+     * @impl done
+     */
     static void SetCalibrationData(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);
@@ -161,6 +201,13 @@ namespace Motor
         ctx.respond(ResponseStatus::Ok);
     }
 
+    /** <API_REF>
+     * @module motor 0x06
+     * @action deleteCalibrationData 0x05
+     * @desc Deletes the calibration data of a motor.
+     * @arg joint_id uint8 ID of the joint to delete the calibration data for.
+     * @impl done
+     */
     static void DeleteCalibrationData(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);
@@ -188,6 +235,13 @@ namespace Motor
         ctx.respond(ResponseStatus::Ok);
     }
 
+    /** <API_REF>
+     * @module motor 0x06
+     * @action startCalibration 0x06
+     * @desc Starts the calibration process for a motor.
+     * @arg joint_id uint8 ID of the joint to start the calibration for.
+     * @impl done
+     */
     static void StartCalibration(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);
@@ -215,6 +269,13 @@ namespace Motor
         ctx.respond(ResponseStatus::Ok);
     }
 
+    /** <API_REF>
+     * @module motor 0x06
+     * @action stopCalibration 0x07
+     * @desc Stops the calibration process for a motor.
+     * @arg joint_id uint8 ID of the joint to stop the calibration for.
+     * @impl done
+     */
     static void StopCalibration(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);
@@ -242,6 +303,14 @@ namespace Motor
         ctx.respond(ResponseStatus::Ok);
     }
 
+    /** <API_REF>
+     * @module motor 0x06
+     * @action getCalibrationProgress 0x08
+     * @desc Gets the progress of the calibration process for a motor.
+     * @arg joint_id uint8 ID of the joint to get the calibration progress for.
+     * @result progress float32 Current calibration progress (0.0 to 1.0).
+     * @impl done
+     */
     static void GetCalibrationProgress(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);

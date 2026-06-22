@@ -12,6 +12,13 @@ namespace Body
 {
     constexpr uint8_t MODULE_ID = 0x03;
 
+    /** <API_REF>
+     * @module body 0x03
+     * @action setEnabled 0x00
+     * @desc Sets the enabled state of the body joints.
+     * @arg enabled_flag uint16 Bitfield representing the enabled state of each joint (see JointId).
+     * @impl done
+     */
     static void SetEnabled(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);
@@ -41,6 +48,13 @@ namespace Body
         });
     }
 
+    /** <API_REF>
+     * @module body 0x03
+     * @action getEnabled 0x01
+     * @desc Gets the enabled state of the body joints.
+     * @result enabled_flag uint16 Bitfield representing the enabled state of each joint (see JointId).
+     * @impl done
+     */
     static void GetEnabled(const RequestContext& ctx, const uint8_t* payload)
     {
         RPC::ExecuteThreadSafe<uint16_t>([]() {
@@ -59,6 +73,16 @@ namespace Body
         });
     }
 
+    /** <API_REF>
+     * @module body 0x03
+     * @action setVelocity 0x02
+     * @desc Sets the target velocity of the robot's body.
+     * @arg x_ms float32 X velocity in meters per second.
+     * @arg y_ms float32 Y velocity in meters per second.
+     * @arg z_rads float32 Rotational velocity around Z axis in radians per second.
+     * @arg clear_overrides bool Whether to clear joint overrides when setting the velocity (default: true).
+     * @impl done
+     */
     static void SetVelocity(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);
@@ -86,12 +110,34 @@ namespace Body
         ctx.respond(ResponseStatus::Ok);
     }
 
+    /** <API_REF>
+     * @module body 0x03
+     * @action getTargetVelocity 0x03
+     * @desc Gets the target velocity of the robot's body.
+     * @result x_ms float32 X velocity in meters per second.
+     * @result y_ms float32 Y velocity in meters per second.
+     * @result z_rads float32 Rotational velocity around Z axis in radians per second.
+     * @impl done
+     */
     static void GetTargetVelocity(const RequestContext& ctx, const uint8_t* payload)
     {
         Vec3f vel = Robot::GetInstance().getDecisionLoop().getControlIntent().body_vel;
         ctx.respond(ResponseStatus::Ok, (uint8_t*) &vel, sizeof(vel));
     }
 
+    /** <API_REF>
+     * @module body 0x03
+     * @action setPosture 0x04
+     * @desc Sets the target posture of the robot's body.
+     * @arg x_pos float32 X position in meters.
+     * @arg y_pos float32 Y position in meters.
+     * @arg z_pos float32 Z position in meters.
+     * @arg x_rot float32 X rotation in radians (Euler XYZ).
+     * @arg y_rot float32 Y rotation in radians (Euler XYZ).
+     * @arg z_rot float32 Z rotation in radians (Euler XYZ).
+     * @arg clear_overrides bool Whether to clear joint overrides when setting the posture (default: true).
+     * @impl done
+     */
     static void SetPosture(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);
@@ -126,6 +172,14 @@ namespace Body
         ctx.respond(ResponseStatus::Ok);
     }
 
+    /** <API_REF>
+     * @module body 0x03
+     * @action getPosture 0x05
+     * @desc Gets the target posture of the robot's body.
+     * @result pos Vec3f Target position of the body in meters.
+     * @result rot Vec3f Target rotation of the body in radians (Euler XYZ).
+     * @impl done
+     */
     static void GetPosture(const RequestContext& ctx, const uint8_t* payload)
     {
         const IPC::ControlIntent& intent = Robot::GetInstance().getDecisionLoop().getControlIntent();

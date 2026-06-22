@@ -13,29 +13,62 @@ namespace System
 {
     constexpr uint8_t MODULE_ID = 0x00;
 
+    /** <API_REF>
+     * @module system 0x00
+     * @action ping 0x00
+     * @desc Pings the robot to check connection status.
+     * @impl done
+     */
     static void Ping(const RequestContext& ctx, const uint8_t* payload)
     {
         ctx.respond(ResponseStatus::Ok);
     }
 
+    /** <API_REF>
+     * @module system 0x00
+     * @action reboot 0x01
+     * @desc Reboots the robot.
+     * @impl done
+     */
     static void Reboot(const RequestContext& ctx, const uint8_t* payload)
     {
         ctx.respond(ResponseStatus::Ok);
         esp_restart();
     }
 
+    /** <API_REF>
+     * @module system 0x00
+     * @action setSettings 0x02
+     * @desc Sets the robot's configuration.
+     * @arg settings string New settings to apply.
+     * @impl nope
+     */
     static void SetSettings(const RequestContext& ctx, const uint8_t* payload)
     {
         ctx.respond(ResponseStatus::Ok);
         // TODO : Implement
     }
 
+    /** <API_REF>
+     * @module system 0x00
+     * @action getSettings 0x01
+     * @desc Gets the robot's configuration.
+     * @result settings string Current settings.
+     * @impl nope
+     */
     static void GetSettings(const RequestContext& ctx, const uint8_t* payload)
     {
         ctx.respond(ResponseStatus::Ok);
         // TODO : Implement
     }
 
+    /** <API_REF>
+     * @module system 0x00
+     * @action setAutolifeLevel 0x04
+     * @desc Sets the autolife level.
+     * @arg level uint8 New autolife level (0-100).
+     * @impl done
+     */
     static void SetAutolifeLevel(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);
@@ -52,12 +85,28 @@ namespace System
         ctx.respond(err == Error::None ? ResponseStatus::Ok : ResponseStatus::InvalidParameters);
     }
 
+    /** <API_REF>
+     * @module system 0x00
+     * @action getAutolifeLevel 0x05
+     * @desc Gets the current autolife level.
+     * @result level uint8 Current autolife level (0-100).
+     * @impl done
+     */
     static void GetAutolifeLevel(const RequestContext& ctx, const uint8_t* payload)
     {
         uint8_t autoLifeLevel = Robot::GetInstance().getDecisionLoop().getAutoLifeLevel();
         ctx.respond(ResponseStatus::Ok, (uint8_t*) &autoLifeLevel, sizeof(autoLifeLevel));
     }
 
+    /** <API_REF>
+     * @module system 0x00
+     * @action getStatistics 0x06
+     * @desc Gets system statistics including temperature, CPU usage, and RAM usage.
+     * @result temp_c float32 Current temperature in Celsius.
+     * @result cpu_usage CPUUsage Current CPU usage statistics.
+     * @result ram_usage RAMUsage Current RAM usage statistics.
+     * @impl done
+     */
     static void GetStatistics(const RequestContext& ctx, const uint8_t* payload)
     {
         float temp_c = SysStats::GetTemperature();
@@ -73,12 +122,31 @@ namespace System
         ctx.respond(ResponseStatus::Ok, result, sizeof(result));
     }
 
+    /** <API_REF>
+     * @module system 0x00
+     * @action getNbLogLines 0x07
+     * @desc Gets the number of log lines.
+     * @result count uint8 Number of log lines.
+     * @impl done
+     */
     static void GetNbLogLines(const RequestContext& ctx, const uint8_t* payload)
     {
         uint8_t logCount = ::Log::Count();
         ctx.respond(ResponseStatus::Ok, (uint8_t*) &logCount, sizeof(logCount));
     }
 
+    /** <API_REF>
+     * @module system 0x00
+     * @action getLogLine 0x08
+     * @desc Gets a specific log line by index.
+     * @arg index uint8 Index of the log line to retrieve (0-based).
+     * @result timestampMs uint32 Timestamp of the log line in milliseconds since boot.
+     * @result level uint8 Log level (0=Debug, 1=Info, 2=Warning, 3=Error).
+     * @result indent uint8 Indentation level of the log line.
+     * @result tag string Tag associated with the log line.
+     * @result message string Log message.
+     * @impl done
+     */
     static void GetLogLine(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);
@@ -123,6 +191,13 @@ namespace System
         ctx.respond(ResponseStatus::Ok, buffer, writer.getOffset());
     }
 
+    /** <API_REF>
+     * @module system 0x00
+     * @action setControlLoopEnabled 0x09
+     * @desc Sets the enabled status of the control loop.
+     * @arg enabled bool Whether the control loop should be enabled.
+     * @impl done
+     */
     static void SetControlLoopEnabled(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);
@@ -147,12 +222,26 @@ namespace System
         ctx.respond(ResponseStatus::Ok);
     }
 
+    /** <API_REF>
+     * @module system 0x00
+     * @action getControlLoopEnabled 0x0A
+     * @desc Gets whether the control loop is currently enabled.
+     * @result enabled bool Whether the control loop is currently enabled.
+     * @impl done
+     */
     static void GetControlLoopEnabled(const RequestContext& ctx, const uint8_t* payload)
     {
         bool enabled = Robot::GetInstance().getControlLoop().isRunning();
         ctx.respond(ResponseStatus::Ok, (uint8_t*) &enabled, sizeof(enabled));
     }
 
+    /** <API_REF>
+     * @module system 0x00
+     * @action setDecisionLoopEnabled 0x0B
+     * @desc Sets the enabled status of the decision loop.
+     * @arg enabled bool Whether the decision loop should be enabled.
+     * @impl done
+     */
     static void SetDecisionLoopEnabled(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);
@@ -177,6 +266,13 @@ namespace System
         ctx.respond(ResponseStatus::Ok);
     }
 
+    /** <API_REF>
+     * @module system 0x00
+     * @action getDecisionLoopEnabled 0x0C
+     * @desc Gets whether the decision loop is currently enabled.
+     * @result enabled bool Whether the decision loop is currently enabled.
+     * @impl done
+     */
     static void GetDecisionLoopEnabled(const RequestContext& ctx, const uint8_t* payload)
     {
         bool enabled = Robot::GetInstance().getDecisionLoop().isRunning();

@@ -10,6 +10,14 @@ namespace I2C
 {
     constexpr uint8_t MODULE_ID = 0x0E;
 
+    /** <API_REF>
+     * @module i2c 0x0E
+     * @action pingDevice 0x00
+     * @desc Pings an I2C device at the specified address to check if it is present on the bus.
+     * @arg address uint8 I2C address of the device to ping.
+     * @result found bool Whether a device responded at the specified address.
+     * @impl done
+     */
     static void PingDevice(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);
@@ -39,6 +47,16 @@ namespace I2C
         }
     }
 
+    /** <API_REF>
+     * @module i2c 0x0E
+     * @action writeRegisters 0x01
+     * @desc Writes a sequence of bytes to a register of an I2C device.
+     * @arg address uint8 I2C address of the device to write to.
+     * @arg reg_address uint8 Register address to write to.
+     * @arg length uint8 Number of bytes to write.
+     * @arg data byte[] Data bytes to write to the register.
+     * @impl done
+     */
     static void WriteRegisters(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);
@@ -73,6 +91,16 @@ namespace I2C
         ctx.respond(ResponseStatus::Ok);
     }
 
+    /** <API_REF>
+     * @module i2c 0x0E
+     * @action readRegisters 0x02
+     * @desc Reads a sequence of bytes from a register of an I2C device.
+     * @arg address uint8 I2C address of the device to read from.
+     * @arg reg_address uint8 Register address to read from.
+     * @arg length uint8 Number of bytes to read.
+     * @result data byte[] Read data bytes (of specified length).
+     * @impl done
+     */
     static void ReadRegisters(const RequestContext& ctx, const uint8_t* payload)
     {
         BinaryReader reader(payload, ctx.expected_len);

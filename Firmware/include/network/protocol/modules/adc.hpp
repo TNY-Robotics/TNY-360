@@ -14,6 +14,13 @@ namespace ADC
 {
     constexpr uint8_t MODULE_ID = 0x0F;
 
+    /** <API_REF>
+     * @module adc 0x0F
+     * @action getAllChannels 0x00
+     * @desc Gets the current voltage readings of all ADC channels.
+     * @result voltages float32[16] Array of voltage readings for all ADC channels in volts.
+      * @impl done
+     */
     static void GetAllChannels(const RequestContext& ctx, const uint8_t* payload)
     {
         RPC::ExecuteThreadSafe<ADCData>([](){

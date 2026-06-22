@@ -42,6 +42,19 @@ public:
         .has_feedback = false
     };
 
+    /** <API_REF>
+     * @type CalibrationData
+     * @desc Calibration data for the motor controller.
+     * @field dc_min float32 Minimum Duty Cycle value corresponding to the minimum physical position of the motor.
+     * @field dc_max float32 Maximum Duty Cycle value corresponding to the maximum physical position of the motor.
+     * @field dc_deadband float32 Deadband width in Duty Cycle unit.
+     * @field feedback_min float32 Feedback value corresponding to the minimum physical position of the motor.
+     * @field feedback_max float32 Feedback value corresponding to the maximum physical position of the motor.
+     * @field feedback_noise float32 Feedback noise level in Volt (standard deviation).
+     * @field feedback_latency_ms float32 Latency between command and movement in ms.
+     * @field feedback_inverted bool Flag indicating whether the feedback is inverted or not.
+     * @field max_speed float32 Maximum speed of the motor in range/s (range = [max bound - min bound]).
+     */
     struct CalibrationData
     {
         /// @brief Minimum Duty Cycle value corresponding to the minimum physical position of the motor
