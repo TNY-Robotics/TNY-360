@@ -373,14 +373,14 @@ Error ControlLoop::control_task()
     perf_global.stop();
     if (perf_counter++ == CONTROL_LOOP_FREQ_HZ)
     {
-        float ms_global = perf_global.get_avg_ms();
-        float ms_reader = perf_reader.get_avg_ms();
-        float ms_imu = perf_imu.get_avg_ms();
-        float ms_estimation = perf_estimation.get_avg_ms();
-        float ms_gait = perf_gait.get_avg_ms();
-        float ms_ik = perf_ik.get_avg_ms();
-        float ms_command = perf_command.get_avg_ms();
-        float ms_driver = perf_driver.get_avg_ms();
+        // float ms_global = perf_global.get_avg_ms();
+        // float ms_reader = perf_reader.get_avg_ms();
+        // float ms_imu = perf_imu.get_avg_ms();
+        // float ms_estimation = perf_estimation.get_avg_ms();
+        // float ms_gait = perf_gait.get_avg_ms();
+        // float ms_ik = perf_ik.get_avg_ms();
+        // float ms_command = perf_command.get_avg_ms();
+        // float ms_driver = perf_driver.get_avg_ms();
 
         // LOG_DEBUG(TAG, "Control loop perfs:");
         // LOG_DEBUG(TAG, "| Global | Reader |  IMU   | Estim  |  Gait  |   IK   |Command | Driver |");

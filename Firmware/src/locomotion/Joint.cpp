@@ -35,7 +35,7 @@ Joint::Joint() {}
 
 Joint::Joint(Joint::Id id, MotorController motor_controller, float min_angle_rad, float max_angle_rad, bool inverted, bool has_feedback)
     : id(id), motor_controller(motor_controller), min_angle_rad(min_angle_rad), max_angle_rad(max_angle_rad),
-      inverted(inverted), velocity_rad_s(MAX_VELOCITY_RAD_S), has_feedback(has_feedback)
+      inverted(inverted), velocity_rad_s(MAX_VELOCITY_RAD_S)
 {
 }
 
@@ -44,16 +44,15 @@ Error Joint::init()
     LOG_SCOPE(TAG, "Joint::init [id=%d]", id);
 
     // Register this joint instance
-    joints[(int)id] = this;
-
     // NOTE : Don't move this in the constructor, as we can have copy/move operations in constructors arguments (yes, that will be horrible to debug)
+    joints[(int)id] = this;
 
     if (Error err = motor_controller.init(); err != Error::None)
     {
         return err;
     }
 
-    if (has_feedback)
+    if (motor_controller.getMotorAttributes().has_feedback)
     {
         // Initialize model angle with current feedback
         if (Error err = get_motorcontroller_position(model_angle_rad); err != Error::None)
@@ -99,7 +98,7 @@ Error Joint::deinit()
 
 Error Joint::estimateState(float dt)
 {
-    if (has_feedback)
+    if (motor_controller.getMotorAttributes().has_feedback)
     {
         // Get the raw feedback from the motor controller
         if (Error err = get_motorcontroller_position(feedback_angle_rad); err != Error::None)
@@ -149,17 +148,15 @@ Error Joint::applyCommand(float joint_angle_rad, float dt)
         }
     }
 
-    // If no feedback, enable the motor now (see enable() notes for more info).
-    if (!has_feedback && motor_controller.getState() == MotorController::State::DISABLED)
+    // If no feedback, set feedback and estimate angles to model
+    if (!motor_controller.getMotorAttributes().has_feedback && motor_controller.getState() == MotorController::State::DISABLED)
     {
-        model_angle_rad = joint_angle_rad;
         feedback_angle_rad = model_angle_rad;
         estimate_angle_rad = model_angle_rad;
-        motor_controller.enable();
     }
 
     // If feedback, indicate command to kalman filter
-    if (has_feedback)
+    if (motor_controller.getMotorAttributes().has_feedback)
     {
         kalman_filter.Predict(model_angle_rad - last_model_angle_rad);
     }
@@ -176,7 +173,7 @@ Error Joint::applyCommand(float joint_angle_rad, float dt)
 
 Error Joint::enable()
 {
-    if (has_feedback)
+    if (motor_controller.getMotorAttributes().has_feedback)
     {
         // because the motor was probably disabled before,
         // model_angle may have drifted from the actual position.
@@ -196,10 +193,8 @@ Error Joint::enable()
     }
     else
     {
-        // No feedback.
-        // We don't try to lerp the motor position from it's current position to the target.
-        // We will enable the motor on the next applyCommand() call, setting the model_angle_rad in the meantime
-        return Error::None;
+        // no feedback, nothing to sync, just enable the motor
+        return motor_controller.enable();
     }
 }
 
@@ -277,7 +272,11 @@ Error Joint::send_motorcontroller_position(const float& position)
 Error Joint::get_motorcontroller_position(float &result) const
 {
     // if no feedback, just use the internal model
-    if (!has_feedback) result = model_angle_rad;
+    if (!motor_controller.getMotorAttributes().has_feedback)
+    {
+        result = model_angle_rad;
+        return Error::None;
+    }
 
     float position_ratio;
     Error err = motor_controller.getCurrentPosition(position_ratio);

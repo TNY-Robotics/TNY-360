@@ -189,6 +189,12 @@ public:
     CalibrationState getCalibrationState() const { return calibration_state; }
 
     /**
+     * @brief Get the motor attributes.
+     * @return Motor attributes.
+     */
+    const MotorAttributes& getMotorAttributes() const { return motor_attributes; }
+
+    /**
      * @brief Get the motor channel.
      * @return Motor channel.
      */
