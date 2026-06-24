@@ -7,7 +7,7 @@
                     {{ leg.enabled? 'Enabled' : 'Disabled' }}
                 </UButton>
             </div>
-            <div class="flex justify-evenly">
+            <div class="flex flex-col lg:flex-row justify-evenly">
                 <div v-for="joint in leg.joints" :key="joint.driverIndex" class="p-4">
                     <JointControlBox :driverIndex="joint.driverIndex" :readerIndex="joint.readerIndex" :name="joint.name" :range="joint.range" :shouldUpdate="shouldUpdate" v-model:blockUpdates="joint.blockUpdates" />
                 </div>
@@ -29,7 +29,7 @@ const joints = reactive([
         joints: [
             { driverIndex: 0, readerIndex: 0, name: 'Hip Roll', range: [-45, 45], blockUpdates: false },
             { driverIndex: 1, readerIndex: 1, name: 'Hip Pitch', range: [-135, 45], blockUpdates: false },
-            { driverIndex: 2, readerIndex: 2, name: 'Knee Pitch', range: [0, 135], blockUpdates: false },
+            { driverIndex: 2, readerIndex: 2, name: 'Knee Pitch', range: [0, 155], blockUpdates: false },
         ],
         enabled: false,
         enableLoading: false,
@@ -40,7 +40,7 @@ const joints = reactive([
         joints: [
             { driverIndex: 3, readerIndex: 4, name: 'Hip Roll', range: [-45, 45], blockUpdates: false },
             { driverIndex: 4, readerIndex: 5, name: 'Hip Pitch', range: [-135, 45], blockUpdates: false },
-            { driverIndex: 5, readerIndex: 6, name: 'Knee Pitch', range: [0, 135], blockUpdates: false },
+            { driverIndex: 5, readerIndex: 6, name: 'Knee Pitch', range: [0, 155], blockUpdates: false },
         ],
         enabled: false,
         enableLoading: false,
@@ -51,7 +51,7 @@ const joints = reactive([
         joints: [
             { driverIndex: 6, readerIndex: 8, name: 'Hip Roll', range: [-45, 45], blockUpdates: false },
             { driverIndex: 7, readerIndex: 9, name: 'Hip Pitch', range: [-135, 45], blockUpdates: false },
-            { driverIndex: 8, readerIndex: 10, name: 'Knee Pitch', range: [0, 135], blockUpdates: false },
+            { driverIndex: 8, readerIndex: 10, name: 'Knee Pitch', range: [0, 155], blockUpdates: false },
         ],
         enabled: false,
         enableLoading: false,
@@ -62,7 +62,7 @@ const joints = reactive([
         joints: [
             { driverIndex: 9, readerIndex: 12, name: 'Hip Roll', range: [-45, 45], blockUpdates: false },
             { driverIndex: 10, readerIndex: 13, name: 'Hip Pitch', range: [-135, 45], blockUpdates: false },
-            { driverIndex: 11, readerIndex: 14, name: 'Knee Pitch', range: [0, 135], blockUpdates: false },
+            { driverIndex: 11, readerIndex: 14, name: 'Knee Pitch', range: [0, 155], blockUpdates: false },
         ],
         enabled: false,
         enableLoading: false,

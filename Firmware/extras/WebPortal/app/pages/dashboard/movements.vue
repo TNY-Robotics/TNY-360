@@ -58,7 +58,7 @@
                 <div class="flex space-x-4">
                     <USlider v-model="translation_speed" :min="0.0" :max="0.8" :step="0.05" class="w-lg" />
                     <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ translation_speed }}</code>
-                    <p>m/s</p>
+                    <p class="whitespace-nowrap">m/s</p>
                 </div>
             </div>
             <div class="flex flex-col space-y-2 p-2">
@@ -66,13 +66,13 @@
                 <div class="flex space-x-4">
                     <USlider v-model="rotation_speed" :min="0" :max="180" :step="5" class="w-lg" />
                     <code class="w-12 bg-slate-200 dark:bg-slate-900 text-center px-2 py-0.5 rounded-md font-light">{{ rotation_speed }}</code>
-                    <p>deg/s</p>
+                    <p class="whitespace-nowrap">deg/s</p>
                 </div>
             </div>
         </div>
         <div class="absolute top-2 right-2">
             <p>Select Gamepad</p>
-            <USelect v-model="selectedGamepad" :items="gamepadItems" class="w-64" />
+            <USelect v-model="selectedGamepad" :items="gamepadItems" class="w-48 lg:w-64" />
         </div>
     </div>
 </template>

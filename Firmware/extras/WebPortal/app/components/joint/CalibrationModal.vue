@@ -4,19 +4,19 @@
             <div class="flex w-full h-full space-x-8">
                 <button class="calib-choice-btn flex flex-col space-y-4 text-center" @click="manualModalOpen = true">
                     <div class="flex space-x-2 items-center">
-                        <UIcon name="lucide:settings-2" class="w-8 h-8" />
-                        <p class="text-xl font-semibold"> Manual </p>
+                        <UIcon name="lucide:settings-2" class="w-6 lg:w-8 h-6 lg:h-8" />
+                        <p class="text-md lg:text-xl font-semibold"> Manual </p>
                     </div>
-                    <p>
+                    <p class="text-sm lg:text-base">
                         Tweak each joint settings manually.
                     </p>
                 </button>
                 <button class="calib-choice-btn flex flex-col space-y-4 text-center" @click="automaticModalOpen = true">
                     <div class="flex space-x-2 items-center">
-                        <UIcon name="lucide:bot" class="w-8 h-8" />
-                        <p class="text-xl font-semibold"> Automatic </p>
+                        <UIcon name="lucide:bot" class="w-6 lg:w-8 h-6 lg:h-8" />
+                        <p class="text-md lg:text-xl font-semibold"> Automatic </p>
                     </div>
-                    <p>
+                    <p class="text-sm lg:text-base">
                         Let your TNY-360 do the calibration.
                     </p>
                 </button>
@@ -255,12 +255,12 @@ function onAutoModalDoneClicked() { // already saved at the end, just close
 @import 'tailwindcss';
 
 .calib-choice-btn {
-    @apply flex justify-center items-center w-1/2 h-full aspect-square p-4 border-dashed border-2
+    @apply flex justify-center items-center w-1/2 h-full aspect-square p-2 lg:p-4 border-dashed border-2
         border-slate-400 dark:border-slate-500 hover:bg-slate-50 hover:dark:bg-slate-800;
     border-radius: 1em;
 }
 .calib-choice-btn-disabled {
-    @apply flex justify-center items-center w-1/2 h-full aspect-square p-4 border-dashed border-2
+    @apply flex justify-center items-center w-1/2 h-full aspect-square p-2 lg:p-4 border-dashed border-2
         border-slate-300 dark:border-slate-600 text-slate-400 dark:text-slate-600 ;
     border-radius: 1em;
 }

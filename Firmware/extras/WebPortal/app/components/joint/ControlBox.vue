@@ -2,8 +2,8 @@
     <div class="flex flex-col space-y-6 border-2 border-slate-200 dark:border-slate-700 p-4 rounded-lg">
         <div class="flex justify-between items-center">
             <div class="flex space-x-4">
-                <p class="text-lg font-semibold"> {{ name }} </p>
-                <UButton :color="enabledLoading? 'neutral' : (enabled? 'success': 'error')" variant="soft" @click="toggleEnabled" :icon="enabled? 'i-lucide-check' : 'i-lucide-x'" trailing :loading="enabledLoading">
+                <p class="text-lg font-semibold whitespace-nowrap "> {{ name }} </p>
+                <UButton class="w-fit h-fit" :color="enabledLoading? 'neutral' : (enabled? 'success': 'error')" variant="soft" @click="toggleEnabled" :icon="enabled? 'i-lucide-check' : 'i-lucide-x'" trailing :loading="enabledLoading">
                     {{ enabled? 'Enabled' : 'Disabled' }}
                 </UButton>
             </div>
@@ -33,11 +33,11 @@
         <div class="flex flex-col space-y-3">
             <div class="flex space-x-8 justify-between items-center">
                 <p> Calibration </p>
-                <UButton variant="soft" disabled :color="getCalibColor(calibrationState)" :label="getCalibLabel(calibrationState)"/>
+                <UButton class="w-fit h-fit" variant="soft" disabled :color="getCalibColor(calibrationState)" :label="getCalibLabel(calibrationState)"/>
             </div>
             <div class="flex justify-between items-center">
-                <UButton variant="soft" label="Calibrate" icon="i-lucide-ruler" @click="onCalibrateClicked" />
-                <UButton v-if="calibrationState === MotorCalibrationState.Calibrated" variant="soft" color="error" :loading="deleteCalibBtnLoading"
+                <UButton class="w-fit h-fit" variant="soft" label="Calibrate" icon="i-lucide-ruler" @click="onCalibrateClicked" />
+                <UButton class="w-fit h-fit" v-if="calibrationState === MotorCalibrationState.Calibrated" variant="soft" color="error" :loading="deleteCalibBtnLoading"
                     label="Delete Calibration" icon="i-lucide-trash" trailing @click="onDeleteCalibrationClicked" />
             </div>
         </div>

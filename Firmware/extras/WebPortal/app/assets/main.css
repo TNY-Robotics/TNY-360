@@ -27,13 +27,52 @@ button {
 }
 
 h1 {
-    @apply text-3xl font-bold;
+    @apply text-2xl lg:text-3xl font-bold;
 }
 
 h2 {
-    @apply text-2xl font-bold;
+    @apply text-xl lg:text-2xl font-bold;
 }
 
 h3 {
-    @apply text-xl font-semibold;
+    @apply text-lg lg:text-xl font-semibold;
 }
+
+@keyframes show {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+@keyframes show-up {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes show-down {
+    0% { opacity: 0; transform: translateY(-10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes show-left {
+    0% { opacity: 0; transform: translateX(10px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes show-right {
+    0% { opacity: 0; transform: translateX(-10px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+:root {
+    --show-duration: 2s;
+    --show-curve: cubic-bezier(0.1, 1.0, 0.1, 1.0);
+}
+
+.show { animation: show var(--show-duration) var(--show-curve) forwards; opacity: 0; }
+.show-up { animation: show-up var(--show-duration) var(--show-curve) forwards; opacity: 0; }
+.show-down { animation: show-down var(--show-duration) var(--show-curve) forwards; opacity: 0; }
+.show-left { animation: show-left var(--show-duration) var(--show-curve) forwards; opacity: 0; }
+.show-right { animation: show-right var(--show-duration) var(--show-curve) forwards; opacity: 0; }
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+.delay-600 { animation-delay: 0.6s; }

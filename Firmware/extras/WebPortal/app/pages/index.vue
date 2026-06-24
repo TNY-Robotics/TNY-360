@@ -1,163 +1,18 @@
 <template>
-    <div class="flex grow p-4 min-h-0 max-h-full">
-        <div class="flex flex-col w-1/2 space-y-4">
-            <div class="flex space-x-4">
-                <div class="p-2">
-                    <h2> CPU Usage ({{ Math.round(stats?.temp_c * 10) / 10 }}°C) </h2>
-                    <div class="flex space-x-8 p-2">
-                        <div>
-                            <p>Core 0</p>
-                            <BarChart class="w-32"
-                                :nbars="10" direction="vertical" :size="2" v-model="stats.cpu_usage.core0_percent.value"
-                            />
-                            <p class="text-center w-full"> {{Math.round(stats?.cpu_usage.core0 * 100)}} % </p>
-                        </div>
-                        <div>
-                            <p>Core 1</p>
-                            <BarChart class="w-32"
-                                :nbars="10" direction="vertical" :size="2" v-model="stats.cpu_usage.core1_percent.value"
-                            />
-                            <p class="text-center w-full"> {{Math.round(stats?.cpu_usage.core1 * 100)}} % </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-2">
-                    <h2> RAM Usage </h2>
-                    <div class="flex space-x-8 p-2">
-                        <div>
-                            <p>Internal</p>
-                            <BarChart class="w-32"
-                                :nbars="10" direction="vertical" :size="2" v-model="stats.ram_usage.internal_percent.value"
-                            />
-                            <p class="text-center w-full"> {{formatRAM(stats?.ram_usage.internal_used)}} / {{ formatRAM(stats?.ram_usage.internal_total) }} </p>
-                        </div>
-                        <div>
-                            <p>PSRAM</p>
-                            <BarChart class="w-32"
-                                :nbars="10" direction="vertical" :size="2" v-model="stats.ram_usage.psram_percent.value"
-                            />
-                            <p class="text-center w-full"> {{formatRAM(stats?.ram_usage.psram_used)}} / {{ formatRAM(stats?.ram_usage.psram_total) }} </p>
-                        </div>
-                    </div>
-                </div>
+    <div class="flex flex-col min-h-screen min-w-screen max-w-screen max-h-screen w-screen h-screen overflow-hidden p-4 lg:p-8">
+        <p class="text-center show-up text-6xl font-extrabold"> TNY - 360 </p>
+        <p class="text-center show-up text-lg text-gray-500 dark:text-gray-500"> Bienvenue sur le portail web de votre TNY-360 !</p>
+        <div class="flex grow justify-center items-center">
+            <div class="flex flex-col space-y-8 h-fit w-fit justify-center items-center">
+                <UButton class="show-up delay-200 flex justify-between w-fit" size="xl" variant="subtle" href="/teleop" label="Jouer avec mon TNY-360" icon="lucide:gamepad-2" />
+                <UButton class="show-up delay-400 flex justify-between w-fit" size="xl" variant="subtle" href="/dashboard" label="Programmer mon TNY-360" icon="lucide:chart-no-axes-gantt" />
+                <UButton class="show-up delay-600 flex justify-between w-fit" size="xl" variant="subtle" href="/dashboard" label="Voir le Panneau de Contrôle" icon="lucide:gauge" />
             </div>
-            <div class="flex space-x-4 w-full">
-                <h2> Latency :</h2>
-                <p class="text-2xl font-mono"> {{ latency !== null ? Math.round(latency) + ' ms' : 'N/A' }} </p>
-            </div>
-        </div>
-        <div class="flex h-full flex-col w-1/2 space-y-4 max-h-full min-h-0">
-            <div class="flex w-full justify-between">
-                <h2> Logs </h2>
-                <div class="flex space-x-4">
-                    <UButton icon="lucide:square-arrow-right-exit" trailing label="Export" variant="subtle" color="neutral" @click="exportLogs" />
-                    <UButton label="Clear" variant="solid" color="error" @click="clearLogs" />
-                </div>
-            </div>
-            <LogTerminal ref="logTerminal" />
         </div>
     </div>
 </template>
 
 <script lang="ts" setup>
-import { useTNY360 } from '~/composables/TNY360';
-
-const tny = useTNY360();
-
-const stats = {
-    temp_c: 0,
-    cpu_usage: {
-        core0: 0,
-        core0_percent: ref(0),
-        core1: 0,
-        core1_percent: ref(0),
-    },
-    ram_usage: {
-        internal_total: 0,
-        internal_used: 0,
-        internal_percent: ref(0),
-        psram_total: 0,
-        psram_used: 0,
-        psram_percent: ref(0),
-    }
-}
-
-let shouldPullStats = false;
-let shouldUpdateLatency = false;
-const latency = ref(null as number | null);
-onMounted(() => {
-    shouldPullStats = true;
-    shouldUpdateLatency = true;
-    pullStatisticsContinuous();
-    updateLatencyContinuous();
-});
-
-onUnmounted(() => {
-    shouldPullStats = false;
-    shouldUpdateLatency = false;
-});
-
-async function updateLatencyContinuous() {
-    latency.value = tny.value?.latency ?? null;
-    if (shouldUpdateLatency) setTimeout(updateLatencyContinuous, 500);
-}
-
-async function pullStatisticsContinuous() {
-    try {
-        const res = await tny.value?.system.getStatistics();
-        if (res) {
-            stats.temp_c = res.temp_c;
-            stats.cpu_usage.core0 = res.cpu_usage.core0;
-            stats.cpu_usage.core1 = res.cpu_usage.core1;
-            stats.ram_usage.internal_used = res.ram_usage.internal_used;
-            stats.ram_usage.internal_total = res.ram_usage.internal_total;
-            stats.ram_usage.psram_used = res.ram_usage.psram_used;
-            stats.ram_usage.psram_total = res.ram_usage.psram_total;
-
-            stats.cpu_usage.core0_percent.value = res.cpu_usage.core0;
-            stats.cpu_usage.core1_percent.value = res.cpu_usage.core1;
-            stats.ram_usage.internal_percent.value = res.ram_usage.internal_used / res.ram_usage.internal_total;
-            stats.ram_usage.psram_percent.value = res.ram_usage.psram_used / res.ram_usage.psram_total;
-        }
-    } catch (error) {
-        if ((error as Error).message.toLowerCase().includes('timed out')) {
-            // robot is overloaded, wait a bit
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            console.warn('Timed out while fetching statistics, retrying...');
-        }
-        else console.error('Error fetching statistics:', error);
-    }
-    if (shouldPullStats) setTimeout(pullStatisticsContinuous, 500);
-}
-
-function formatRAM(bytes: number): string {
-    if (bytes < 1024) return bytes + ' B';
-    else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
-    else if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(0) + ' MB';
-    else return (bytes / (1024 * 1024 * 1024)).toFixed(0) + ' GB';
-}
-
-const logTerminal = ref<InstanceType<typeof import('~/components/LogTerminal.vue').default>>();
-function exportLogs() {
-    if (logTerminal.value) {
-        const logs = logTerminal.value.export();
-        const blob = new Blob([logs], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'logs.txt';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-}
-
-function clearLogs() {
-    if (logTerminal.value) {
-        logTerminal.value.clear();
-    }
-}
 
 </script>
 
