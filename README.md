@@ -7,6 +7,7 @@
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Platform](https://img.shields.io/badge/Platform-ESP32--S3-blue)](https://espressif.com)
 [![Framework](https://img.shields.io/badge/Framework-ESP--IDF-orange)](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/TNY-Robotics/TNY-360)
 
 **A compact, open-source robot dog designed to *Understand*, *Interact*, and *Learn*.**
 
