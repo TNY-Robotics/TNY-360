@@ -34,39 +34,39 @@ public:
      * @brief Initialize the leg.
      * @return Error code indicating success or failure.
      */
-    Error init();
+    Status init();
 
     /**
      * @brief Deinitialize the leg.
      * @return Error code indicating success or failure.
      */
-    Error deinit();
+    Status deinit();
 
     /**
      * @brief Estimate the leg state.
      * @note This method should not be called manually, it is called internally in the control loop.
      * @return Error code indicating success or failure.
      */
-    Error estimateState(float dt);
+    Status estimateState(float dt);
 
     /**
      * @brief Apply a new command.
      * @note This method should not be called manually, it is called internally in the control loop.
      * @return Error code indicating success or failure.
      */
-    Error applyCommand(LegJointState jointState, float dt);
+    Status applyCommand(LegJointState jointState, float dt);
 
     /**
      * @brief Enable all joints of the leg.
      * @return Error code indicating success or failure.
      */
-    Error enable();
+    Status enable();
 
     /**
      * @brief Disable all joints of the leg.
      * @return Error code indicating success or failure.
      */
-    Error disable();
+    Status disable();
 
     /**
      * @brief Get a joint of the leg by its ID (see JointId).

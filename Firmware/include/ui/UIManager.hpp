@@ -14,13 +14,13 @@ public:
      * @brief Initialize the ui system.
      * @return Error code indicating success or failure.
      */
-    Error init();
+    Status init();
 
     /**
      * @brief Deinitialize the ui system.
      * @return Error code indicating success or failure.
      */
-    Error deinit();
+    Status deinit();
 
     CameraDriver& getCamera() { return camera; }
 

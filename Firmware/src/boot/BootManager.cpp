@@ -9,9 +9,9 @@ namespace BootManager
         LOG_SCOPE(TAG, "BootManager::CheckForSpecialBoot");
 
         // Init NVS to check for flags
-        if (Error err = NVS::Init(); err != Error::None)
+        if (Status err = NVS::Init(); err != Status::Ok)
         {
-            LOG_ERROR(TAG, "Error initializing NVS : %s", ErrorToString(err));
+            // LOG_ERROR(TAG, "Error initializing NVS : %s", ErrorToString(err));
             return true; // block robot from booting as normal
         }
 

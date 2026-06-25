@@ -36,7 +36,7 @@ WebSocket::WebSocket(uint16_t port) : server_port(port)
 {
 }
 
-Error WebSocket::init()
+Status WebSocket::init()
 {
     LOG_SCOPE(TAG, "WebSocket::init");
     
@@ -54,24 +54,24 @@ Error WebSocket::init()
     {
         server_handle = nullptr;
         LOG_ERROR(TAG, "Failed to start WebSocket server");
-        return Error::Unknown;
+        return Status::Unknown;
     }
 
     // register URI handlers and return
     return register_uri_handlers();
 }
 
-Error WebSocket::deinit()
+Status WebSocket::deinit()
 {
     if (server_handle)
     {
         httpd_stop(server_handle);
         server_handle = nullptr;
     }
-    return Error::None;
+    return Status::Ok;
 }
 
-Error WebSocket::register_uri_handlers()
+Status WebSocket::register_uri_handlers()
 {
     httpd_uri_t ws = {
         .uri        = "/",
@@ -86,7 +86,7 @@ Error WebSocket::register_uri_handlers()
     };
     httpd_register_uri_handler((httpd_handle_t) server_handle, &ws);
 
-    return Error::None;
+    return Status::Ok;
 }
 
 void WebSocket::sendResponse(void* context, const Protocol::MessageHeader& header, const uint8_t* payload)

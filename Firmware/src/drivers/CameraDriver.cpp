@@ -2,7 +2,7 @@
 #include "common/Log.hpp"
 #include "common/I2C.hpp"
 #include "Robot.hpp"
-
+#include "drivers/CameraDriver.Error.hpp"
 #include "driver/i2c_master.h"
 #include "esp_timer.h"
 
@@ -43,23 +43,27 @@ static camera_config_t camera_config = {
 };
 
 typedef struct {
-        httpd_req_t *req;
-        size_t len;
+    httpd_req_t *req;
+    size_t len;
 } jpg_chunking_t;
 
-static size_t jpg_encode_stream(void * arg, size_t index, const void* data, size_t len){
+static size_t jpg_encode_stream(void * arg, size_t index, const void* data, size_t len)
+{
     jpg_chunking_t *j = (jpg_chunking_t *)arg;
-    if(!index){
+    if (!index)
+    {
         j->len = 0;
     }
-    if(httpd_resp_send_chunk(j->req, (const char *)data, len) != ESP_OK){
+    if(httpd_resp_send_chunk(j->req, (const char *)data, len) != ESP_OK)
+    {
         return 0;
     }
     j->len += len;
     return len;
 }
 
-esp_err_t jpg_httpd_handler(httpd_req_t *req){
+esp_err_t jpg_httpd_handler(httpd_req_t *req)
+{
     camera_fb_t * fb = NULL;
     esp_err_t res = ESP_OK;
     size_t fb_len = 0;
@@ -68,19 +72,25 @@ esp_err_t jpg_httpd_handler(httpd_req_t *req){
     fb = esp_camera_fb_get();
     if (!fb) {
         LOG_ERROR(TAG, "Camera capture failed");
+        Error::RegisterErrorEvent(ErrorEventCameraCaptureFailed());
         httpd_resp_send_500(req);
         return ESP_FAIL;
     }
     res = httpd_resp_set_type(req, "image/jpeg");
-    if(res == ESP_OK){
+    if(res == ESP_OK)
+    {
         res = httpd_resp_set_hdr(req, "Content-Disposition", "inline; filename=capture.jpg");
     }
 
-    if(res == ESP_OK){
-        if(fb->format == PIXFORMAT_JPEG){
+    if(res == ESP_OK)
+    {
+        if(fb->format == PIXFORMAT_JPEG)
+        {
             fb_len = fb->len;
             res = httpd_resp_send(req, (const char *)fb->buf, fb->len);
-        } else {
+        }
+        else
+        {
             jpg_chunking_t jchunk = {req, 0};
             res = frame2jpg_cb(fb, 80, jpg_encode_stream, &jchunk)?ESP_OK:ESP_FAIL;
             httpd_resp_send_chunk(req, NULL, 0);
@@ -93,7 +103,8 @@ esp_err_t jpg_httpd_handler(httpd_req_t *req){
     return res;
 }
 
-esp_err_t stream_handler(httpd_req_t *req) {
+esp_err_t stream_handler(httpd_req_t *req)
+{
     camera_fb_t *fb = nullptr;
     esp_err_t res = ESP_OK;
     char *part_buf[128];
@@ -104,12 +115,15 @@ esp_err_t stream_handler(httpd_req_t *req) {
 
     // int64_t last_frame_time = esp_timer_get_time();
 
-    while (true) {
+    while (true)
+    {
         // Get the image
         fb = esp_camera_fb_get();
-        if (!fb) {
+        if (!fb)
+        {
             LOG_WARNING(TAG, "Failed to get camera capture");
             res = ESP_FAIL;
+            Error::RegisterErrorEvent(ErrorEventCameraCaptureFailed());
             break;
         }
 
@@ -119,7 +133,8 @@ esp_err_t stream_handler(httpd_req_t *req) {
         
         // Send image header
         res = httpd_resp_send_chunk(req, (const char *)part_buf, hlen);
-        if (res != ESP_OK) {
+        if (res != ESP_OK)
+        {
             esp_camera_fb_return(fb);
             break; // disconnected
         }
@@ -130,7 +145,8 @@ esp_err_t stream_handler(httpd_req_t *req) {
         // Free camera buffer
         esp_camera_fb_return(fb);
         
-        if (res != ESP_OK) {
+        if (res != ESP_OK)
+        {
             break;
         }
 
@@ -148,22 +164,23 @@ CameraDriver::~CameraDriver()
 {
 }
 
-Error CameraDriver::init()
+Status CameraDriver::init()
 {
     LOG_SCOPE(TAG, "CameraDriver::init");
 
     // initialize i2c for camera configuration
-    if (Error err = I2C::Init(); err != Error::None)
+    if (Status err = I2C::Init(); err != Status::Ok)
     {
+        Error::RegisterErrorEvent(ErrorEventI2CInitFailed());
         return err;
     }
 
     // initialize the camera
-    esp_err_t err = esp_camera_init(&camera_config);
-    if (err != ESP_OK) {
+    if (esp_err_t err = esp_camera_init(&camera_config); err != ESP_OK)
+    {
         LOG_ERROR(TAG, "Camera init failed with error 0x%x", err);
-        ErrorHandle(ErrorStruct::CameraInitFailed);
-        return Error::HardwareFailure;
+        Error::RegisterErrorEvent(ErrorEventCameraInitFailed(err));
+        return Status::Failure;
     }
 
     // flip the image (sensor is upside down)
@@ -171,27 +188,28 @@ Error CameraDriver::init()
     if (sensor == nullptr)
     {
         LOG_ERROR(TAG, "esp_camera_sensor_get returned nullptr");
-        ErrorHandle(ErrorStruct::CameraInitFailed);
-        return Error::Unknown;
+        Error::RegisterErrorEvent(ErrorEventGetSensorFailed());
+        return Status::Unknown;
     }
     sensor->set_vflip(sensor, true);
     sensor->set_hmirror(sensor, true);
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error CameraDriver::deinit()
+Status CameraDriver::deinit()
 {
     if (esp_err_t err = esp_camera_deinit(); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Failed to deinit camera : Error 0x%0x", err);
-        return Error::SoftwareFailure;
+        Error::RegisterErrorEvent(ErrorEventCameraDeinitFailed(err));
+        return Status::Failure;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error CameraDriver::start()
+Status CameraDriver::start()
 {
     // Start the camera stream server
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -204,12 +222,12 @@ Error CameraDriver::start()
     config.recv_wait_timeout = 5;
     config.send_wait_timeout = 5;
 
-    if (httpd_start(&server, &config) != ESP_OK)
+    if (esp_err_t err = httpd_start(&server, &config); err != ESP_OK)
     {
         server = nullptr;
         LOG_ERROR(TAG, "Failed to start web server");
-        ErrorHandle(ErrorStruct::CameraServerInitFailed);
-        return Error::SoftwareFailure;
+        Error::RegisterErrorEvent(ErrorEventServerStartFailed(err));
+        return Status::Failure;
     }
 
     httpd_uri_t catch_all_uri = {
@@ -224,19 +242,24 @@ Error CameraDriver::start()
     if (esp_err_t err = httpd_register_uri_handler(server, &catch_all_uri); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Unable to register URI handler : Error 0x%0x", err);
-        ErrorHandle(ErrorStruct::CameraServerInitFailed);
-        return Error::SoftwareFailure;
+        Error::RegisterErrorEvent(ErrorEventServerRegisterFailed(err));
+        return Status::Failure;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error CameraDriver::stop()
+Status CameraDriver::stop()
 {
     if (server)
     {
-        httpd_stop(server);
+        if (esp_err_t err = httpd_stop(server); err != ESP_OK)
+        {
+            LOG_ERROR(TAG, "Failed to stop web server : Error 0x%0x", err);
+            Error::RegisterErrorEvent(ErrorEventServerStopFailed(err));
+            return Status::Failure;
+        }
         server = nullptr;
     }
-    return Error::None;
+    return Status::Ok;
 }

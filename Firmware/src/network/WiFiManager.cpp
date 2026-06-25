@@ -57,7 +57,7 @@ void WiFiManager::__wifi_event_handler(esp_event_base_t event_base, int32_t even
 
             if (strlen(ssid) > 0)
             {
-                if (Error err = nvs_handle_ptr->set("ssid", ssid, strlen(ssid) + 1); err != Error::None)
+                if (Status err = nvs_handle_ptr->set("ssid", ssid, strlen(ssid) + 1); err != Status::Ok)
                 {
                     LOG_ERROR(TAG, "Failed to store SSID in NVS");
                 }
@@ -69,7 +69,7 @@ void WiFiManager::__wifi_event_handler(esp_event_base_t event_base, int32_t even
 
             if (strlen(password) > 0)
             {
-                if (Error err = nvs_handle_ptr->set("password", password, strlen(password) + 1); err != Error::None)
+                if (Status err = nvs_handle_ptr->set("password", password, strlen(password) + 1); err != Status::Ok)
                 {
                     LOG_ERROR(TAG, "Failed to store password in NVS");
                 }
@@ -107,11 +107,11 @@ WiFiManager::WiFiManager()
     mode = Station;
 }
 
-Error WiFiManager::init()
+Status WiFiManager::init()
 {
     LOG_SCOPE(TAG, "WiFiManager::init");
 
-    if (Error err = NVS::Init(); err != Error::None)
+    if (Status err = NVS::Init(); err != Status::Ok)
     {
         return err;
     }
@@ -119,14 +119,14 @@ Error WiFiManager::init()
     if (esp_netif_init() != ESP_OK)
     {
         LOG_ERROR(TAG, "esp_netif_init failed");
-        ErrorHandle(ErrorStruct::WiFiInitFailed);
-        return Error::SoftwareFailure;
+        // ErrorHandle(ErrorStruct::WiFiInitFailed);
+        return Status::Failure;
     }
     if (esp_event_loop_create_default() != ESP_OK)
     {
         LOG_ERROR(TAG, "esp_event_loop_create_default failed");
-        ErrorHandle(ErrorStruct::WiFiInitFailed);
-        return Error::SoftwareFailure;
+        // ErrorHandle(ErrorStruct::WiFiInitFailed);
+        return Status::Failure;
     }
 
     // Create default WiFi station and AP interfaces
@@ -137,37 +137,37 @@ Error WiFiManager::init()
     if (esp_wifi_init(&cfg) != ESP_OK)
     {
         LOG_ERROR(TAG, "esp_wifi_init failed");
-        ErrorHandle(ErrorStruct::WiFiInitFailed);
-        return Error::SoftwareFailure;
+        // ErrorHandle(ErrorStruct::WiFiInitFailed);
+        return Status::Failure;
     }
 
     // Register event handlers
     if (esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, this) != ESP_OK)
     {
         LOG_ERROR(TAG, "Failed to register WiFi event handler");
-        ErrorHandle(ErrorStruct::WiFiInitFailed);
-        return Error::SoftwareFailure;
+        // ErrorHandle(ErrorStruct::WiFiInitFailed);
+        return Status::Failure;
     }
     if (esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_event_handler, this) != ESP_OK)
     {
         LOG_ERROR(TAG, "Failed to register IP event handler");
-        ErrorHandle(ErrorStruct::WiFiInitFailed);
-        return Error::SoftwareFailure;
+        // ErrorHandle(ErrorStruct::WiFiInitFailed);
+        return Status::Failure;
     }
 
-    if (Error err = NVS::Open("WiFi", &nvs_handle_ptr); err != Error::None)
+    if (Status err = NVS::Open("WiFi", &nvs_handle_ptr); err != Status::Ok)
     {
         LOG_ERROR(TAG, "Failed to open NVS namespace for WiFi: %d", static_cast<int>(err));
-        ErrorHandle(ErrorStruct::WiFiInitFailed);
+        // ErrorHandle(ErrorStruct::WiFiInitFailed);
         return err;
     }
     
-    if (nvs_handle_ptr->get("ssid", ssid, sizeof(ssid)) != Error::None)
+    if (nvs_handle_ptr->get("ssid", ssid, sizeof(ssid)) != Status::Ok)
     {
         LOG_DEBUG(TAG, "No stored SSID found in NVS");
         ssid[0] = '\0';
     }
-    if (nvs_handle_ptr->get("password", password, sizeof(password)) != Error::None)
+    if (nvs_handle_ptr->get("password", password, sizeof(password)) != Status::Ok)
     {
         LOG_DEBUG(TAG, "No stored password found in NVS");
         password[0] = '\0';
@@ -184,18 +184,18 @@ Error WiFiManager::init()
         LOG_DEBUG(TAG, "No SSID stored. Starting AP");
         strcpy(ssid, WIFI_AP_SSID);
         strcpy(password, WIFI_AP_PASSWORD);
-        if (Error err = __create_ap(); err != Error::None)
+        if (Status err = __create_ap(); err != Status::Ok)
         {
             LOG_ERROR(TAG, "Create AP Failed");
-            ErrorHandle(ErrorStruct::WiFiInitFailed);
+            // ErrorHandle(ErrorStruct::WiFiInitFailed);
             return err;
         }
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error WiFiManager::deinit()
+Status WiFiManager::deinit()
 {
     if (nvs_handle_ptr)
     {
@@ -203,14 +203,14 @@ Error WiFiManager::deinit()
         nvs_handle_ptr = nullptr;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error WiFiManager::connect(const char* _ssid, const char* _password, bool store_credentials)
+Status WiFiManager::connect(const char* _ssid, const char* _password, bool store_credentials)
 {
     if (strlen(_ssid) == 0)
     {
-        return Error::InvalidParameters;
+        return Status::InvalidParameters;
     }
 
     strncpy(ssid, _ssid, sizeof(ssid) - 1);
@@ -218,41 +218,41 @@ Error WiFiManager::connect(const char* _ssid, const char* _password, bool store_
     should_store_credentials = store_credentials;
     __connect_to_ap();
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error WiFiManager::disconnect()
+Status WiFiManager::disconnect()
 {
     if (state != Connected)
     {
-        return Error::InvalidState;
+        return Status::InvalidState;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error WiFiManager::createAccessPoint(const char* _ssid, const char* _password)
+Status WiFiManager::createAccessPoint(const char* _ssid, const char* _password)
 {
     if (strlen(_ssid) == 0)
     {
-        return Error::InvalidParameters;
+        return Status::InvalidParameters;
     }
 
     strncpy(ssid, _ssid, sizeof(ssid) - 1);
     strncpy(password, _password, sizeof(password) - 1);
 
     __create_ap();
-    return Error::None;
+    return Status::Ok;
 }
 
 
-Error WiFiManager::__connect_to_ap()
+Status WiFiManager::__connect_to_ap()
 {
     // Stop current WiFi mode if running
     if (esp_wifi_stop() != ESP_OK)
     {
         LOG_ERROR(TAG, "esp_wifi_stop failed");
-        return Error::SoftwareFailure;
+        return Status::Failure;
     }
 
     wifi_config_t wifi_config = {};
@@ -270,43 +270,43 @@ Error WiFiManager::__connect_to_ap()
     if (esp_err_t err = esp_wifi_set_mode(WIFI_MODE_STA); err != ESP_OK)
     {
         LOG_ERROR(TAG, "esp_wifi_set_mode failed with code 0x%x", err);
-        return Error::SoftwareFailure;
+        return Status::Failure;
     }
 
     // Set WiFi configuration
     if (esp_err_t err = esp_wifi_set_config(WIFI_IF_STA, &wifi_config); err != ESP_OK)
     {
         LOG_ERROR(TAG, "esp_wifi_set_config failed with code 0x%x", err);
-        return Error::SoftwareFailure;
+        return Status::Failure;
     }
 
     // Disable power save for better performance
     if (esp_err_t err = esp_wifi_set_ps(WIFI_PS_NONE); err != ESP_OK)
     {
         LOG_ERROR(TAG, "esp_wifi_set_ps failed with code 0x%x", err);
-        return Error::SoftwareFailure;
+        return Status::Failure;
     }
     
     if (esp_err_t err = esp_wifi_start(); err != ESP_OK)
     {
         LOG_ERROR(TAG, "esp_wifi_start failed with code 0x%x", err);
-        return Error::SoftwareFailure;
+        return Status::Failure;
     }
     
     esp_wifi_set_max_tx_power(40);
     
     state = Connecting;
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error WiFiManager::__create_ap()
+Status WiFiManager::__create_ap()
 {
     // Stop current WiFi mode if running
     if (esp_wifi_stop() != ESP_OK)
     {
         LOG_ERROR(TAG, "esp_wifi_stop failed");
-        return Error::SoftwareFailure;
+        return Status::Failure;
     }
 
     // Configure Access Point
@@ -325,30 +325,30 @@ Error WiFiManager::__create_ap()
     if (esp_err_t err = esp_wifi_set_mode(WIFI_MODE_AP); err != ESP_OK)
     {
         LOG_ERROR(TAG, "esp_wifi_set_mode failed with code 0x%x", err);
-        return Error::SoftwareFailure;
+        return Status::Failure;
     }
     if (esp_err_t err = esp_wifi_set_config(WIFI_IF_AP, &wifi_config); err != ESP_OK)
     {
         LOG_ERROR(TAG, "esp_wifi_set_config failed with code 0x%x", err);
-        return Error::SoftwareFailure;
+        return Status::Failure;
     }
     if (esp_err_t err = esp_wifi_start(); err != ESP_OK)
     {
         LOG_ERROR(TAG, "esp_wifi_start failed with code 0x%x", err);
-        return Error::SoftwareFailure;
+        return Status::Failure;
     }
 
     esp_wifi_set_max_tx_power(40);
     
     LOG_DEBUG(TAG, "Starting AP with config: ssid=%s, password=%s", wifi_config.ap.ssid, wifi_config.ap.password);
 
-    return Error::None;
+    return Status::Ok;
 }
 
 void WiFiManager::on_ap_started()
 {
     LOG_DEBUG(TAG, "WiFiManager::on_ap_started");
-    if (Error err = dns_server.init(); err != Error::None)
+    if (Status err = dns_server.init(); err != Status::Ok)
     {
         LOG_ERROR(TAG, "Failed to start DNS server");
     }
@@ -357,7 +357,7 @@ void WiFiManager::on_ap_started()
 
 void WiFiManager::on_ap_stopped()
 {
-    if (Error err = dns_server.deinit(); err != Error::None)
+    if (Status err = dns_server.deinit(); err != Status::Ok)
     {
         LOG_ERROR(TAG, "Failed to stop DNS server");
     }

@@ -25,32 +25,32 @@ namespace Leg
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t legId;
-        if (reader.read(legId) != Error::None || legId >= (int) ::Leg::Id::Count)
+        if (reader.read(legId) != Status::Ok || legId >= (int) ::Leg::Id::Count)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
 
         uint8_t enabledFlag;
-        if (reader.read(enabledFlag) != Error::None)
+        if (reader.read(enabledFlag) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
 
-        RPC::ExecuteThreadSafe<Error>([enabledFlag, legId](){
-            Error err;
+        RPC::ExecuteThreadSafe<Status>([enabledFlag, legId](){
+            Status err;
             for (int i = 0; i < (int) ::Leg::JointId::Count; i++)
             {
                 bool isEnabled = (enabledFlag & (1 << i)) != 0;
                 Joint& joint = Robot::GetInstance().getBody().getLeg((::Leg::Id)legId).getJoint((::Leg::JointId)i);
                 if (isEnabled) err = joint.enable();
                 else err = joint.disable();
-                if (err != Error::None) return err;
+                if (err != Status::Ok) return err;
             }
-            return Error::None;
-        }, [ctx](Error err){
-            if (err != Error::None)
+            return Status::Ok;
+        }, [ctx](Status err){
+            if (err != Status::Ok)
                 ctx.respond(ResponseStatus::InvalidParameters);
             else ctx.respond(ResponseStatus::Ok);
         });
@@ -69,7 +69,7 @@ namespace Leg
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t legId;
-        if (reader.read(legId) != Error::None || legId >= (int) ::Leg::Id::Count)
+        if (reader.read(legId) != Status::Ok || legId >= (int) ::Leg::Id::Count)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -107,21 +107,21 @@ namespace Leg
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t legId;
-        if (reader.read(legId) != Error::None || legId >= (int) ::Leg::Id::Count)
+        if (reader.read(legId) != Status::Ok || legId >= (int) ::Leg::Id::Count)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
 
         float x_m, y_m, z_m;
-        if (reader.read(x_m) != Error::None || reader.read(y_m) != Error::None || reader.read(z_m) != Error::None)
+        if (reader.read(x_m) != Status::Ok || reader.read(y_m) != Status::Ok || reader.read(z_m) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
 
         bool clearOverrides;
-        if (reader.read(clearOverrides) != Error::None)
+        if (reader.read(clearOverrides) != Status::Ok)
         {
             clearOverrides = true; // clear overrides by default
         }
@@ -152,7 +152,7 @@ namespace Leg
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t legId;
-        if (reader.read(legId) != Error::None || legId >= (int) ::Leg::Id::Count)
+        if (reader.read(legId) != Status::Ok || legId >= (int) ::Leg::Id::Count)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -175,7 +175,7 @@ namespace Leg
         BinaryReader reader(payload, ctx.expected_len);
         
         uint8_t legId;
-        if (reader.read(legId) != Error::None || legId >= (int) ::Leg::Id::Count)
+        if (reader.read(legId) != Status::Ok || legId >= (int) ::Leg::Id::Count)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;

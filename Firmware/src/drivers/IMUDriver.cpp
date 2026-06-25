@@ -1,6 +1,7 @@
 #include "drivers/IMUDriver.hpp"
 #include "common/I2C.hpp"
 #include "common/Log.hpp"
+#include "drivers/IMUDriver.Error.hpp"
 #include "mpu6050.h"
 
 namespace IMUDriver
@@ -9,14 +10,15 @@ namespace IMUDriver
     static mpu6050_handle_t mpu_handle;
     static IMUData imu_data;
 
-    Error Init()
+    Status Init()
     {
         LOG_SCOPE(TAG, "IMUDriver::Init");
 
-        if (initialized) return Error::None;
+        if (initialized) return Status::Ok;
         
-        if (Error err = I2C::Init(); err != Error::None)
+        if (Status err = I2C::Init(); err != Status::Ok)
         {
+            Error::RegisterErrorEvent(ErrorEventI2CInitFailed());
             return err;
         }
 
@@ -28,16 +30,16 @@ namespace IMUDriver
         if (esp_err_t err = mpu6050_create(I2C::handle_primary, mpu_info, &mpu_handle); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Failed to create MPU6050 handle with error: 0x%0x", err);
-            ErrorHandle(ErrorStruct::IMUInitFailed);
-            return Error::HardwareFailure;
+            Error::RegisterErrorEvent(ErrorEventCreateFailed(err));
+            return Status::Failure;
         }
         
         // Note : Resetting it so it's in a known state
         if (esp_err_t err = mpu6050_reset(mpu_handle); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Failed to reset MPU6050 with error: 0x%0x", err);
-            ErrorHandle(ErrorStruct::IMUInitFailed);
-            return Error::HardwareFailure;
+            Error::RegisterErrorEvent(ErrorEventResetFailed(err));
+            return Status::Failure;
         }
 
         mpu6050_config_t mpu_config = MPU6050_DEFAULT_CONFIG();
@@ -46,33 +48,34 @@ namespace IMUDriver
         if (esp_err_t err = mpu6050_config(&mpu_handle, mpu_config); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Failed to configure MPU6050 with error: 0x%0x", err);
-            ErrorHandle(ErrorStruct::IMUInitFailed);
-            return Error::HardwareFailure;
+            Error::RegisterErrorEvent(ErrorEventConfigFailed(err));
+            return Status::Failure;
         }
 
         if (esp_err_t err = mpu6050_wake_up(mpu_handle); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Failed to wake up MPU6050 with error: 0x%0x", err);
-            ErrorHandle(ErrorStruct::IMUInitFailed);
-            return Error::HardwareFailure;
+            Error::RegisterErrorEvent(ErrorEventWakeUpFailed(err));
+            return Status::Failure;
         }
 
         initialized = true;
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error Deinit()
+    Status Deinit()
     {
         if (esp_err_t err = mpu6050_delete(mpu_handle); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Failed to delete MPU6050 handle with error: 0x%0x", err);
-            return Error::HardwareFailure;
+            Error::RegisterErrorEvent(ErrorEventDeleteFailed(err));
+            return Status::Failure;
         }
         initialized = false;
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error ReadData()
+    Status ReadData()
     {
         mpu6050_accel_value_t accel;
         mpu6050_gyro_value_t gyro;
@@ -80,7 +83,8 @@ namespace IMUDriver
         if (esp_err_t err = mpu6050_get_all(mpu_handle, &accel, &gyro, nullptr); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Failed to read sensor data from MPU6050 with error: 0x%0x", err);
-            return Error::HardwareFailure;
+            Error::RegisterErrorEvent(ErrorEventReadDataFailed(err));
+            return Status::Failure;
         }
 
         imu_data.accel_x_g = accel.accel_x;
@@ -90,7 +94,7 @@ namespace IMUDriver
         imu_data.gyro_y_ds = gyro.gyro_y;
         imu_data.gyro_z_ds = gyro.gyro_z;
 
-        return Error::None;
+        return Status::Ok;
     }
 
     IMUData& GetData()

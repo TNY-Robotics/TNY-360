@@ -26,14 +26,14 @@ namespace Joint
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t jointId;
-        if (reader.read(jointId) != Error::None || jointId >= (int) ::Joint::Id::Count)
+        if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
 
         bool enabled;
-        if (reader.read(enabled) != Error::None)
+        if (reader.read(enabled) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -46,13 +46,13 @@ namespace Joint
             return;
         }
 
-        RPC::ExecuteThreadSafe<Error>([joint, enabled](){
-            Error err;
+        RPC::ExecuteThreadSafe<Status>([joint, enabled](){
+            Status err;
             if (enabled) err = joint->enable();
             else err = joint->disable();
             return err;
-        }, [ctx](Error err){
-            if (err != Error::None)
+        }, [ctx](Status err){
+            if (err != Status::Ok)
                 ctx.respond(ResponseStatus::InvalidParameters);
             else ctx.respond(ResponseStatus::Ok);
         });
@@ -71,7 +71,7 @@ namespace Joint
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t jointId;
-        if (reader.read(jointId) != Error::None || jointId >= (int) ::Joint::Id::Count)
+        if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -104,14 +104,14 @@ namespace Joint
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t jointId;
-        if (reader.read(jointId) != Error::None || jointId >= (int) ::Joint::Id::Count)
+        if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
 
         float angle;
-        if (reader.read(angle) != Error::None)
+        if (reader.read(angle) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -134,7 +134,7 @@ namespace Joint
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t jointId;
-        if (reader.read(jointId) != Error::None || jointId >= (int) ::Joint::Id::Count)
+        if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -164,7 +164,7 @@ namespace Joint
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t jointId;
-        if (reader.read(jointId) != Error::None || jointId >= (int) ::Joint::Id::Count)
+        if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -187,7 +187,7 @@ namespace Joint
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t jointId;
-        if (reader.read(jointId) != Error::None || jointId >= (int) ::Joint::Id::Count)
+        if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -217,7 +217,7 @@ namespace Joint
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t jointId;
-        if (reader.read(jointId) != Error::None || jointId >= (int) ::Joint::Id::Count)
+        if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -248,7 +248,7 @@ namespace Joint
         float angles[14];
         for (int i = 0; i < 14; i++)
         {
-            if (reader.read(angles[i]) != Error::None)
+            if (reader.read(angles[i]) != Status::Ok)
             {
                 ctx.respond(ResponseStatus::InvalidParameters);
                 return;
@@ -257,7 +257,7 @@ namespace Joint
 
         for (int i = 0; i < 14; i++)
         {
-            if (Robot::GetInstance().getDecisionLoop().askJointAngle((::Joint::Id) i, angles[i]) != Error::None)
+            if (Robot::GetInstance().getDecisionLoop().askJointAngle((::Joint::Id) i, angles[i]) != Status::Ok)
             {
                 ctx.respond(ResponseStatus::InvalidParameters);
                 return;

@@ -36,13 +36,13 @@ public:
      * @brief Initialize the WiFi manager.
      * @return Error code indicating success or failure.
      */
-    Error init();
+    Status init();
 
     /**
      * @brief Deinitialize the WiFi manager.
      * @return Error code indicating success or failure.
      */
-    Error deinit();
+    Status deinit();
 
     /**
      * @brief Connect to a WiFi network.
@@ -50,19 +50,19 @@ public:
      * @param password The password of the WiFi network.
      * @return Error code indicating success or failure.
      */
-    Error connect(const char* _ssid = "", const char* _password = "", bool store_credentials = true);
+    Status connect(const char* _ssid = "", const char* _password = "", bool store_credentials = true);
 
     /**
      * @brief Disconnect from the current WiFi network.
      * @return Error code indicating success or failure.
      */
-    Error disconnect();
+    Status disconnect();
 
     /**
      * @brief Scan for available WiFi networks.
      * @return Error code indicating success or failure.
      */
-    Error createAccessPoint(const char* _ssid = "", const char* _password = "");
+    Status createAccessPoint(const char* _ssid = "", const char* _password = "");
 
     /**
      * @brief Get the current WiFi state.
@@ -97,8 +97,8 @@ private:
     esp_netif_t* sta_netif = nullptr;
     esp_netif_t* ap_netif = nullptr;
 
-    Error __connect_to_ap();
-    Error __create_ap();
+    Status __connect_to_ap();
+    Status __create_ap();
 
     DNSServer dns_server;
 

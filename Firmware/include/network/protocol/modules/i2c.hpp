@@ -23,20 +23,20 @@ namespace I2C
         BinaryReader reader(payload, ctx.expected_len);
         
         uint8_t address;
-        if (reader.read(address) != Error::None)
+        if (reader.read(address) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
 
 
-        Error err = ::I2C::ProbeAddress(::I2C::handle_secondary, address);
-        if (err == Error::NotFound)
+        Status err = ::I2C::ProbeAddress(::I2C::handle_secondary, address);
+        if (err == Status::NotFound)
         {
             bool found = false;
             ctx.respond(ResponseStatus::Ok, (const uint8_t*) &found, sizeof(found));
         }
-        else if (err == Error::None)
+        else if (err == Status::Ok)
         {
             bool found = true;
             ctx.respond(ResponseStatus::Ok, (const uint8_t*) &found, sizeof(found));
@@ -62,28 +62,28 @@ namespace I2C
         BinaryReader reader(payload, ctx.expected_len);
         
         uint8_t address;
-        if (reader.read(address) != Error::None)
+        if (reader.read(address) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
         
         uint8_t reg_address;
-        if (reader.read(reg_address) != Error::None)
+        if (reader.read(reg_address) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
         
         uint8_t length;
-        if (reader.read(length) != Error::None)
+        if (reader.read(length) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
 
-        Error err = ::I2C::WriteRegisters(::I2C::handle_secondary, address, reg_address, payload + 3, length);
-        if (err != Error::None)
+        Status err = ::I2C::WriteRegisters(::I2C::handle_secondary, address, reg_address, payload + 3, length);
+        if (err != Status::Ok)
         {
             ctx.respond(ResponseStatus::UnknownError);
             return;
@@ -106,21 +106,21 @@ namespace I2C
         BinaryReader reader(payload, ctx.expected_len);
         
         uint8_t address;
-        if (reader.read(address) != Error::None)
+        if (reader.read(address) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
         
         uint8_t reg_address;
-        if (reader.read(reg_address) != Error::None)
+        if (reader.read(reg_address) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
         
         uint8_t length;
-        if (reader.read(length) != Error::None)
+        if (reader.read(length) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -133,8 +133,8 @@ namespace I2C
             return;
         }
 
-        Error err = ::I2C::ReadRegisters(::I2C::handle_secondary, address, reg_address, data, length);
-        if (err != Error::None)
+        Status err = ::I2C::ReadRegisters(::I2C::handle_secondary, address, reg_address, data, length);
+        if (err != Status::Ok)
         {
             free(data);
             ctx.respond(ResponseStatus::UnknownError);

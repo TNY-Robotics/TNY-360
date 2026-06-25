@@ -15,6 +15,6 @@ typedef struct LegGeometry {
     float length_calf;
 } LegGeometry;
 
-Error computeIK(const Vec3f& target, const LegGeometry& geo, LegAngles& out);
+Status computeIK(const Vec3f& target, const LegGeometry& geo, LegAngles& out);
 
-Error computeFK(const LegAngles& angles, const LegGeometry& geo, Vec3f& out_pos);
+Status computeFK(const LegAngles& angles, const LegGeometry& geo, Vec3f& out_pos);

@@ -152,10 +152,10 @@ namespace Menus
         }
     }
 
-    Error Init()
+    Status Init()
     {
         // setup button callbacks
-        if (Error err = Button::Init(); err != Error::None)
+        if (Status err = Button::Init(); err != Status::Ok)
         {
             return err;
         }
@@ -179,11 +179,11 @@ namespace Menus
         TaskHandle_t xTaskHandle = nullptr;
         if (xTaskCreatePinnedToCore(update_task, "updateMenu", 8192, nullptr, 1, &xTaskHandle, CORE_BRAIN) != pdPASS)
         {
-            ErrorHandle(ErrorStruct::MenusInitFailed);
-            return Error::Unknown;
+            // ErrorHandle(ErrorStruct::MenusInitFailed);
+            return Status::Unknown;
         }
 
-        return Error::None;
+        return Status::Ok;
     }
 
     Menu* GetCurrentMenu()
@@ -198,11 +198,11 @@ namespace Menus
         if (currentMenu) currentMenu->show();
     }
 
-    void DisplayError(ErrorStruct::ErrorStruct err)
-    {
-        menuError.setError(err);
-        SetCurrentMenu(&menuError);
-    }
+    // void DisplayError(ErrorStruct::ErrorStruct err)
+    // {
+    //     menuError.setError(err);
+    //     SetCurrentMenu(&menuError);
+    // }
 
     Menu* GetMenuSplash() { return &menuSplash; }
     Menu* GetMenuFace() { return &menuFace; }

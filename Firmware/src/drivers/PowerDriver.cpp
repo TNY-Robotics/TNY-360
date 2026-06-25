@@ -1,6 +1,7 @@
 #include "drivers/PowerDriver.hpp"
 #include "common/I2C.hpp"
 #include "common/Log.hpp"
+#include "drivers/PowerDriver.Error.hpp"
 #include "ina219.h"
 
 namespace PowerDriver
@@ -11,49 +12,53 @@ namespace PowerDriver
 
     namespace internal
     {
-        Error read_voltage(Value& voltage_v)
+        Status read_voltage(Value& voltage_v)
         {
             if (esp_err_t err = ina219_get_bus_voltage_V(ina_handle, &voltage_v); err != ESP_OK)
             {
                 LOG_ERROR(TAG, "Failed to read voltage data from INA219 with error 0x%0x", err);
-                return Error::HardwareFailure;
+                Error::RegisterErrorEvent(ErrorEventReadVoltageFailed(err));
+                return Status::Failure;
             }
-            return Error::None;
+            return Status::Ok;
         }
 
-        Error read_current(Value& current_a)
+        Status read_current(Value& current_a)
         {
             float value;
             if (esp_err_t err = ina219_get_current_mA(ina_handle, &value); err != ESP_OK)
             {
                 LOG_ERROR(TAG, "Failed to read current data from INA219 with error 0x%0x", err);
-                return Error::HardwareFailure;
+                Error::RegisterErrorEvent(ErrorEventReadCurrentFailed(err));
+                return Status::Failure;
             }
             current_a = value / 1000.f; // from mA to A
-            return Error::None;
+            return Status::Ok;
         }
 
-        Error read_power(Value& power_w)
+        Status read_power(Value& power_w)
         {
             float value;
             if (esp_err_t err = ina219_get_power_mW(ina_handle, &value); err != ESP_OK)
             {
                 LOG_ERROR(TAG, "Failed to read power data from INA219 with error 0x%0x", err);
-                return Error::HardwareFailure;
+                Error::RegisterErrorEvent(ErrorEventReadPowerFailed(err));
+                return Status::Failure;
             }
             power_w = value / 1000.f; // from mW to W
-            return Error::None;
+            return Status::Ok;
         }
     }
 
-    Error Init()
+    Status Init()
     {
         LOG_SCOPE(TAG, "PowerDriver::Init");
 
-        if (initialized) return Error::None;
+        if (initialized) return Status::Ok;
         
-        if (Error err = I2C::Init(); err != Error::None)
+        if (Status err = I2C::Init(); err != Status::Ok)
         {
+            Error::RegisterErrorEvent(ErrorEventI2CInitFailed());
             return err;
         }
 
@@ -63,8 +68,8 @@ namespace PowerDriver
         if (esp_err_t err = ina219_create(I2C::handle_secondary, ina_info, &ina_handle); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Failed to create INA219 handle");
-            ErrorHandle(ErrorStruct::PowerInitFailed);
-            return Error::HardwareFailure;
+            Error::RegisterErrorEvent(ErrorEventCreateFailed(err));
+            return Status::Failure;
         }
 
         ina219_config_t ina_config = {
@@ -80,47 +85,48 @@ namespace PowerDriver
         if (esp_err_t err = ina219_config(&ina_handle, ina_config); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Failed to configure INA219");
-            ErrorHandle(ErrorStruct::PowerInitFailed);
-            return Error::HardwareFailure;
+            Error::RegisterErrorEvent(ErrorEventConfigFailed(err));
+            return Status::Failure;
         }
 
         if (esp_err_t err = ina219_wake_up(ina_handle, INA219_MODE_SHUNT_BUS_CONT); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Failed to wake up INA219");
-            ErrorHandle(ErrorStruct::PowerInitFailed);
-            return Error::HardwareFailure;
+            Error::RegisterErrorEvent(ErrorEventWakeUpFailed(err));
+            return Status::Failure;
         }
 
         initialized = true;
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error Deinit()
+    Status Deinit()
     {
         if (esp_err_t err = ina219_delete(ina_handle); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Failed to delete INA219 handle");
-            return Error::HardwareFailure;
+            Error::RegisterErrorEvent(ErrorEventDeleteFailed(err));
+            return Status::Failure;
         }
         initialized = false;
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error ReadData()
+    Status ReadData()
     {
-        if (Error err = internal::read_voltage(power_data.voltage_v); err != Error::None)
+        if (Status err = internal::read_voltage(power_data.voltage_v); err != Status::Ok)
         {
             return err;
         }
-        if (Error err = internal::read_current(power_data.current_a); err != Error::None)
+        if (Status err = internal::read_current(power_data.current_a); err != Status::Ok)
         {
             return err;
         }
-        if (Error err = internal::read_power(power_data.power_w); err != Error::None)
+        if (Status err = internal::read_power(power_data.power_w); err != Status::Ok)
         {
             return err;
         }
-        return Error::None;
+        return Status::Ok;
     }
 
     Data& GetData()

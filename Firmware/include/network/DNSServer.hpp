@@ -11,13 +11,13 @@ public:
      * @brief Initialize the DNS server.
      * @return Error code indicating success or failure.
      */
-    Error init();
+    Status init();
 
     /**
      * @brief Deinitialize the DNS server.
      * @return Error code indicating success or failure.
      */
-    Error deinit();
+    Status deinit();
 
     void __dns_server_task(void* parameter);
 

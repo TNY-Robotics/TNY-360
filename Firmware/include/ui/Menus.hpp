@@ -94,13 +94,13 @@ namespace Menus
 
     /// MENUS NAMESPACE FUNCTIONS
 
-    Error Init();
+    Status Init();
 
     Menu* GetCurrentMenu();
 
     void SetCurrentMenu(Menu* menu);
 
-    void DisplayError(ErrorStruct::ErrorStruct err);
+    // void DisplayError(ErrorStruct::ErrorStruct err);
 
     /// MENU INSTANCES
 

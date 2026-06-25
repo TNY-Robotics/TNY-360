@@ -8,7 +8,7 @@ SoundMixer::SoundMixer(Speaker& speaker) : speaker(speaker)
 {
 }
 
-Error SoundMixer::init()
+Status SoundMixer::init()
 {
     std::lock_guard<std::mutex> lock(mixerMutex);
     for (size_t i = 0; i < SPEAKER_NB_AUDIO_PROVIDERS; i++)
@@ -27,14 +27,14 @@ Error SoundMixer::init()
     if (ret != pdPASS)
     {
         LOG_ERROR(TAG, "Failed to create SoundMixer task");
-        ErrorHandle(ErrorStruct::MixerInitFailed);
-        return Error::SoftwareFailure;
+        // ErrorHandle(ErrorStruct::MixerInitFailed);
+        return Status::Failure;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error SoundMixer::deinit()
+Status SoundMixer::deinit()
 {
     std::lock_guard<std::mutex> lock(mixerMutex);
     running = false; // ask task to stop
@@ -47,7 +47,7 @@ Error SoundMixer::deinit()
             providers[i] = nullptr;
         }
     }
-    return Error::None;
+    return Status::Ok;
 }
 
 void SoundMixer::setVolume(float volume)
@@ -61,7 +61,7 @@ void SoundMixer::setVolume(float volume)
         masterVolume = volume;
 }
 
-Error SoundMixer::addSoundProvider(SoundProvider* provider)
+Status SoundMixer::addSoundProvider(SoundProvider* provider)
 {
     std::lock_guard<std::mutex> lock(mixerMutex);
     for (size_t i = 0; i < SPEAKER_NB_AUDIO_PROVIDERS; i++)
@@ -69,11 +69,11 @@ Error SoundMixer::addSoundProvider(SoundProvider* provider)
         if (providers[i] == nullptr)
         {
             providers[i] = provider;
-            return Error::None;
+            return Status::Ok;
         }
     }
     LOG_WARNING(TAG, "No available slot to add audio provider");
-    return Error::NoMemory;
+    return Status::NoMemory;
 }
 
 void SoundMixer::__internal_task(void* pvParams)

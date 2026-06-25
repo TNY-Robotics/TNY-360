@@ -9,7 +9,7 @@ namespace LittleFS
      * @brief Initialize and mount LittleFS
      * @return Error code
      */
-    Error Init();
+    Status Init();
 
     /**
      * @brief Load entire file content into given buffer
@@ -19,5 +19,5 @@ namespace LittleFS
      * @return Error code
      * @note If out_buffer is nullptr and out_size is provided, only the size of the file will be returned
      */
-    Error LoadFileContent(const char* path, char** out_buffer, size_t* out_size);
+    Status LoadFileContent(const char* path, char** out_buffer, size_t* out_size);
 }

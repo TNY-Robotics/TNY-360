@@ -37,13 +37,13 @@ public:
      * @return Error code indicating success or failure.
      * @note If an update was just applied, this function will trigger necessary verification steps, and may restart the system.
      */
-    Error init();
+    ::Status init();
 
     /**
      * @brief Deinitializes the Update Manager.
      * @return Error code indicating success or failure.
      */
-    Error deinit();
+    ::Status deinit();
 
     /**
      * @brief Get the current update status
@@ -82,21 +82,21 @@ public:
      * @returns Error code indicating success or failure of the update check process.
      * @note Use isUpdateAvailable() to check if an update was found after calling this function.
      */
-    Error checkForUpdate();
+    ::Status checkForUpdate();
 
     /**
      * @brief Starts the update process if an update is available.
      * @return Error code indicating success or failure of starting the update process.
      * @note This function will trigger the download and application of the update. Use getStatus() and getProgress() to monitor the update process.
      */
-    Error startUpdate();
+    ::Status startUpdate();
 
     /**
      * @brief Continues the update process if an update is pending (e.g. after a reboot).
      * @return Error code indicating success or failure of continuing the update process.
      * @note This function should be called only if isUpdatePending() returns true, to continue the update process after a reboot or interruption.
      */
-    Error continueUpdate();
+    ::Status continueUpdate();
 
 private:
     // For getters
@@ -110,8 +110,8 @@ private:
     std::string filesystem_download_url;
 
     // Internal functions
-    Error check_update();
-    Error download_firmware();
-    Error download_filesystem();
-    Error verify_firmware();
+    ::Status check_update();
+    ::Status download_firmware();
+    ::Status download_filesystem();
+    ::Status verify_firmware();
 };

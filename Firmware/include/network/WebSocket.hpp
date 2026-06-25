@@ -16,13 +16,13 @@ public:
      * @brief Initialize the WebSocket.
      * @return Error code indicating success or failure.
      */
-    Error init();
+    Status init();
 
     /**
      * @brief Deinitialize the WebSocket.
      * @return Error code indicating success or failure.
      */
-    Error deinit();
+    Status deinit();
 
     void sendResponse(void* context, const Protocol::MessageHeader& header, const uint8_t* payload);
 
@@ -32,5 +32,5 @@ private:
     uint16_t server_port;
     httpd_handle_t server_handle = nullptr;
 
-    Error register_uri_handlers();
+    Status register_uri_handlers();
 };

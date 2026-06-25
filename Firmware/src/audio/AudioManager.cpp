@@ -4,32 +4,32 @@ AudioManager::AudioManager() : mixer(speaker)
 {
 }
 
-Error AudioManager::init()
+Status AudioManager::init()
 {
-    if (Error err = speaker.init(); err != Error::None)
+    if (Status err = speaker.init(); err != Status::Ok)
     {
         return err;
     }
 
-    if (Error err = mixer.init(); err != Error::None)
+    if (Status err = mixer.init(); err != Status::Ok)
     {
         return err;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error AudioManager::deinit()
+Status AudioManager::deinit()
 {
-    if (Error err = mixer.deinit(); err != Error::None)
+    if (Status err = mixer.deinit(); err != Status::Ok)
     {
         return err;
     }
 
-    if (Error err = speaker.deinit(); err != Error::None)
+    if (Status err = speaker.deinit(); err != Status::Ok)
     {
         return err;
     }
 
-    return Error::None;
+    return Status::Ok;
 }

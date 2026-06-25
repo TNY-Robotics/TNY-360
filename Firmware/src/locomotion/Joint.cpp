@@ -14,21 +14,21 @@ Joint* Joint::GetJoint(Joint::Id id)
     return joints[(int)id];
 }
 
-Error Joint::ClampVelocity(float max_velocity_rad_s)
+Status Joint::ClampVelocity(float max_velocity_rad_s)
 {
     if (max_velocity_rad_s < 0.f || max_velocity_rad_s > MAX_VELOCITY_RAD_S)
     {
         LOG_ERROR(TAG, "Requested max joint velocity %.2f rad/s is out of bounds (0 - %.2f rad/s)", max_velocity_rad_s, MAX_VELOCITY_RAD_S);
-        return Error::InvalidParameters;
+        return Status::InvalidParameters;
     }
     if (max_velocity_rad_s == 0.f) // if zero, disable clamp
     {
         joint_velocity_clamp_rad_s = MAX_VELOCITY_RAD_S;
-        return Error::None;
+        return Status::Ok;
     }
 
     joint_velocity_clamp_rad_s = max_velocity_rad_s;
-    return Error::None;
+    return Status::Ok;
 }
 
 Joint::Joint() {}
@@ -39,7 +39,7 @@ Joint::Joint(Joint::Id id, MotorController motor_controller, float min_angle_rad
 {
 }
 
-Error Joint::init()
+Status Joint::init()
 {
     LOG_SCOPE(TAG, "Joint::init [id=%d]", id);
 
@@ -47,7 +47,7 @@ Error Joint::init()
     // NOTE : Don't move this in the constructor, as we can have copy/move operations in constructors arguments (yes, that will be horrible to debug)
     joints[(int)id] = this;
 
-    if (Error err = motor_controller.init(); err != Error::None)
+    if (Status err = motor_controller.init(); err != Status::Ok)
     {
         return err;
     }
@@ -55,7 +55,7 @@ Error Joint::init()
     if (motor_controller.getMotorAttributes().has_feedback)
     {
         // Initialize model angle with current feedback
-        if (Error err = get_motorcontroller_position(model_angle_rad); err != Error::None)
+        if (Status err = get_motorcontroller_position(model_angle_rad); err != Status::Ok)
         {
             return err;
         }
@@ -83,25 +83,25 @@ Error Joint::init()
     }
 
     // Disable the motor initially
-    if (Error err = disable(); err != Error::None)
+    if (Status err = disable(); err != Status::Ok)
     {
         return err;
     }
     
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Joint::deinit()
+Status Joint::deinit()
 {
     return motor_controller.deinit();
 }
 
-Error Joint::estimateState(float dt)
+Status Joint::estimateState(float dt)
 {
     if (motor_controller.getMotorAttributes().has_feedback)
     {
         // Get the raw feedback from the motor controller
-        if (Error err = get_motorcontroller_position(feedback_angle_rad); err != Error::None)
+        if (Status err = get_motorcontroller_position(feedback_angle_rad); err != Status::Ok)
         {
             return err;
         }
@@ -115,15 +115,15 @@ Error Joint::estimateState(float dt)
         estimate_angle_rad = model_angle_rad;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Joint::applyCommand(float joint_angle_rad, float dt)
+Status Joint::applyCommand(float joint_angle_rad, float dt)
 {
     if (joint_angle_rad < min_angle_rad || joint_angle_rad > max_angle_rad)
     {
         LOG_ERROR(TAG, "JOINT %d - Requested target angle %.2f rad is out of bounds (%.2f - %.2f rad)", id, joint_angle_rad, min_angle_rad, max_angle_rad);
-        return Error::InvalidParameters;
+        return Status::InvalidParameters;
     }
     target_angle_rad = joint_angle_rad;
 
@@ -163,22 +163,22 @@ Error Joint::applyCommand(float joint_angle_rad, float dt)
 
     // Move the motor at the desired position
     // NOTE : We could maybe improve this by moving the motor a bit ahead (to catch up with the control loop delay)
-    if (Error err = send_motorcontroller_position(model_angle_rad); err != Error::None)
+    if (Status err = send_motorcontroller_position(model_angle_rad); err != Status::Ok)
     {
         return err;
     }
     
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Joint::enable()
+Status Joint::enable()
 {
     if (motor_controller.getMotorAttributes().has_feedback)
     {
         // because the motor was probably disabled before,
         // model_angle may have drifted from the actual position.
         // Thus, to avoid sudden jumps, we reset the model and kalman filter to the current position.
-        if (Error err = get_motorcontroller_position(feedback_angle_rad); err != Error::None)
+        if (Status err = get_motorcontroller_position(feedback_angle_rad); err != Status::Ok)
         {
             return err;
         }
@@ -198,7 +198,7 @@ Error Joint::enable()
     }
 }
 
-Error Joint::disable()
+Status Joint::disable()
 {
     return motor_controller.disable();
 }
@@ -208,58 +208,58 @@ bool Joint::isEnabled() const
     return motor_controller.getState() == MotorController::State::ENABLED;
 }
 
-Error Joint::setVelocity(float velocity_rad_s)
+Status Joint::setVelocity(float velocity_rad_s)
 {
     // clamp velocity to allowed range
     if (velocity_rad_s < 0.f || velocity_rad_s > MAX_VELOCITY_RAD_S)
     {
         // NOTE : Not logging error because we are in the control loop (200Hz) and we don't want to slow it down with logging
         // LOG_ERROR(TAG, "JOINT %d - Requested velocity %.2f rad/s is out of bounds (0 - %.2f rad/s)", id, velocity_rad_s, MAX_VELOCITY_RAD_S);
-        return Error::InvalidParameters;
+        return Status::InvalidParameters;
     }
     
     this->velocity_rad_s = velocity_rad_s;
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Joint::getVelocity(float &result) const
+Status Joint::getVelocity(float &result) const
 {
     result = std::min(velocity_rad_s, joint_velocity_clamp_rad_s);
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Joint::getTarget(float &result) const
+Status Joint::getTarget(float &result) const
 {
     result = target_angle_rad;
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Joint::getPosition(float &result) const
+Status Joint::getPosition(float &result) const
 {
     result = estimate_angle_rad;
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Joint::getFeedback(float &result) const
+Status Joint::getFeedback(float &result) const
 {
     result = feedback_angle_rad;
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Joint::getPrediction(float &result) const
+Status Joint::getPrediction(float &result) const
 {
     result = model_angle_rad;
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Joint::getUncertainty(float &result) const
+Status Joint::getUncertainty(float &result) const
 {
     result = kalman_filter.GetUncertainty();
-    return Error::None;
+    return Status::Ok;
 }
 
 
-Error Joint::send_motorcontroller_position(const float& position)
+Status Joint::send_motorcontroller_position(const float& position)
 {
     float position_ratio = (position - min_angle_rad) / (max_angle_rad - min_angle_rad);
     if (inverted)
@@ -269,18 +269,18 @@ Error Joint::send_motorcontroller_position(const float& position)
     return motor_controller.setTargetPosition(position_ratio);
 }
 
-Error Joint::get_motorcontroller_position(float &result) const
+Status Joint::get_motorcontroller_position(float &result) const
 {
     // if no feedback, just use the internal model
     if (!motor_controller.getMotorAttributes().has_feedback)
     {
         result = model_angle_rad;
-        return Error::None;
+        return Status::Ok;
     }
 
     float position_ratio;
-    Error err = motor_controller.getCurrentPosition(position_ratio);
-    if (err != Error::None)
+    Status err = motor_controller.getCurrentPosition(position_ratio);
+    if (err != Status::Ok)
     {
         return err;
     }
@@ -289,5 +289,5 @@ Error Joint::get_motorcontroller_position(float &result) const
         position_ratio = 1.0f - position_ratio;
     }
     result = min_angle_rad + position_ratio * (max_angle_rad - min_angle_rad);
-    return Error::None;
+    return Status::Ok;
 }

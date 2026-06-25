@@ -3,7 +3,7 @@
 
 constexpr const char* TAG = "IK";
 
-Error computeIK(const Vec3f& target, const LegGeometry& geo, LegAngles& out)
+Status computeIK(const Vec3f& target, const LegGeometry& geo, LegAngles& out)
 {
     // Calculate distances and basic checks
     float dist_zy_raw = sqrt(target.y * target.y + target.z * target.z); // theorical distance
@@ -11,7 +11,7 @@ Error computeIK(const Vec3f& target, const LegGeometry& geo, LegAngles& out)
     if (dist_zy > (geo.length_thigh + geo.length_calf))
     {
         LOG_WARNING(TAG, "Target unreachable: dist_zy %.2f > max %.2f", dist_zy, geo.length_thigh + geo.length_calf);
-        return Error::Unreachable; // Target is out of reach
+        return Status::OutOfBounds; // Target is out of reach
     }
 
     // Calculate roll angle compensation due to hip offset
@@ -24,7 +24,7 @@ Error computeIK(const Vec3f& target, const LegGeometry& geo, LegAngles& out)
     if (dist_leg > (geo.length_thigh + geo.length_calf))
     {
         LOG_WARNING(TAG, "Target unreachable: dist_leg %.2f > max %.2f", dist_leg, geo.length_thigh + geo.length_calf);
-        return Error::Unreachable; // Target is out of reach
+        return Status::OutOfBounds; // Target is out of reach
     }
 
     // Calculate hip pitch base angle (like if the leg was straight)
@@ -43,10 +43,10 @@ Error computeIK(const Vec3f& target, const LegGeometry& geo, LegAngles& out)
     out.hip_roll = hip_roll_base - roll_compensation;
     out.hip_pitch = hip_pitch_base - hip_pitch_angle;
     out.knee_pitch = PI - knee_angle; // knee is a 0 when fully extended, so we invert the angle
-    return Error::None;
+    return Status::Ok;
 }
 
-Error computeFK(const LegAngles& angles, const LegGeometry& geo, Vec3f& out_pos)
+Status computeFK(const LegAngles& angles, const LegGeometry& geo, Vec3f& out_pos)
 {
     // calculate knee position in (Z, X) plane
     float knee_x = geo.length_thigh * sin(angles.hip_pitch);
@@ -64,5 +64,5 @@ Error computeFK(const LegAngles& angles, const LegGeometry& geo, Vec3f& out_pos)
     out_pos.y = foot_y * cos(angles.hip_roll) + foot_z * sin(angles.hip_roll);
     out_pos.z = - foot_y * sin(angles.hip_roll) + foot_z * cos(angles.hip_roll);
 
-    return Error::None;
+    return Status::Ok;
 }

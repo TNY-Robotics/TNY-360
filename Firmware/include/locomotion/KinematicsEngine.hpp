@@ -33,17 +33,17 @@ public:
      * @brief Computes the full body IK
      * @param cartesian [IN] The cartesian positions / rotations of body parts
      * @param joints [OUT] The joint angles corresponding to the given cartesian state
-     * @returns Error::None if success, other Error type overwise
+     * @returns Status::Ok if success, other Error type overwise
      */
-    Error computeBodyIK(const BodyCartesianState& cartesian, BodyJointState& joints);
+    Status computeBodyIK(const BodyCartesianState& cartesian, BodyJointState& joints);
     
     /**
      * @brief Computes the IK for a leg
      * @param target [IN] The target feet position (in hip frame)
      * @param joints [OUT] The joint angles corresponding to the given feet target
-     * @returns Error::None if success, other Error type overwise
+     * @returns Status::Ok if success, other Error type overwise
      */
-    Error computeLegIK(const Vec3f& target, LegJointState& joints);
+    Status computeLegIK(const Vec3f& target, LegJointState& joints);
 
 private:
     KinematicsConfig config;

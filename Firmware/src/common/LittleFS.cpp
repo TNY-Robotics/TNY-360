@@ -9,11 +9,11 @@ namespace LittleFS
     constexpr const char* ROOT_FOLDER = "/storage";
     constexpr const char* TAG = "LittleFS";
 
-    Error Init()
+    Status Init()
     {
         LOG_SCOPE(TAG, "LittleFS::Init");
         
-        if (initialized) return Error::None;
+        if (initialized) return Status::Ok;
 
         // Mount LittleFS
         esp_vfs_littlefs_conf_t conf = {
@@ -30,15 +30,15 @@ namespace LittleFS
 
         if (ret != ESP_OK) {
             LOG_ERROR(TAG, "Failed to mount LittleFS");
-            ErrorHandle(ErrorStruct::FileSystemInitFailed);
-            return Error::Unknown;
+            // ErrorHandle(ErrorStruct::FileSystemInitFailed);
+            return Status::Unknown;
         }
 
         initialized = true;
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error LoadFileContent(const char* path, char** out_buffer, size_t* out_size)
+    Status LoadFileContent(const char* path, char** out_buffer, size_t* out_size)
     {
         if (!initialized)
         {
@@ -47,7 +47,7 @@ namespace LittleFS
 
         if (!path)
         {
-            return Error::InvalidParameters;
+            return Status::InvalidParameters;
         }
 
         char full_path[MAX_PATH_LEN];
@@ -57,7 +57,7 @@ namespace LittleFS
         FILE* f = fopen(full_path, "r");
         if (f == nullptr)
         {
-            return Error::NotFound;
+            return Status::NotFound;
         }
 
         fseek(f, 0, SEEK_END);
@@ -68,11 +68,11 @@ namespace LittleFS
         {
             if (!out_size)
             {
-                return Error::InvalidParameters;
+                return Status::InvalidParameters;
             }
             *out_size = file_size;
             fclose(f);
-            return Error::None;
+            return Status::Ok;
         }
 
         *out_buffer = new char[file_size + 1];
@@ -86,6 +86,6 @@ namespace LittleFS
 
         fclose(f);
 
-        return Error::None;
+        return Status::Ok;
     }
 }

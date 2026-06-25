@@ -9,39 +9,39 @@ public:
         : buffer(buffer), size(size), offset(0) {}
 
     template<typename T>
-    Error read(T& out)
+    Status read(T& out)
     {
         if (offset + sizeof(T) > size)
         {
-            return Error::OutOfBounds;
+            return Status::OutOfBounds;
         }
         out = *reinterpret_cast<const T*>(buffer + offset);
         offset += sizeof(T);
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error readBytes(uint8_t* out, size_t length)
+    Status readBytes(uint8_t* out, size_t length)
     {
         if (offset + length > size)
         {
-            return Error::OutOfBounds;
+            return Status::OutOfBounds;
         }
         memcpy(out, buffer + offset, length);
         offset += length;
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error readString(char* out, size_t maxLength)
+    Status readString(char* out, size_t maxLength)
     {
         uint16_t strLength;
-        if (read(strLength) != Error::None)
+        if (read(strLength) != Status::Ok)
         {
-            return Error::OutOfBounds;
+            return Status::OutOfBounds;
         }
 
         if (strLength >= maxLength)
         {
-            return Error::OutOfBounds;
+            return Status::OutOfBounds;
         }
 
         return readBytes((uint8_t*) out, strLength);

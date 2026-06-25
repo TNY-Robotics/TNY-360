@@ -2,6 +2,7 @@
 #include "common/I2C.hpp"
 #include "common/Log.hpp"
 #include "common/LED.hpp"
+#include "drivers/ScreenDriver.Error.hpp"
 #include "esp_lcd_panel_sh1106.h"
 #include <esp_lcd_io_i2c.h>
 #include <esp_lcd_panel_io.h>
@@ -39,10 +40,11 @@ namespace ScreenDriver
         }
     }
 
-    Error Init()
+    Status Init()
     {
-        if (Error err = I2C::Init(); err != Error::None)
+        if (Status err = I2C::Init(); err != Status::Ok)
         {
+            Error::RegisterErrorEvent(ErrorEventI2CInitFailed());
             return err;
         }
 
@@ -51,8 +53,8 @@ namespace ScreenDriver
         if (esp_err_t err = esp_lcd_new_panel_io_i2c(I2C::handle_secondary, &io_config, &io_handle); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Couldn't create panel IO");
-            ErrorHandle(ErrorStruct::ScreenInitFailed);
-            return Error::SoftwareFailure;
+            
+            return Status::Failure;
         }
 
         esp_lcd_panel_dev_config_t panel_config = {
@@ -68,30 +70,30 @@ namespace ScreenDriver
         if (esp_err_t err = esp_lcd_new_panel_sh1106(io_handle, &panel_config, &panel_handle); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Couldn't create sh1106 panel");
-            ErrorHandle(ErrorStruct::ScreenInitFailed);
-            return Error::SoftwareFailure;
+            Error::RegisterErrorEvent(ErrorEventPanelCreateFailed(err));
+            return Status::Failure;
         }
         if (esp_err_t err = esp_lcd_panel_reset(panel_handle); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Couln't reset panel");
-            ErrorHandle(ErrorStruct::ScreenInitFailed);
-            return Error::SoftwareFailure;
+            Error::RegisterErrorEvent(ErrorEventPanelResetFailed(err));
+            return Status::Failure;
         }
         if (esp_err_t err = esp_lcd_panel_init(panel_handle); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Couldn't init panel");
-            ErrorHandle(ErrorStruct::ScreenInitFailed);
-            return Error::SoftwareFailure;
+            Error::RegisterErrorEvent(ErrorEventPanelInitFailed(err));
+            return Status::Failure;
         }
 
-        if (Error err = Clear(); err != Error::None) return err;
-        if (Error err = Upload(); err != Error::None) return err;
+        if (Status err = Clear(); err != Status::Ok) return err;
+        if (Status err = Upload(); err != Status::Ok) return err;
 
         if (esp_err_t err = esp_lcd_panel_disp_on_off(panel_handle, true); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Couldn't turn the display on");
-            ErrorHandle(ErrorStruct::ScreenInitFailed);
-            return Error::SoftwareFailure;
+            Error::RegisterErrorEvent(ErrorEventPanelDisplayOnFailed(err));
+            return Status::Failure;
         }
         
         info = {
@@ -100,24 +102,37 @@ namespace ScreenDriver
             .height = SH1106_HEIGHT,
         };
 
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error Clear()
+    Status Deinit()
+    {
+        if (esp_err_t err = esp_lcd_panel_del(panel_handle); err != ESP_OK)
+        {
+            LOG_ERROR(TAG, "Couldn't delete panel");
+            Error::RegisterErrorEvent(ErrorEventPanelDeleteFailed(err));
+            return Status::Failure;
+        }
+        panel_handle = NULL;
+        return Status::Ok;
+    }
+
+    Status Clear()
     {
         memset(screen_data, 0, SH1106_HEIGHT * SH1106_WIDTH);
         memset(buffer_data, 0, SH1106_BUFFER_SIZE);
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error Upload()
+    Status Upload()
     {
         screen_to_buffer(&info, buffer_data);
         esp_err_t err = esp_lcd_panel_draw_bitmap(panel_handle, 0, 0, SH1106_WIDTH, SH1106_HEIGHT, buffer_data);
         if (err != ESP_OK) {
             LOG_ERROR(TAG, "Couldn't draw bitmap on panel");
-            return Error::SoftwareFailure;
+            Error::RegisterErrorEvent(ErrorEventUploadFailed(err));
+            return Status::Failure;
         }
-        return Error::None;
+        return Status::Ok;
     }
 }

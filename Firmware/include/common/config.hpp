@@ -32,6 +32,10 @@ constexpr float DEFAULT_FEET_SPREAD_X_M = 0.090f; // in meters, from body center
 constexpr float DEFAULT_FEET_SPREAD_Y_M = 0.100f; // in meters, from body center
 
 
+/** ERROR EVENTS **/
+const int ERROR_MAX_EVENTS = 32;
+
+
 /** LOGGING **/
 // Maximum number of log lines to store
 constexpr int LOG_MAX_LINES = 32;

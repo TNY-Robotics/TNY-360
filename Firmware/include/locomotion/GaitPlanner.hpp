@@ -40,7 +40,7 @@ public:
      * @brief Update the movement planner, should be called in the control loop
      * @return Error code indicating success or failure of the update
      */
-    Error update(float dt, BodyCartesianState& state) override;
+    Status update(float dt, BodyCartesianState& state) override;
 
     /**
      * @brief Set the desired velocity command for the robot

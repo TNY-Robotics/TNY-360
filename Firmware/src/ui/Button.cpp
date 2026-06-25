@@ -55,9 +55,9 @@ namespace Button
         }
     }
 
-    Error Init()
+    Status Init()
     {
-        if (initialized) return Error::None;
+        if (initialized) return Status::Ok;
 
         gpio_config_t io_conf;
         io_conf.intr_type = GPIO_INTR_DISABLE;
@@ -69,25 +69,25 @@ namespace Button
         if (gpio_config(&io_conf) != ESP_OK)
         {
             LOG_ERROR(TAG, "Buttons: Failed to configure GPIO pins");
-            ErrorHandle(ErrorStruct::ButtonsInitFailed);
-            return Error::Unknown;
+            // ErrorHandle(ErrorStruct::ButtonsInitFailed);
+            return Status::Unknown;
         }
 
         if (xTaskCreatePinnedToCore(update_task, "Buttons::update_task", 8192, nullptr, tskIDLE_PRIORITY + 1, nullptr, CORE_BRAIN) != pdPASS)
         {
             LOG_ERROR(TAG, "Buttons: Failed to create Buttons update task");
-            ErrorHandle(ErrorStruct::ButtonsInitFailed);
-            return Error::Unknown;
+            // ErrorHandle(ErrorStruct::ButtonsInitFailed);
+            return Status::Unknown;
         }
 
         initialized = true;
 
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error SetCallbacks(const CallbackSet& cb)
+    Status SetCallbacks(const CallbackSet& cb)
     {
         callbacks = cb;
-        return Error::None;
+        return Status::Ok;
     }
 }

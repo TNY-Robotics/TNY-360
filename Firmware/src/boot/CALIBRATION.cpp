@@ -19,16 +19,16 @@ namespace BootManager
         // Check for skip calibration flag
         {
             NVS::Handle* nvsHandle;
-            if (Error err = NVS::Open("boot", &nvsHandle); err != Error::None)
+            if (Status err = NVS::Open("boot", &nvsHandle); err != Status::Ok)
             {
-                LOG_ERROR(TAG, "Error opening NVS 'boot' namespace : %s", ErrorToString(err));
+                // LOG_ERROR(TAG, "Error opening NVS 'boot' namespace : %s", ErrorToString(err));
                 return true; // block robot from booting as normal
             }
 
             bool skip_calib = false;
-            if (Error err = nvsHandle->get<bool>("skip_calib", skip_calib); err != Error::None)
+            if (Status err = nvsHandle->get<bool>("skip_calib", skip_calib); err != Status::Ok)
             {
-                LOG_ERROR(TAG, "Error reading skip calibration flag from NVS : %s", ErrorToString(err));
+                // LOG_ERROR(TAG, "Error reading skip calibration flag from NVS : %s", ErrorToString(err));
                 NVS::Close(nvsHandle);
                 return true; // block robot from booting as normal
             }
@@ -48,30 +48,30 @@ namespace BootManager
             char key[32];
             sprintf(key, "MtrCtrl-%d", static_cast<int>(i));
             NVS::Handle* nvsHandle;
-            if (Error err = NVS::Open(key, &nvsHandle); err != Error::None)
+            if (Status err = NVS::Open(key, &nvsHandle); err != Status::Ok)
             {
-                if (err == Error::NotFound) // not found ? means not calibrated yet
+                if (err == Status::NotFound) // not found ? means not calibrated yet
                 {
                     LOG_INFO(TAG, "Couldn't open namespace for motor %d. Starting in CALIBRATION boot mode", i);
                     return true; // start calibration boot
                 }
                 else // something went wrong
                 {
-                    LOG_ERROR(TAG, "Error opening NVS 'MtrCtrl-%d' namespace : %s", i, ErrorToString(err));
+                    // LOG_ERROR(TAG, "Error opening NVS 'MtrCtrl-%d' namespace : %s", i, ErrorToString(err));
                     return true; // start calibration boot to allow user to fix the issue
                 }
             }
             MotorController::CalibrationData calib_data;
-            if (Error err = nvsHandle->get("calib_data", calib_data); err != Error::None)
+            if (Status err = nvsHandle->get("calib_data", calib_data); err != Status::Ok)
             {
-                if (err == Error::NotFound)
+                if (err == Status::NotFound)
                 {
                     LOG_INFO(TAG, "Calibration data not found for motor %d. Starting in CALIBRATION boot mode", i);
                     return true; // start calibration boot
                 }
                 else
                 {
-                    LOG_ERROR(TAG, "Error occurred while fetching calibration data for motor %d : %s", i, ErrorToString(err));
+                    // LOG_ERROR(TAG, "Error occurred while fetching calibration data for motor %d : %s", i, ErrorToString(err));
                     return true; // start calibration boot to allow user to fix the issue
                 }
             }
@@ -87,30 +87,30 @@ namespace BootManager
     void boot_CALIBRATION()
     {
         // Initialize LED module for error display
-        if (Error err = LED::Init(); err != Error::None)
+        if (Status err = LED::Init(); err != Status::Ok)
         {
             LOG_ERROR(TAG, "Failed to initialize LED module");
             return;
         }
 
         // Initialize I2C for screen and motor driver
-        if (Error err = I2C::Init(); err != Error::None)
+        if (Status err = I2C::Init(); err != Status::Ok)
         {
             LOG_ERROR(TAG, "Failed to initialize I2C module");
             return;
         }
 
         // Initialize Screen and Menu system for user interface
-        if (Error err = ScreenDriver::Init(); err != Error::None)
+        if (Status err = ScreenDriver::Init(); err != Status::Ok)
         {
             LOG_ERROR(TAG, "Failed to initialize ScreenDriver module");
-            LED::LoopErrorCode(ErrorCode::ScreenInitFailed);
+            // LED::LoopErrorCode(ErrorCode::ScreenInitFailed);
             return;
         }
-        if (Error err = Menus::Init(); err != Error::None)
+        if (Status err = Menus::Init(); err != Status::Ok)
         {
             LOG_ERROR(TAG, "Failed to initialize Menus module");
-            LED::LoopErrorCode(ErrorCode::ScreenInitFailed);
+            // LED::LoopErrorCode(ErrorCode::ScreenInitFailed);
             return;
         }
 
@@ -118,10 +118,10 @@ namespace BootManager
         Menus::SetCurrentMenu(Menus::GetMenuSplash());
 
         // Initialize Motor Driver for motor control
-        if (Error err = MotorDriver::Init(); err != Error::None)
+        if (Status err = MotorDriver::Init(); err != Status::Ok)
         {
             LOG_ERROR(TAG, "Failed to initialize MotorDriver module");
-            LED::LoopErrorCode(ErrorCode::DriverInitFailed);
+            // LED::LoopErrorCode(ErrorCode::DriverInitFailed);
             return;
         }
 

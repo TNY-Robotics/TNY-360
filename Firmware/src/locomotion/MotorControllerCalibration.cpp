@@ -6,10 +6,11 @@
 #include "locomotion/calibration/get_feedback_latency.hpp"
 #include "locomotion/calibration/get_deadband_size.hpp"
 #include "locomotion/calibration/get_physical_bound.hpp"
+#include "locomotion/MotorController.Errors.hpp"
 
 constexpr const char* TAG = "MtrCtrl-Calib";
 
-Error MotorController::run_calibration_sequence()
+Status MotorController::run_calibration_sequence()
 {
     MotorDriver::Value dc_center = (motor_attributes.dc_min + motor_attributes.dc_max) / 2;
 
@@ -31,7 +32,7 @@ Error MotorController::run_calibration_sequence()
             Joint* joint = Joint::GetJoint((Joint::Id)i);
             if (joint) joint->disable();
         }
-        RETURN_ERROR(MotorDriver::DisableAllMotors());
+        RETURN_ON_ERROR(MotorDriver::DisableAllMotors());
         vTaskDelay(pdMS_TO_TICKS(500));
     }
     this->calibration_progress = 0.1f;
@@ -39,8 +40,8 @@ Error MotorController::run_calibration_sequence()
     // Move motor to center
     LOG_DEBUG(TAG, "Moving to center (duty cycle: %.2f)", dc_center);
     {
-        RETURN_ERROR(MotorDriver::SetDutyCycle(motor_channel, dc_center));
-        RETURN_ERROR(MotorDriver::SendData());
+        RETURN_ON_ERROR(MotorDriver::SetDutyCycle(motor_channel, dc_center));
+        RETURN_ON_ERROR(MotorDriver::SendData());
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
     this->calibration_progress = 0.2f;
@@ -49,10 +50,10 @@ Error MotorController::run_calibration_sequence()
     LOG_DEBUG(TAG, "Getting feedback noise");
     {
         FeedbackNoiseParams params;
-        if (Error err = get_feedback_noise(params, analog_channel, noise_v); err != Error::None)
+        if (Status err = get_feedback_noise(params, analog_channel, noise_v); err != Status::Ok)
         {
-            LOG_ERROR(TAG, "Feedback noise detection failed with error [%s]", ErrorToString(err));
-            return Error::Unknown;
+            // LOG_ERROR(TAG, "Feedback noise detection failed with error [%s]", ErrorToString(err));
+            return Status::Unknown;
         }
         LOG_DEBUG(TAG, "==> Feedback noise is %.3f V", noise_v);
     }
@@ -65,10 +66,10 @@ Error MotorController::run_calibration_sequence()
         params.dc_center = dc_center;
         params.dc_delta = 0.2;
         params.feedback_noise = noise_v;
-        if (Error err = check_feedback_inversion(params, motor_channel, analog_channel, feedback_inverted); err != Error::None)
+        if (Status err = check_feedback_inversion(params, motor_channel, analog_channel, feedback_inverted); err != Status::Ok)
         {
-            LOG_ERROR(TAG, "Feedback invertion detection failed with error [%s]", ErrorToString(err));
-            return Error::Unknown;
+            // LOG_ERROR(TAG, "Feedback invertion detection failed with error [%s]", ErrorToString(err));
+            return Status::Unknown;
         }
         LOG_DEBUG(TAG, "==> Feedback inverted : %s", feedback_inverted? "true": "false");
     }
@@ -83,10 +84,10 @@ Error MotorController::run_calibration_sequence()
         params.feedback_noise = noise_v;
         params.nb_samples = 6;
         params.nb_subsamples = 20;
-        if (Error err = get_feedback_latency(params, motor_channel, analog_channel, feedback_latency_ms); err != Error::None)
+        if (Status err = get_feedback_latency(params, motor_channel, analog_channel, feedback_latency_ms); err != Status::Ok)
         {
-            LOG_ERROR(TAG, "Feedback latency estimation failed with error [%s]", ErrorToString(err));
-            return Error::Unknown;
+            // LOG_ERROR(TAG, "Feedback latency estimation failed with error [%s]", ErrorToString(err));
+            return Status::Unknown;
         }
         LOG_DEBUG(TAG, "==> Feedback latency : %.1f ms", feedback_latency_ms);
     }
@@ -106,10 +107,10 @@ Error MotorController::run_calibration_sequence()
             params.dc_center = dc_center;
             params.max_dc = 2.0;
             params.feedback_noise = noise_v;
-            if (Error err = get_deadband_size(params, motor_channel, analog_channel, deadband_size); err != Error::None)
+            if (Status err = get_deadband_size(params, motor_channel, analog_channel, deadband_size); err != Status::Ok)
             {
-                LOG_ERROR(TAG, "Deadband size estimation failed with error [%s]", ErrorToString(err));
-                return Error::Unknown;
+                // LOG_ERROR(TAG, "Deadband size estimation failed with error [%s]", ErrorToString(err));
+                return Status::Unknown;
             }
         }
         LOG_DEBUG(TAG, "==> Deadband size : %.1f PWM units (%.2f ms, %.2f deg)", deadband_size, MotorDriver::PWM_TO_DC(deadband_size), MotorDriver::PWM_TO_DC(deadband_size) * 90.f);
@@ -125,10 +126,10 @@ Error MotorController::run_calibration_sequence()
         params.dc_min = 0.1;
         params.dc_safe = 0.3;
         params.direction = -1;
-        if (Error err = get_physical_bound(params, motor_channel, analog_channel, min_bound); err != Error::None)
+        if (Status err = get_physical_bound(params, motor_channel, analog_channel, min_bound); err != Status::Ok)
         {
-            LOG_ERROR(TAG, "Minimum bound detection failed with error [%s]", ErrorToString(err));
-            return Error::Unknown;
+            // LOG_ERROR(TAG, "Minimum bound detection failed with error [%s]", ErrorToString(err));
+            return Status::Unknown;
         }
         LOG_DEBUG(TAG, "==> Minimum bound : %.2f Duty cycle and %.2f V", min_bound.dc_value, min_bound.feedback_value);
     }
@@ -143,10 +144,10 @@ Error MotorController::run_calibration_sequence()
         params.dc_min = 0.1;
         params.dc_safe = 0.3;
         params.direction = 1;
-        if (Error err = get_physical_bound(params, motor_channel, analog_channel, max_bound); err != Error::None)
+        if (Status err = get_physical_bound(params, motor_channel, analog_channel, max_bound); err != Status::Ok)
         {
-            LOG_ERROR(TAG, "Maximum bound detection failed with error [%s]", ErrorToString(err));
-            return Error::Unknown;
+            // LOG_ERROR(TAG, "Maximum bound detection failed with error [%s]", ErrorToString(err));
+            return Status::Unknown;
         }
         LOG_DEBUG(TAG, "==> Maximum bound : %.2f Duty cycle and %.2f V", max_bound.dc_value, max_bound.feedback_value);
     }
@@ -162,10 +163,10 @@ Error MotorController::run_calibration_sequence()
 
     LOG_DEBUG(TAG, "Calibration complete, centering motor before disabling it");
     {
-        RETURN_ERROR(MotorDriver::SetDutyCycle(motor_channel, dc_center))
-        RETURN_ERROR(MotorDriver::SendData());
+        RETURN_ON_ERROR(MotorDriver::SetDutyCycle(motor_channel, dc_center))
+        RETURN_ON_ERROR(MotorDriver::SendData());
         vTaskDelay(pdMS_TO_TICKS(800));
-        RETURN_ERROR(MotorDriver::DisableAllMotors());
+        RETURN_ON_ERROR(MotorDriver::DisableAllMotors());
     }
 
     // Save calibration data
@@ -188,5 +189,5 @@ Error MotorController::run_calibration_sequence()
     }
     this->calibration_progress = 1.0f;
 
-    return Error::None;
+    return Status::Ok;
 }

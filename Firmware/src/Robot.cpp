@@ -9,12 +9,12 @@ Robot::Robot()
     instance = this;
 }
 
-Error Robot::init()
+Status Robot::init()
 {
     LOG_SCOPE(TAG, "Robot::init");
 
     // Initialize the LED module to diplay status
-    if (Error err = LED::Init(); err != Error::None)
+    if (Status err = LED::Init(); err != Status::Ok)
     {
         LOG_ERROR(TAG, "Couldn't initialize LED module");
         return err;
@@ -23,34 +23,34 @@ Error Robot::init()
     // Set yellow color (init color)
     LED::SetColor(0, LED::Color(16, 16, 0), 0.1f);
 
-    if (Error err = ui_manager.init(); err != Error::None)
+    if (Status err = ui_manager.init(); err != Status::Ok)
     {
         return err;
     }
 
-    if (Error err = audio_manager.init(); err != Error::None)
+    if (Status err = audio_manager.init(); err != Status::Ok)
     {
         return err;
     }
 
-    if (Error err = network_manager.init(); err != Error::None)
+    if (Status err = network_manager.init(); err != Status::Ok)
     {
         return err;
     }
 
-    if (Error err = body.init(); err != Error::None)
+    if (Status err = body.init(); err != Status::Ok)
     {
         return err;
     }
 
     // Initialize the decision loop
-    if (Error err = decision_loop.init(); err != Error::None)
+    if (Status err = decision_loop.init(); err != Status::Ok)
     {
         return err;
     }
 
     // Initialize the control loop
-    if (Error err = control_loop.init(); err != Error::None)
+    if (Status err = control_loop.init(); err != Status::Ok)
     {
         return err;
     }
@@ -58,19 +58,19 @@ Error Robot::init()
     // all good, turn orange for startup
     LED::SetColor(0, LED::Color(16, 8, 0), 0.1f);
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Robot::start()
+Status Robot::start()
 {
     // Start the decision loop
-    if (Error err = decision_loop.start(); err != Error::None)
+    if (Status err = decision_loop.start(); err != Status::Ok)
     {
         return err;
     }
 
     // Start the control loop
-    if (Error err = control_loop.start(); err != Error::None)
+    if (Status err = control_loop.start(); err != Status::Ok)
     {
         return err;
     }
@@ -86,59 +86,59 @@ Error Robot::start()
     // Set the menu to face (face only displays when everything is working)
     Menus::SetCurrentMenu(Menus::GetMenuFace());
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Robot::stop()
+Status Robot::stop()
 {
     // Stop the control loop
-    if (Error err = control_loop.stop(); err != Error::None)
+    if (Status err = control_loop.stop(); err != Status::Ok)
     {
         return err;
     }
 
     // Stop the decision loop
-    if (Error err = decision_loop.stop(); err != Error::None)
+    if (Status err = decision_loop.stop(); err != Status::Ok)
     {
         return err;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Robot::deinit()
+Status Robot::deinit()
 {
     // Deinitialize the control loop
-    if (Error err = control_loop.init(); err != Error::None)
+    if (Status err = control_loop.init(); err != Status::Ok)
     {
         return err;
     }
 
     // Deinitialize the decision loop
-    if (Error err = decision_loop.deinit(); err != Error::None)
+    if (Status err = decision_loop.deinit(); err != Status::Ok)
     {
         return err;
     }
 
-    if (Error err = body.deinit(); err != Error::None)
+    if (Status err = body.deinit(); err != Status::Ok)
     {
         return err;
     }
 
-    if (Error err = network_manager.deinit(); err != Error::None)
+    if (Status err = network_manager.deinit(); err != Status::Ok)
     {
         return err;
     }
 
-    if (Error err = audio_manager.deinit(); err != Error::None)
+    if (Status err = audio_manager.deinit(); err != Status::Ok)
     {
         return err;
     }
 
-    if (Error err = ui_manager.deinit(); err != Error::None)
+    if (Status err = ui_manager.deinit(); err != Status::Ok)
     {
         return err;
     }
 
-    return Error::None;
+    return Status::Ok;
 }

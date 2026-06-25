@@ -7,6 +7,7 @@
 #include "drivers/AnalogDriver.hpp"
 #include "drivers/MotorDriver.hpp"
 #include "drivers/PowerDriver.hpp"
+#include "locomotion/MotorController.Errors.hpp"
 #include <cmath>
 
 struct PhysicalBoundParams
@@ -75,15 +76,15 @@ struct ProfilingParams
     int direction;
 };
 
-Error get_safezone_profiling(ProfilingParams params, MotorDriver::Channel motor_channel, AnalogDriver::Channel analog_channel, PowerDriver::Value& out_current_baseline_avg, PowerDriver::Value& out_current_baseline_noise)
+Status get_safezone_profiling(ProfilingParams params, MotorDriver::Channel motor_channel, AnalogDriver::Channel analog_channel, PowerDriver::Value& out_current_baseline_avg, PowerDriver::Value& out_current_baseline_noise)
 {
     int current_nb_samples = std::abs(params.dc_start - params.dc_end) / std::abs(params.dc_step);
     int current_samples_index = 0;
 
     PowerDriver::Value current_samples[current_nb_samples];
     // Send motor to the start of the evaluation range (safe zone)
-    RETURN_ERROR(MotorDriver::SetDutyCycle(motor_channel, params.dc_start));
-    RETURN_ERROR(MotorDriver::SendData());
+    RETURN_ON_ERROR(MotorDriver::SetDutyCycle(motor_channel, params.dc_start));
+    RETURN_ON_ERROR(MotorDriver::SendData());
     vTaskDelay(pdMS_TO_TICKS(params.base_delay_ms));
 
     MotorDriver::Value current_eval_dc = params.dc_start;
@@ -91,13 +92,13 @@ Error get_safezone_profiling(ProfilingParams params, MotorDriver::Channel motor_
     // Looping in the right direction (towards the bound)
     while ((params.direction == 1 && current_eval_dc <= params.dc_end) || (params.direction == -1 && current_eval_dc >= params.dc_end))
     {
-        RETURN_ERROR(MotorDriver::SetDutyCycle(motor_channel, current_eval_dc));
-        RETURN_ERROR(MotorDriver::SendData());
+        RETURN_ON_ERROR(MotorDriver::SetDutyCycle(motor_channel, current_eval_dc));
+        RETURN_ON_ERROR(MotorDriver::SendData());
         vTaskDelay(pdMS_TO_TICKS(params.step_delay_ms));
 
         // read current
         PowerDriver::Value current;
-        RETURN_ERROR(PowerDriver::internal::read_current(current));
+        RETURN_ON_ERROR(PowerDriver::internal::read_current(current));
         if (current_samples_index < current_nb_samples) // to avoid overflow in case of miscalculations and roundings
             current_samples[current_samples_index++] = current;
         
@@ -108,7 +109,7 @@ Error get_safezone_profiling(ProfilingParams params, MotorDriver::Channel motor_
     ArrayStats::Stats<PowerDriver::Value> current_stats = ArrayStats::GetStats(current_samples, current_nb_samples);
     out_current_baseline_avg = current_stats.mean; // This is the default current when the motor is not stalled
     out_current_baseline_noise = current_stats.std_dev; // We take x3 for 99% confidence interval
-    return Error::None;
+    return Status::Ok;
 }
 
 /**
@@ -119,7 +120,7 @@ Error get_safezone_profiling(ProfilingParams params, MotorDriver::Channel motor_
  * @param out_value [out] Description of the detected bound
  * @note Returned value is the median of the sampled deadband size values
  */
-Error get_physical_bound(PhysicalBoundParams params, MotorDriver::Channel motor_channel, AnalogDriver::Channel analog_channel, BoundDescription& out_value)
+Status get_physical_bound(PhysicalBoundParams params, MotorDriver::Channel motor_channel, AnalogDriver::Channel analog_channel, BoundDescription& out_value)
 {   
     AnalogDriver::internal::select(analog_channel);
     vTaskDelay(pdMS_TO_TICKS(1));
@@ -143,7 +144,7 @@ Error get_physical_bound(PhysicalBoundParams params, MotorDriver::Channel motor_
     MotorDriver::Value eval_step = params.direction * params.dc_faststep;
 
     PowerDriver::Value current_baseline_avg, current_baseline_noise;
-    RETURN_ERROR(get_safezone_profiling(
+    RETURN_ON_ERROR(get_safezone_profiling(
         {eval_start, eval_end, eval_step, params.base_delay_ms, params.move_fast_delay_ms, params.direction},
         motor_channel, analog_channel, current_baseline_avg, current_baseline_noise
     ));
@@ -160,13 +161,13 @@ Error get_physical_bound(PhysicalBoundParams params, MotorDriver::Channel motor_
         while ((params.direction == 1 && current_dc <= params.dc_max) || (params.direction == -1 && current_dc >= params.dc_min))
         {
             current_dc += params.direction * params.dc_faststep;
-            RETURN_ERROR(MotorDriver::SetDutyCycle(motor_channel, current_dc));
-            RETURN_ERROR(MotorDriver::SendData());
+            RETURN_ON_ERROR(MotorDriver::SetDutyCycle(motor_channel, current_dc));
+            RETURN_ON_ERROR(MotorDriver::SendData());
             vTaskDelay(pdMS_TO_TICKS(params.move_fast_delay_ms));
 
             // read current
             PowerDriver::Value current;
-            RETURN_ERROR(PowerDriver::internal::read_current(current));
+            RETURN_ON_ERROR(PowerDriver::internal::read_current(current));
 
             // Check if current is above the threshold, in which case increment the debounce counter, otherwise reset it
             if (current > fast_threshold)
@@ -181,7 +182,8 @@ Error get_physical_bound(PhysicalBoundParams params, MotorDriver::Channel motor_
 
         if (!bound_found) {
             LOG_ERROR("GET_PHC_BND", "Reached Duty Cycle limit (%f) without finding bound. Check motor assembly.", params.direction == 1 ? params.dc_max : params.dc_min);
-            return Error::HardwareFailure;
+            Error::RegisterErrorEvent(ErrorEventPhysicalBoundNotFound(params.direction, params.direction == 1 ? params.dc_max : params.dc_min));
+            return Status::Failure;
         }
     }
 
@@ -190,8 +192,8 @@ Error get_physical_bound(PhysicalBoundParams params, MotorDriver::Channel motor_
     // =========================================================================
     {
         current_dc -= (params.direction * params.dc_backoff);
-        RETURN_ERROR(MotorDriver::SetDutyCycle(motor_channel, current_dc));
-        RETURN_ERROR(MotorDriver::SendData());
+        RETURN_ON_ERROR(MotorDriver::SetDutyCycle(motor_channel, current_dc));
+        RETURN_ON_ERROR(MotorDriver::SendData());
         vTaskDelay(pdMS_TO_TICKS(params.backoff_delay_ms));
     }
     
@@ -202,7 +204,7 @@ Error get_physical_bound(PhysicalBoundParams params, MotorDriver::Channel motor_
     eval_end = current_dc;
     eval_step = params.direction * params.dc_slowstep;
 
-    RETURN_ERROR(get_safezone_profiling(
+    RETURN_ON_ERROR(get_safezone_profiling(
         {eval_start, eval_end, eval_step, params.base_delay_ms, params.move_slow_delay_ms, params.direction},
         motor_channel, analog_channel, current_baseline_avg, current_baseline_noise
     ));
@@ -224,17 +226,17 @@ Error get_physical_bound(PhysicalBoundParams params, MotorDriver::Channel motor_
         while ((params.direction == 1 && current_dc <= params.dc_max) || (params.direction == -1 && current_dc >= params.dc_min))
         {
             current_dc += params.direction * params.dc_slowstep;
-            RETURN_ERROR(MotorDriver::SetDutyCycle(motor_channel, current_dc));
-            RETURN_ERROR(MotorDriver::SendData());
+            RETURN_ON_ERROR(MotorDriver::SetDutyCycle(motor_channel, current_dc));
+            RETURN_ON_ERROR(MotorDriver::SendData());
             vTaskDelay(pdMS_TO_TICKS(params.move_slow_delay_ms));
 
             // Read feedback 
             AnalogDriver::Value feedback;
-            RETURN_ERROR(AnalogDriver::internal::read_subsampled(feedback, params.feedback_subsamples));
+            RETURN_ON_ERROR(AnalogDriver::internal::read_subsampled(feedback, params.feedback_subsamples));
 
             // read current
             PowerDriver::Value current;
-            RETURN_ERROR(PowerDriver::internal::read_current(current));
+            RETURN_ON_ERROR(PowerDriver::internal::read_current(current));
 
             // Save in rollback history
             history[history_idx].dc = current_dc;
@@ -257,11 +259,12 @@ Error get_physical_bound(PhysicalBoundParams params, MotorDriver::Channel motor_
 
         if (!bound_found) {
             LOG_ERROR("GET_PHC_BND", "Reached Duty Cycle limit (%f) without finding bound. Check motor assembly.", params.direction == 1 ? params.dc_max : params.dc_min);
-            return Error::HardwareFailure;
+            Error::RegisterErrorEvent(ErrorEventPhysicalBoundNotFound(params.direction, params.direction == 1 ? params.dc_max : params.dc_min));
+            return Status::Failure;
         }
 
         // Disable motor to avoid stressing it
-        RETURN_ERROR(MotorDriver::DisableAllMotors());
+        RETURN_ON_ERROR(MotorDriver::DisableAllMotors());
 
         // Now rollback to find the exact moment where the bound is touched
         {
@@ -294,5 +297,5 @@ Error get_physical_bound(PhysicalBoundParams params, MotorDriver::Channel motor_
         }
     }
 
-    return Error::None;
+    return Status::Ok;
 }

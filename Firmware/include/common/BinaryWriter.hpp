@@ -10,37 +10,37 @@ public:
         : buffer(buffer), size(size), offset(0) {}
 
     template<typename T>
-    Error write(const T& value)
+    Status write(const T& value)
     {
         if (offset + sizeof(T) > size)
         {
-            return Error::OutOfBounds;
+            return Status::OutOfBounds;
         }
         memcpy(buffer + offset, &value, sizeof(T));
         offset += sizeof(T);
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error writeBytes(const uint8_t* data, size_t length)
+    Status writeBytes(const uint8_t* data, size_t length)
     {
         if (offset + length > size)
         {
-            return Error::OutOfBounds;
+            return Status::OutOfBounds;
         }
         memcpy(buffer + offset, data, length);
         offset += length;
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error writeString(const char* str)
+    Status writeString(const char* str)
     {
         uint16_t strLength = (uint16_t)strlen(str);
         // write length first
-        Error e = write(strLength);
-        if (e != Error::None)
+        Status e = write(strLength);
+        if (e != Status::Ok)
             return e;
         if (offset + strLength > size)
-            return Error::OutOfBounds;
+            return Status::OutOfBounds;
         return writeBytes((const uint8_t*)str, strLength);
     }
 

@@ -13,41 +13,41 @@ Leg::Leg(Joint hip_roll, Joint hip_pitch, Joint knee_pitch, AnalogDriver::Channe
     grounded = true; // by default on the ground
 }
 
-Error Leg::init()
+Status Leg::init()
 {
-    Error err;
+    Status err;
 
     for (int i = 0; i < (int)JointId::Count; i++)
     {
-        if ((err = joints[i].init()) != Error::None)
+        if ((err = joints[i].init()) != Status::Ok)
         {
             return err;
         }
     }
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Leg::deinit()
+Status Leg::deinit()
 {
-    Error err;
+    Status err;
 
     for (int i = 0; i < (int)JointId::Count; i++)
     {
-        if ((err = joints[i].deinit()) != Error::None)
+        if ((err = joints[i].deinit()) != Status::Ok)
         {
             return err;
         }
     }
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Leg::estimateState(float dt)
+Status Leg::estimateState(float dt)
 {
-    Error err;
+    Status err;
 
     // Check if grounded
     AnalogDriver::Value voltage;
-    if (Error err = AnalogDriver::GetVoltage(this->contact_channel, voltage); err != Error::None)
+    if (Status err = AnalogDriver::GetVoltage(this->contact_channel, voltage); err != Status::Ok)
     {
         return err;
     }
@@ -56,48 +56,48 @@ Error Leg::estimateState(float dt)
     // pass the call to all motors
     for (int i = 0; i < (int)JointId::Count; i++)
     {
-        if ((err = joints[i].estimateState(dt)) != Error::None)
+        if ((err = joints[i].estimateState(dt)) != Status::Ok)
         {
             return err;
         }
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Leg::applyCommand(LegJointState jointState, float dt)
+Status Leg::applyCommand(LegJointState jointState, float dt)
 {
     for (int i = 0; i < (int)JointId::Count; i++)
     {
-        if (Error err = joints[i].applyCommand(jointState.joint_angles_rad[i], dt); err != Error::None)
+        if (Status err = joints[i].applyCommand(jointState.joint_angles_rad[i], dt); err != Status::Ok)
         {
             return err;
         }
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Leg::enable()
+Status Leg::enable()
 {
     for (int i = 0; i < (int)JointId::Count; i++)
     {
-        if (Error err = joints[i].enable(); err != Error::None)
+        if (Status err = joints[i].enable(); err != Status::Ok)
         {
             return err;
         }
     }
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Leg::disable()
+Status Leg::disable()
 {
     for (int i = 0; i < (int)JointId::Count; i++)
     {
-        if (Error err = joints[i].disable(); err != Error::None)
+        if (Status err = joints[i].disable(); err != Status::Ok)
         {
             return err;
         }
     }
-    return Error::None;
+    return Status::Ok;
 }

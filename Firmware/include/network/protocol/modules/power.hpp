@@ -18,7 +18,7 @@ namespace Power
      */
     static void GetVoltage(const RequestContext& ctx, const uint8_t* payload)
     {
-        if (Error err = PowerDriver::ReadData(); err != Error::None) {
+        if (Status err = PowerDriver::ReadData(); err != Status::Ok) {
             ctx.respond(ResponseStatus::UnknownError);
             return;
         }
@@ -35,7 +35,7 @@ namespace Power
      */
     static void GetCurrent(const RequestContext& ctx, const uint8_t* payload)
     {
-        if (Error err = PowerDriver::ReadData(); err != Error::None) {
+        if (Status err = PowerDriver::ReadData(); err != Status::Ok) {
             ctx.respond(ResponseStatus::UnknownError);
             return;
         }
@@ -52,7 +52,7 @@ namespace Power
      */
     static void GetPower(const RequestContext& ctx, const uint8_t* payload)
     {
-        if (Error err = PowerDriver::ReadData(); err != Error::None) {
+        if (Status err = PowerDriver::ReadData(); err != Status::Ok) {
             ctx.respond(ResponseStatus::UnknownError);
             return;
         }

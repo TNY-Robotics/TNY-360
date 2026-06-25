@@ -12,13 +12,13 @@ public:
      * @brief Initialize the audio manager.
      * @return Error code indicating success or failure.
      */
-    Error init();
+    Status init();
     
     /**
      * @brief Deinitialize the audio manager.
      * @return Error code indicating success or failure.
      */
-    Error deinit();
+    Status deinit();
 
     /**
      * @brief Get the Speaker instance.

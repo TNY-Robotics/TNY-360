@@ -129,21 +129,21 @@ DNSServer::DNSServer()
 {
 }
 
-Error DNSServer::init()
+Status DNSServer::init()
 {
     running = true;
 
     if (xTaskCreatePinnedToCore(server_task, "dns_server", 4096, this, 5, &task_handle, CORE_BRAIN) != pdPASS)
     {
         LOG_ERROR(TAG, "Failed to create DNS server task");
-        return Error::SoftwareFailure;
+        return Status::Failure;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error DNSServer::deinit()
+Status DNSServer::deinit()
 {
     running = false;
-    return Error::None;
+    return Status::Ok;
 }

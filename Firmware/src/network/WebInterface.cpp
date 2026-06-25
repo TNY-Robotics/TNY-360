@@ -16,7 +16,7 @@ WebInterface::WebInterface(uint16_t web_port)
 {
 }
 
-Error WebInterface::init()
+Status WebInterface::init()
 {
     LOG_SCOPE(TAG, "WebInterface::init");
 
@@ -35,13 +35,13 @@ Error WebInterface::init()
     {
         server = nullptr;
         LOG_ERROR(TAG, "Failed to start web server");
-        ErrorHandle(ErrorStruct::WebInterfaceInitFailed);
-        return Error::Unknown;
+        // ErrorHandle(ErrorStruct::WebInterfaceInitFailed);
+        return Status::Unknown;
     }
     running = true;
 
     // initialize storage
-    if (Error err = LittleFS::Init(); err != Error::None)
+    if (Status err = LittleFS::Init(); err != Status::Ok)
     {
         return err;
     }
@@ -92,14 +92,14 @@ Error WebInterface::init()
             httpd_resp_send(req, "Redirecting...", HTTPD_RESP_USE_STRLEN);
             return ESP_OK;
         });
-        return Error::None;
+        return Status::Ok;
     }
 
     registerURIHandlers();
-    return Error::None;
+    return Status::Ok;
 }
 
-Error WebInterface::deinit()
+Status WebInterface::deinit()
 {
     if (server)
     {
@@ -107,7 +107,7 @@ Error WebInterface::deinit()
         server = nullptr;
     }
     running = false;
-    return Error::None;
+    return Status::Ok;
 }
 
 void WebInterface::registerURIHandlers()
@@ -306,8 +306,8 @@ esp_err_t WebInterface::connect_request_handler(httpd_req_t *req)
     }
 
     // Attempt to connect to the new WiFi network
-    Error wifi_err = Robot::GetInstance().getNetworkManager().getWiFiManager().connect(ssid, password);
-    if (wifi_err != Error::None)
+    Status wifi_err = Robot::GetInstance().getNetworkManager().getWiFiManager().connect(ssid, password);
+    if (wifi_err != Status::Ok)
     {
         return httpd_resp_send(req, "Failed to connect to WiFi", HTTPD_RESP_USE_STRLEN);
     }

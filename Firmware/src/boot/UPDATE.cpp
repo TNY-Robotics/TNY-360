@@ -24,7 +24,7 @@ namespace BootManager
     {
         // Initialize LED module for error display
         LOG_DEBUG(TAG, "Initializing LED");
-        if (Error err = LED::Init(); err != Error::None)
+        if (Status err = LED::Init(); err != Status::Ok)
         {
             LOG_ERROR(TAG, "Failed to initialize LED module");
             esp_ota_mark_app_invalid_rollback_and_reboot();
@@ -32,7 +32,7 @@ namespace BootManager
         }
 
         // Initialize I2C for screen
-        if (Error err = I2C::Init(); err != Error::None)
+        if (Status err = I2C::Init(); err != Status::Ok)
         {
             LOG_ERROR(TAG, "Failed to initialize I2C module");
             esp_ota_mark_app_invalid_rollback_and_reboot();
@@ -41,7 +41,7 @@ namespace BootManager
 
         // Initialize Screen and Menu system for user interface
         LOG_DEBUG(TAG, "Initializing ScreenDriver");
-        if (Error err = ScreenDriver::Init(); err != Error::None)
+        if (Status err = ScreenDriver::Init(); err != Status::Ok)
         {
             LOG_ERROR(TAG, "Failed to initialize ScreenDriver module");
             esp_ota_mark_app_invalid_rollback_and_reboot();
@@ -58,7 +58,7 @@ namespace BootManager
         UpdateManager& update_manager = Robot::GetInstance().getNetworkManager().getUpdateManager();
 
         // Continue the update process
-        if (Error err = update_manager.continueUpdate(); err != Error::None)
+        if (Status err = update_manager.continueUpdate(); err != Status::Ok)
         {
             LOG_ERROR(TAG, "Failed to continue update process");
             return;

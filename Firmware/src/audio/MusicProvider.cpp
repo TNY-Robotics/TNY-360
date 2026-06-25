@@ -21,17 +21,17 @@ MusicProvider::~MusicProvider()
     }
 }
 
-Error MusicProvider::loadFromFile(const char* filepath)
+Status MusicProvider::loadFromFile(const char* filepath)
 {
-    if (Error err = LittleFS::Init(); err != Error::None)
+    if (Status err = LittleFS::Init(); err != Status::Ok)
     {
-        LOG_ERROR(TAG, "Failed to initialize LittleFS: %d", ErrorToString(err));
+        // LOG_ERROR(TAG, "Failed to initialize LittleFS: %d", ErrorToString(err));
         return err;
     }
 
-    if (Error err = LittleFS::LoadFileContent(filepath, &file_content, &content_size); err != Error::None)
+    if (Status err = LittleFS::LoadFileContent(filepath, &file_content, &content_size); err != Status::Ok)
     {
-        LOG_ERROR(TAG, "Failed to load WAV file '%s': %d", filepath, ErrorToString(err));
+        // LOG_ERROR(TAG, "Failed to load WAV file '%s': %d", filepath, ErrorToString(err));
         return err;
     }
 
@@ -60,7 +60,7 @@ Error MusicProvider::loadFromFile(const char* filepath)
     
     LOG_INFO(TAG, "Fichier WAV '%s' (Taille: %u octets, debut data: %u)", filepath, content_size, read_position);
 
-    return Error::None;
+    return Status::Ok;
 }
 
 void MusicProvider::stop()

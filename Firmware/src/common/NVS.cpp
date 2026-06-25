@@ -13,58 +13,58 @@ namespace NVS
     public:
         HandleImpl(nvs_handle_t handle) : m_handle(handle) {}
 
-        Error get(const char* key, void* out_value, size_t* length) override
+        Status get(const char* key, void* out_value, size_t* length) override
         {
             esp_err_t ret = nvs_get_blob(m_handle, key, out_value, length);
             if (ret == ESP_OK) {
-                return Error::None;
+                return Status::Ok;
             } else if (ret == ESP_ERR_NVS_NOT_FOUND) {
-                return Error::NotFound;
+                return Status::NotFound;
             } else {
-                return Error::Unknown;
+                return Status::Unknown;
             }
         }
 
-        Error set(const char* key, const void* value, size_t length) override
+        Status set(const char* key, const void* value, size_t length) override
         {
             esp_err_t ret = nvs_set_blob(m_handle, key, value, length);
             if (ret == ESP_OK) {
                 ret = nvs_commit(m_handle);
                 if (ret == ESP_OK) {
-                    return Error::None;
+                    return Status::Ok;
                 } else {
-                    return Error::Unknown;
+                    return Status::Unknown;
                 }
             } else {
-                return Error::Unknown;
+                return Status::Unknown;
             }
         }
 
-        Error erase(const char* key) override
+        Status erase(const char* key) override
         {
             esp_err_t ret = nvs_erase_key(m_handle, key);
             if (ret == ESP_OK) {
                 ret = nvs_commit(m_handle);
                 if (ret == ESP_OK) {
-                    return Error::None;
+                    return Status::Ok;
                 } else {
-                    return Error::Unknown;
+                    return Status::Unknown;
                 }
             } else if (ret == ESP_ERR_NVS_NOT_FOUND) {
-                return Error::NotFound;
+                return Status::NotFound;
             } else {
-                return Error::Unknown;
+                return Status::Unknown;
             }
         }
         
         nvs_handle_t m_handle;
     };
 
-    Error Init()
+    Status Init()
     {
         LOG_SCOPE(TAG, "NVS::Init");
 
-        if (initialized) return Error::None;
+        if (initialized) return Status::Ok;
 
         esp_err_t ret = nvs_flash_init();
         if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
@@ -72,8 +72,8 @@ namespace NVS
             LOG_WARNING(TAG, "NVS flash init failed, erasing and retrying...");
             if (nvs_flash_erase() != ESP_OK) {
                 LOG_ERROR(TAG, "Failed to erase NVS flash");
-                ErrorHandle(ErrorStruct::NVSInitFailed);
-                return Error::SoftwareFailure;
+                // ErrorHandle(ErrorStruct::NVSInitFailed);
+                return Status::Failure;
             }
             ret = nvs_flash_init();
         }
@@ -81,28 +81,28 @@ namespace NVS
         if (ret != ESP_OK)
         {
             LOG_ERROR(TAG, "Failed to initialize NVS flash");
-            ErrorHandle(ErrorStruct::NVSInitFailed);
-            return Error::SoftwareFailure;
+            // ErrorHandle(ErrorStruct::NVSInitFailed);
+            return Status::Failure;
         }
 
         initialized = true;
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error Open(const char* namespace_name, Handle** out_handle)
+    Status Open(const char* namespace_name, Handle** out_handle)
     {
         LOG_SCOPE(TAG, "NVS::Open");
         if (!initialized)
         {
-            Error err = Init();
-            if (err != Error::None) {
+            Status err = Init();
+            if (err != Status::Ok) {
                 return err;
             }
         }
 
         if (!namespace_name || !out_handle)
         {
-            return Error::InvalidParameters;
+            return Status::InvalidParameters;
         }
 
         nvs_handle_t nvs_handle;
@@ -111,15 +111,15 @@ namespace NVS
         {
             if (ret == ESP_ERR_NVS_NOT_FOUND) {
                 LOG_ERROR(TAG, "NVS namespace not found: %s", namespace_name);
-                return Error::NotFound;
+                return Status::NotFound;
             } else {
                 LOG_ERROR(TAG, "Failed to open NVS namespace: %s - Error: 0x%x", namespace_name, ret);
-                return Error::Unknown;
+                return Status::Unknown;
             }
         }
 
         *out_handle = reinterpret_cast<Handle*>(new HandleImpl(nvs_handle));
-        return Error::None;
+        return Status::Ok;
     }
 
     void Close(Handle* handle)

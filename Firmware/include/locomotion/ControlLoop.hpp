@@ -15,23 +15,23 @@ public:
      * @brief Initializes the Control Loop.
      * @return Error code indicating success or failure.
      */
-    Error init();
+    Status init();
 
     /**
      * @brief Deinitializes the Control Loop.
      * @return Error code indicating success or failure.
      */
-    Error deinit();
+    Status deinit();
 
     /**
      * @brief Starts the control loop 
      */
-    Error start();
+    Status start();
 
     /**
      * @brief Stops the control loop
      */
-    Error stop();
+    Status stop();
 
     /**
      * @brief Checks if the control loop is currently running.
@@ -53,10 +53,10 @@ public:
      * @brief Internal Task for Control loop at 50 Hz.
      * @return Error code indicating success or failure.
      */
-    Error control_task();
+    Status control_task();
     
 private:
-    Error create_internal_task();
+    Status create_internal_task();
 
     bool initialized;
     gptimer_handle_t timer = NULL;

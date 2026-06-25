@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "nuxt dev --host",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
@@ -12,7 +12,7 @@
   "dependencies": {
     "@iconify-json/lucide": "^1.2.99",
     "@nuxt/ui": "^4.4.0",
-    "@tny-robotics/sdk": "^0.9.8",
+    "@tny-robotics/sdk": "^0.9.9",
     "@tresjs/nuxt": "^5.1.7",
     "@unovis/ts": "^1.6.2",
     "@unovis/vue": "^1.6.2",

@@ -9,11 +9,11 @@ public:
     CameraDriver();
     ~CameraDriver();
 
-    Error init();
-    Error deinit();
+    Status init();
+    Status deinit();
 
-    Error start();
-    Error stop();
+    Status start();
+    Status stop();
 
 private:
     sensor_t* sensor;

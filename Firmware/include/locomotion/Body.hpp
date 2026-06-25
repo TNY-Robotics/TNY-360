@@ -16,39 +16,39 @@ public:
      * @brief Initialize the body.
      * @return Error code indicating success or failure.
      */
-    Error init();
+    Status init();
 
     /**
      * @brief Deinitialize the body.
      * @return Error code indicating success or failure.
      */
-    Error deinit();
+    Status deinit();
     
     /**
      * @brief Estimate the body state.
      * @note This method should not be called manually, it is called internally in the control loop.
      * @return Error code indicating success or failure.
      */
-    Error estimateState(float dt);
+    Status estimateState(float dt);
 
     /**
      * @brief Apply a new command to the entire body.
      * @note This method should not be called manually, it is called internally in the control loop.
      * @return Error code indicating success or failure.
      */
-    Error applyCommand(BodyJointState jointState, float dt);
+    Status applyCommand(BodyJointState jointState, float dt);
 
     /**
      * @brief Enable all legs and ears of the body.
      * @return Error code indicating success or failure.
      */
-    Error enable();
+    Status enable();
 
     /**
      * @brief Disable all legs and ears of the body.
      * @return Error code indicating success or failure.
      */
-    Error disable();
+    Status disable();
 
     /**
      * @brief Get a given leg from its id
@@ -111,5 +111,5 @@ private:
     Vec3f global_feet_positions_mm[4]; // global positions in world frame (ground reference)
     Transformf posture; // Body posture (position relative to world, orientation relative to body frame)
 
-    Error apply_posture();
+    Status apply_posture();
 };

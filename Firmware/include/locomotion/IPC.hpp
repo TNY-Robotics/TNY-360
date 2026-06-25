@@ -64,14 +64,14 @@ namespace IPC
         Vec3f imu_down_vector = Vec3f::Zero();
     };
 
-    Error Init();
+    Status Init();
 
-    Error Deinit();
+    Status Deinit();
 
     /// @brief [Brain Core] Set the control intent to be read by the Reflex core.
     /// @param intent The control intent to set.
     /// @return Error code indicating success or failure of the operation.
-    Error setIntent(ControlIntent& intent);
+    Status setIntent(ControlIntent& intent);
 
     /// @brief [Reflex Core] Get the latest intent from the Brain core. 
     /// @param intent Pointer to a ControlIntent struct to be filled with the latest intent.
@@ -81,7 +81,7 @@ namespace IPC
     /// @brief [Reflex Core] Set the robot state to be read by the Brain core.
     /// @param state The robot state to set.
     /// @return Error code indicating success or failure of the operation.
-    Error setState(RobotState& state);
+    Status setState(RobotState& state);
 
     /// @brief [Brain Core] Get the latest robot state from the Reflex core.
     /// @param state Pointer to a RobotState struct to be filled with the latest state.

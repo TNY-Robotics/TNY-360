@@ -96,8 +96,8 @@ void MenuI2C::onUpdate()
             return;
         }
 
-        Error err = I2C::ProbeAddress(m_i2c_bus_select ? I2C::handle_primary : I2C::handle_secondary, m_addr_scan);
-        if (err == Error::None)
+        Status err = I2C::ProbeAddress(m_i2c_bus_select ? I2C::handle_primary : I2C::handle_secondary, m_addr_scan);
+        if (err == Status::Ok)
         {
             if (m_device_count < sizeof(m_devices_list))
             {

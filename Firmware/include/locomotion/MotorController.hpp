@@ -1,6 +1,7 @@
 #pragma once
 #include "drivers/MotorDriver.hpp"
 #include "drivers/AnalogDriver.hpp"
+#include "common/utils.hpp"
 #include "common/NVS.hpp"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -85,38 +86,38 @@ public:
      * @brief Initialize the motor controller.
      * @return Error code indicating success or failure.
      */
-    Error init();
+    Status init();
 
     /**
      * @brief Deinitialize the motor controller.
      * @return Error code indicating success or failure.
      */
-    Error deinit();
+    Status deinit();
 
     /**
      * @brief Turns on the motor.
      * @return Error code indicating success or failure.
      */
-    Error enable();
+    Status enable();
 
     /**
      * @brief Turns off the motor.
      * @return Error code indicating success or failure.
      */
-    Error disable();
+    Status disable();
 
     /**
      * @brief Starts the calibration process.
      * @return Error code indicating success or failure.
      */
-    Error startCalibration();
+    Status startCalibration();
 
     /**
      * @brief Stops the calibration process (no saving).
      * @note This method should not be called to save calibration data, it is done automatically on calibration sequence completion.
      * @return Error code indicating success or failure.
      */
-    Error stopCalibration();
+    Status stopCalibration();
 
     /**
      * @brief Get the calibration progress as a ratio (0.0 to 1.0).
@@ -130,7 +131,7 @@ public:
      * @return Error code indicating success or failure.
      * @note Should only be used for manual calibration control. 
      */
-    Error setCalibrationState(CalibrationState state);
+    Status setCalibrationState(CalibrationState state);
 
     /**
      * @brief Get the current calibration data
@@ -144,14 +145,14 @@ public:
      * @param save Should the data be saved in NVS for future use
      * @return If the save was successfull or not
      */
-    Error setCalibrationData(CalibrationData& data, bool save = true);
+    Status setCalibrationData(CalibrationData& data, bool save = true);
 
     /**
      * @brief Delete the current calibration data (fallback to default)
      * @param save Should the deletion be saved in NVS or not
      * @return If the deletion was successfull or not
      */
-    Error deleteCalibrationData(bool save = true);
+    Status deleteCalibrationData(bool save = true);
 
     /**
      * @brief Set the target position for the motor.
@@ -159,14 +160,14 @@ public:
      * @note An approximate position can be set even if the motor is uncalibrated.
      * @return Error code indicating success or failure.
      */
-    Error setTargetPosition(float position);
+    Status setTargetPosition(float position);
 
     /**
      * @brief Get the target position of the motor.
      * @param result Target position as a ratio (0.0 to 1.0).
      * @return Error code indicating success or failure.
      */
-    Error getTargetPosition(float& result) const;
+    Status getTargetPosition(float& result) const;
 
     /**
      * @brief Get the current position of the motor.
@@ -174,7 +175,7 @@ public:
      * @return Error code indicating success or failure.
      * @note An approximate position will be returned until the motor is calibrated.
      */
-    Error getCurrentPosition(float& result) const;
+    Status getCurrentPosition(float& result) const;
 
     /**
      * @brief Get the current state of the motor controller.
@@ -221,8 +222,8 @@ private:
 
     TaskHandle_t calibration_task_handle;
 
-    Error __send_target_position();
-    Error save_calibration_data();
-    Error delete_calibration_data();
-    Error run_calibration_sequence();
+    Status __send_target_position();
+    Status save_calibration_data();
+    Status delete_calibration_data();
+    Status run_calibration_sequence();
 };

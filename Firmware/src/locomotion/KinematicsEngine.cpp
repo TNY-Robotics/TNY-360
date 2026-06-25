@@ -11,7 +11,7 @@ KinematicsEngine::KinematicsEngine(KinematicsConfig config)
 {
 }
 
-Error KinematicsEngine::computeBodyIK(const BodyCartesianState& cartesian, BodyJointState& joints)
+Status KinematicsEngine::computeBodyIK(const BodyCartesianState& cartesian, BodyJointState& joints)
 {
     Transformf body_transform(cartesian.body_pos, Quatf::FromEulerAngles(cartesian.body_rot));
 
@@ -38,24 +38,24 @@ Error KinematicsEngine::computeBodyIK(const BodyCartesianState& cartesian, BodyJ
         }
 
         // Calculate leg IK
-        if (Error err = computeLegIK(target_hip_frame, joints.leg_joints[i]); err != Error::None)
+        if (Status err = computeLegIK(target_hip_frame, joints.leg_joints[i]); err != Status::Ok)
         {
             LOG_ERROR(TAG, "IK Failed for leg %d", i);
             return err;
         }
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error KinematicsEngine::computeLegIK(const Vec3f& target, LegJointState& joints)
+Status KinematicsEngine::computeLegIK(const Vec3f& target, LegJointState& joints)
 {
     float dist_zy_sq = target.y * target.y + target.z * target.z;
     float dist_zy = sqrtf(dist_zy_sq - config.hip_offset * config.hip_offset);
 
     if (dist_zy > (config.length_thigh + config.length_calf)) {
         LOG_ERROR(TAG, "Feet position is too far (%.2fm)", dist_zy);
-        return Error::Unreachable; 
+        return Status::OutOfBounds; 
     }
 
     float roll_compensation = atan2f(config.hip_offset, dist_zy);
@@ -64,7 +64,7 @@ Error KinematicsEngine::computeLegIK(const Vec3f& target, LegJointState& joints)
     float dist_leg = sqrtf(dist_zy * dist_zy + target.x * target.x);
     if (dist_leg > (config.length_thigh + config.length_calf)) {
         LOG_ERROR(TAG, "Feet position is too far after hip roll compensation (%.2fm)", dist_leg);
-        return Error::Unreachable;
+        return Status::OutOfBounds;
     }
 
     float hip_pitch_base = atan2f(target.x, dist_zy);
@@ -83,5 +83,5 @@ Error KinematicsEngine::computeLegIK(const Vec3f& target, LegJointState& joints)
     joints.joint_angles_rad[1] = hip_pitch_base - hip_pitch_angle;
     joints.joint_angles_rad[2] = PI - knee_angle; 
     
-    return Error::None;
+    return Status::Ok;
 }

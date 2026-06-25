@@ -3,6 +3,7 @@
 #include "common/utils.hpp"
 #include "drivers/MotorDriver.hpp"
 #include "drivers/AnalogDriver.hpp"
+#include "locomotion/MotorController.Errors.hpp"
 #include <cmath>
 
 struct FeedbackInversionParams
@@ -31,30 +32,30 @@ struct FeedbackInversionParams
  * @param out_value [out] Return value (true if inverted)
  * @note Invertion is detected by moving the motor forward and backward and checking resulting feedback
  */
-Error check_feedback_inversion(FeedbackInversionParams params, MotorDriver::Channel motor_channel, AnalogDriver::Channel analog_channel, bool& out_value)
+Status check_feedback_inversion(FeedbackInversionParams params, MotorDriver::Channel motor_channel, AnalogDriver::Channel analog_channel, bool& out_value)
 {
     AnalogDriver::internal::select(analog_channel);
     vTaskDelay(pdMS_TO_TICKS(1)); // Ensure stabilization
 
     // Move the motor to center and wait a bit
-    RETURN_ERROR(MotorDriver::SetDutyCycle(motor_channel, params.dc_center));
-    RETURN_ERROR(MotorDriver::SendData());
+    RETURN_ON_ERROR(MotorDriver::SetDutyCycle(motor_channel, params.dc_center));
+    RETURN_ON_ERROR(MotorDriver::SendData());
     vTaskDelay(pdMS_TO_TICKS(params.base_delay_ms));
 
     // Move forward, wait a bit, and take feedback
     AnalogDriver::Value feedback_forward;
-    RETURN_ERROR(MotorDriver::SetDutyCycle(motor_channel, params.dc_center + params.dc_delta));
-    RETURN_ERROR(MotorDriver::SendData());
+    RETURN_ON_ERROR(MotorDriver::SetDutyCycle(motor_channel, params.dc_center + params.dc_delta));
+    RETURN_ON_ERROR(MotorDriver::SendData());
     vTaskDelay(pdMS_TO_TICKS(params.feedback_delay_ms));
-    RETURN_ERROR(AnalogDriver::internal::read_subsampled(feedback_forward, params.nb_subsamples));
+    RETURN_ON_ERROR(AnalogDriver::internal::read_subsampled(feedback_forward, params.nb_subsamples));
     vTaskDelay(pdMS_TO_TICKS(params.movement_delay_ms));
 
     // Move forward, wait a bit, and take feedback
     AnalogDriver::Value feedback_backward;
-    RETURN_ERROR(MotorDriver::SetDutyCycle(motor_channel, params.dc_center - params.dc_delta));
-    RETURN_ERROR(MotorDriver::SendData());
+    RETURN_ON_ERROR(MotorDriver::SetDutyCycle(motor_channel, params.dc_center - params.dc_delta));
+    RETURN_ON_ERROR(MotorDriver::SendData());
     vTaskDelay(pdMS_TO_TICKS(params.feedback_delay_ms));
-    RETURN_ERROR(AnalogDriver::internal::read_subsampled(feedback_backward, params.nb_subsamples));
+    RETURN_ON_ERROR(AnalogDriver::internal::read_subsampled(feedback_backward, params.nb_subsamples));
     vTaskDelay(pdMS_TO_TICKS(params.movement_delay_ms));
 
     // Compare feedbacks and return result
@@ -62,9 +63,10 @@ Error check_feedback_inversion(FeedbackInversionParams params, MotorDriver::Chan
     if (abs_diff <= params.feedback_noise)
     {
         LOG_ERROR("FDB_INV", "Feedback inversion test failed: no significant feedback change detected (abs diff: %f, noise: %f)", abs_diff, params.feedback_noise);
-        return Error::HardwareFailure;
+        Error::RegisterErrorEvent(ErrorEventFeedbackInversionFailed(abs_diff, params.feedback_noise));
+        return Status::Failure;
     }
 
     out_value = feedback_forward < feedback_backward;
-    return Error::None;
+    return Status::Ok;
 }

@@ -21,13 +21,13 @@ public:
      * @brief Initialize the speaker module.
      * @return Error code indicating success or failure.
      */
-    Error init();
+    Status init();
 
     /**
      * @brief Deinitialize the speaker module.
      * @return Error code indicating success or failure.
      */
-    Error deinit();
+    Status deinit();
 
     /**
      * @brief Write audio samples to the speaker.

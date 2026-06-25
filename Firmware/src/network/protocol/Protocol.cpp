@@ -19,7 +19,7 @@ namespace Protocol
     Dispatcher dispatcher;
 }
 
-Error Protocol::Init()
+Status Protocol::Init()
 {
     System::Register(dispatcher);
     Protocol::Register(dispatcher);
@@ -34,12 +34,12 @@ Error Protocol::Init()
     I2C::Register(dispatcher);
     WiFi::Register(dispatcher);
     // ErrorHandle(ErrorStruct::ProtocolInitFailed);
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Protocol::Deinit()
+Status Protocol::Deinit()
 {
-    return Error::None;
+    return Status::Ok;
 }
 
 Protocol::Dispatcher& Protocol::GetDispatcher()

@@ -74,15 +74,15 @@ namespace System
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t level;
-        if (reader.read(level) != Error::None)
+        if (reader.read(level) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
 
-        Error err = Robot::GetInstance().getDecisionLoop().setAutoLifeLevel(level);
+        Status err = Robot::GetInstance().getDecisionLoop().setAutoLifeLevel(level);
 
-        ctx.respond(err == Error::None ? ResponseStatus::Ok : ResponseStatus::InvalidParameters);
+        ctx.respond(err == Status::Ok ? ResponseStatus::Ok : ResponseStatus::InvalidParameters);
     }
 
     /** <API_REF>
@@ -152,7 +152,7 @@ namespace System
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t index;
-        if (reader.read(index) != Error::None)
+        if (reader.read(index) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -162,27 +162,27 @@ namespace System
 
         uint8_t buffer[256];
         BinaryWriter writer(buffer, sizeof(buffer));
-        if (writer.write<uint32_t>(line.timestampMs) != Error::None)
+        if (writer.write<uint32_t>(line.timestampMs) != Status::Ok)
         {
             ctx.respond(ResponseStatus::UnknownError);
             return;
         }
-        if (writer.write<uint8_t>((uint8_t)line.level) != Error::None)
+        if (writer.write<uint8_t>((uint8_t)line.level) != Status::Ok)
         {
             ctx.respond(ResponseStatus::UnknownError);
             return;
         }
-        if (writer.write<uint8_t>(line.indent) != Error::None)
+        if (writer.write<uint8_t>(line.indent) != Status::Ok)
         {
             ctx.respond(ResponseStatus::UnknownError);
             return;
         }
-        if (writer.writeString(line.tag) != Error::None)
+        if (writer.writeString(line.tag) != Status::Ok)
         {
             ctx.respond(ResponseStatus::UnknownError);
             return;
         }
-        if (writer.writeString(line.message) != Error::None)
+        if (writer.writeString(line.message) != Status::Ok)
         {
             ctx.respond(ResponseStatus::UnknownError);
             return;
@@ -203,7 +203,7 @@ namespace System
         BinaryReader reader(payload, ctx.expected_len);
 
         bool enabled;
-        if (reader.read(enabled) != Error::None)
+        if (reader.read(enabled) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -211,12 +211,12 @@ namespace System
 
         if (enabled && !Robot::GetInstance().getControlLoop().isRunning())
         {
-            if (Robot::GetInstance().getControlLoop().start() != Error::None)
+            if (Robot::GetInstance().getControlLoop().start() != Status::Ok)
                 ctx.respond(ResponseStatus::UnknownError);
         }
         else if (Robot::GetInstance().getControlLoop().isRunning())
         {
-            if (Robot::GetInstance().getControlLoop().stop() != Error::None)
+            if (Robot::GetInstance().getControlLoop().stop() != Status::Ok)
                 ctx.respond(ResponseStatus::UnknownError);
         }
         ctx.respond(ResponseStatus::Ok);
@@ -247,7 +247,7 @@ namespace System
         BinaryReader reader(payload, ctx.expected_len);
 
         bool enabled;
-        if (reader.read(enabled) != Error::None)
+        if (reader.read(enabled) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -255,12 +255,12 @@ namespace System
 
         if (enabled && !Robot::GetInstance().getDecisionLoop().isRunning())
         {
-            if (Robot::GetInstance().getDecisionLoop().start() != Error::None)
+            if (Robot::GetInstance().getDecisionLoop().start() != Status::Ok)
                 ctx.respond(ResponseStatus::UnknownError);
         }
         else if (Robot::GetInstance().getDecisionLoop().isRunning())
         {
-            if (Robot::GetInstance().getDecisionLoop().stop() != Error::None)
+            if (Robot::GetInstance().getDecisionLoop().stop() != Status::Ok)
                 ctx.respond(ResponseStatus::UnknownError);
         }
         ctx.respond(ResponseStatus::Ok);

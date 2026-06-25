@@ -16,13 +16,13 @@ public:
      * @brief Initialize the network manager.
      * @return Error code indicating success or failure.
      */
-    Error init();
+    Status init();
 
     /**
      * @brief Deinitialize the network manager.
      * @return Error code indicating success or failure.
      */
-    Error deinit();
+    Status deinit();
 
     /**
      * @brief Get the WiFiManager instance.

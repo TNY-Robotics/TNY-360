@@ -21,25 +21,25 @@ public:
      * @brief Initialize the robot.
      * @return Error code indicating success or failure.
      */
-    Error init();
+    Status init();
 
     /**
      * @brief Deinitialize the robot.
      * @return Error code indicating success or failure.
      */
-    Error deinit();
+    Status deinit();
 
     /**
      * @brief Starts the robot main loops
      * @note : This starts loops on both cores : BRAIN + REFLEX
      */
-    Error start();
+    Status start();
 
     /**
      * @brief Stops the robot main loops
      * @note : This stops loops on both cores : BRAIN + REFLEX
      */
-    Error stop();
+    Status stop();
 
     /**
      * @brief Get the robot's body.

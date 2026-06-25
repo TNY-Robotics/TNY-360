@@ -15,14 +15,14 @@ namespace AnalogDriver
          * @return Error code indicating success or failure of the channel selection.
          * @note This function should not be called in normal usage.
          */
-        Error select(Channel channel);
+        Status select(Channel channel);
 
         /**
          * @brief Reads the voltage value from the currently selected analog input channel.
          * @param outVoltage Reference to store the read voltage value in Volt.
          * @return Error code indicating success or failure of the read operation.
          */
-        Error read(Value& outVoltage);
+        Status read(Value& outVoltage);
 
         /**
          * @brief Reads the voltage value from the currently selected analog input channel using multiple samples for better accuracy.
@@ -30,20 +30,20 @@ namespace AnalogDriver
          * @param nb_subsamples Number of subsamples to take and average.
          * @return Error code indicating success or failure of the read operation.
          */
-        Error read_subsampled(Value& outVoltage, uint16_t nb_subsamples);
+        Status read_subsampled(Value& outVoltage, uint16_t nb_subsamples);
     }
 
     /**
     * @brief Initializes the Analog driver.
     * @return Error code indicating success or failure.
     */
-    Error Init();
+    Status Init();
 
     /**
      * @brief Deinitializes the Analog driver.
      * @return Error code indicating success or failure.
      */
-    Error Deinit();
+    Status Deinit();
 
     /**
     * @brief Gets the raw value of an analog input.
@@ -51,14 +51,14 @@ namespace AnalogDriver
     * @param outVoltage Pointer to store the raw value.
     * @return Error code indicating success or failure.
     */
-    Error GetVoltage(Channel id, Value& outVoltage);
+    Status GetVoltage(Channel id, Value& outVoltage);
 
     /**
     * @brief Gets all analog input voltages.
     * @param outVoltages Pointer to array to store voltage values.
     * @return Error code indicating success or failure.
     */
-    Error GetVoltages(Value* outVoltages);
+    Status GetVoltages(Value* outVoltages);
 
     /**
     * @brief Gets raw values for specified analog inputs.
@@ -67,7 +67,7 @@ namespace AnalogDriver
     * @param count Number of elements in the ids array.
     * @return Error code indicating success or failure.
     */
-    Error GetVoltages(const Channel* ids, Value* outVoltages, uint8_t count);
+    Status GetVoltages(const Channel* ids, Value* outVoltages, uint8_t count);
 
-    Error ReadAllChannels();
+    Status ReadAllChannels();
 }

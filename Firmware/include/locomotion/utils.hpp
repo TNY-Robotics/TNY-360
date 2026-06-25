@@ -34,7 +34,7 @@ struct BodyCartesianState
 
 class CartesianStateModifier
 {
-    virtual Error update(float dt, BodyCartesianState& state) = 0;
+    virtual Status update(float dt, BodyCartesianState& state) = 0;
 };
 
 /// @brief Stores all the rotation of each motors of a leg
@@ -58,5 +58,5 @@ struct BodyJointState
 
 class JointStateModifier
 {
-    virtual Error update(float dt, BodyJointState& state) = 0;
+    virtual Status update(float dt, BodyJointState& state) = 0;
 };

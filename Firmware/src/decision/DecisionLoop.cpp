@@ -3,14 +3,14 @@
 #include "common/config.hpp"
 #include "common/Log.hpp"
 
-Error DecisionLoop::init()
+Status DecisionLoop::init()
 {
     // ErrorHandle(ErrorStruct::DecisionLoopInitFailed);
     // FIXME : Maybe we should create the task here and just keep it suspended until start() is called
-    return Error::None;
+    return Status::Ok;
 }
 
-Error DecisionLoop::deinit()
+Status DecisionLoop::deinit()
 {
     if (decision_loop_task != nullptr)
     {
@@ -18,10 +18,10 @@ Error DecisionLoop::deinit()
         decision_loop_task = nullptr;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error DecisionLoop::start()
+Status DecisionLoop::start()
 {
     loop_running = true;
 
@@ -34,20 +34,20 @@ Error DecisionLoop::start()
     {
         loop_running = false;
         LOG_ERROR(TAG, "Error creating DecisionLoop task");
-        return Error::Unknown;
+        return Status::Unknown;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error DecisionLoop::stop()
+Status DecisionLoop::stop()
 {
     loop_running = false;
 
     // wait 2 decision cycles to be sure it's stopped
     vTaskDelay(pdMS_TO_TICKS(DECISION_LOOP_DT_MS * 2));
 
-    return Error::None;
+    return Status::Ok;
 }
 
 bool DecisionLoop::isRunning() const
@@ -55,63 +55,63 @@ bool DecisionLoop::isRunning() const
     return loop_running;
 }
 
-Error DecisionLoop::setAutoLifeLevel(uint8_t level)
+Status DecisionLoop::setAutoLifeLevel(uint8_t level)
 {
     if (level > AutoLifeLevel::Full)
     {
-        return Error::InvalidParameters;
+        return Status::InvalidParameters;
     }
     auto_life_level = level;
     // TODO : Implement real auto life logic and all
-    return Error::None;
+    return Status::Ok;
 }
 
-Error DecisionLoop::askBodyVelocity(float x_ms, float y_ms, float z_rads)
+Status DecisionLoop::askBodyVelocity(float x_ms, float y_ms, float z_rads)
 {
     last_ask_timestamp_ms = esp_log_timestamp();
     askedBodyVel = {x_ms, y_ms, z_rads};
-    return Error::None;
+    return Status::Ok;
 }
 
-Error DecisionLoop::askBodyRotation(float x_rad, float y_rad, float z_rad)
+Status DecisionLoop::askBodyRotation(float x_rad, float y_rad, float z_rad)
 {
     last_ask_timestamp_ms = esp_log_timestamp();
     askedBodyRot = {x_rad, y_rad, z_rad};
-    return Error::None;
+    return Status::Ok;
 }
 
-Error DecisionLoop::askBodyPosition(float x_m, float y_m, float z_m)
+Status DecisionLoop::askBodyPosition(float x_m, float y_m, float z_m)
 {
     last_ask_timestamp_ms = esp_log_timestamp();
     askedBodyPos = {x_m, y_m, z_m};
-    return Error::None;
+    return Status::Ok;
 }
 
-Error DecisionLoop::askLegPosition(Leg::Id leg_id, float x_m, float y_m, float z_m, IPC::OverrideMode mode)
+Status DecisionLoop::askLegPosition(Leg::Id leg_id, float x_m, float y_m, float z_m, IPC::OverrideMode mode)
 {
     last_ask_timestamp_ms = esp_log_timestamp();
     askedLegOverrides[(int) leg_id].mode = mode;
     askedLegOverrides[(int) leg_id].value_pos = {x_m, y_m, z_m};
-    return Error::None;
+    return Status::Ok;
 }
 
-Error DecisionLoop::askGaitType(GaitPlanner::GaitType gait)
+Status DecisionLoop::askGaitType(GaitPlanner::GaitType gait)
 {
     last_ask_timestamp_ms = esp_log_timestamp();
     askedGait = gait;
-    return Error::None;
+    return Status::Ok;
 }
 
-Error DecisionLoop::askJointAngle(Joint::Id joint_id, float angle_rad, IPC::OverrideMode mode)
+Status DecisionLoop::askJointAngle(Joint::Id joint_id, float angle_rad, IPC::OverrideMode mode)
 {
     last_ask_timestamp_ms = esp_log_timestamp();
     if (joint_id >= Joint::Id::Count)
     {
-        return Error::InvalidParameters;
+        return Status::InvalidParameters;
     }
     askedJointAngles[(int) joint_id].mode = mode;
     askedJointAngles[(int) joint_id].value_rad = angle_rad;
-    return Error::None;
+    return Status::Ok;
 }
 
 void DecisionLoop::decision_loop()
@@ -150,7 +150,7 @@ void DecisionLoop::decision_loop()
 
         // Update timestamp and send intent to Reflex core
         final_intent.timestamp_ms = esp_log_timestamp();
-        if (IPC::setIntent(final_intent) != Error::None)
+        if (IPC::setIntent(final_intent) != Status::Ok)
         {
             LOG_WARNING(TAG, "Failed to send intent to Reflex core");
         }

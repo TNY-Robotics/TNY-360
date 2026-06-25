@@ -21,7 +21,7 @@ struct FeedbackNoiseParams
  * @param out_value [out] Final noise value output variable
  * @note Returned noise value is the standard deviation of the samples multiplied by 3 (covers 99% of values)
  */
-Error get_feedback_noise(FeedbackNoiseParams params, AnalogDriver::Channel channel, AnalogDriver::Value& out_value)
+Status get_feedback_noise(FeedbackNoiseParams params, AnalogDriver::Channel channel, AnalogDriver::Value& out_value)
 {
     AnalogDriver::Value samples[params.nb_samples];
 
@@ -31,7 +31,7 @@ Error get_feedback_noise(FeedbackNoiseParams params, AnalogDriver::Channel chann
         vTaskDelay(pdMS_TO_TICKS(1)); // Short delay to ensure stabilization after channel switch
         for (uint16_t i = 0; i < params.nb_samples; i++)
         {
-            RETURN_ERROR(AnalogDriver::internal::read_subsampled(samples[i], params.nb_subsamples));
+            RETURN_ON_ERROR(AnalogDriver::internal::read_subsampled(samples[i], params.nb_subsamples));
             vTaskDelay(pdMS_TO_TICKS(params.sample_delay_ms));
         }
     }
@@ -41,5 +41,5 @@ Error get_feedback_noise(FeedbackNoiseParams params, AnalogDriver::Channel chann
 
     // Return result
     out_value = stats.std_dev * 3; // x3 : covers 99% of values
-    return Error::None;
+    return Status::Ok;
 }

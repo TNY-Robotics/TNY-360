@@ -44,9 +44,9 @@ namespace RPC
     };
 
     template<typename T>
-    Error ExecuteThreadSafe(std::function<T()> task, std::function<void(T)> on_complete)
+    Status ExecuteThreadSafe(std::function<T()> task, std::function<void(T)> on_complete)
     {
-        if (rpcRequestQueue == nullptr) return Error::InvalidState;
+        if (rpcRequestQueue == nullptr) return Status::InvalidState;
 
         RpcJob* job = new TypedRpcJob<T>(task, on_complete);
         
@@ -55,10 +55,10 @@ namespace RPC
         {
             delete job; // Anti-leak security
             LOG_WARNING(TAG, "Request queue full, job dropped.");
-            return Error::OutOfMemory;
+            return Status::NoMemory;
         }
 
-        return Error::None;
+        return Status::Ok;
     }
 
     inline void core0_task_func(void* params)
@@ -91,7 +91,7 @@ namespace RPC
     /**
      * @brief Initializes the RPC layer (job queues, executor tasks, etc.)
      */
-    inline Error Init()
+    inline Status Init()
     {
         LOG_SCOPE(TAG, "RPC::Init");
 
@@ -101,28 +101,28 @@ namespace RPC
 
         if (rpcRequestQueue == nullptr || rpcResponseQueue == nullptr) {
             LOG_ERROR(TAG, "Failed to create RPC queues");
-            ErrorHandle(ErrorStruct::RPCInitFailed);
-            return Error::Unknown; // Remplace par ton code d'erreur
+            // ErrorHandle(ErrorStruct::RPCInitFailed);
+            return Status::Unknown; // Remplace par ton code d'erreur
         }
 
         // Launching core 0 background job task
         if (xTaskCreatePinnedToCore(core0_task_func, "RPC_Core0", 4096, nullptr, tskIDLE_PRIORITY + 5, &core0_executor_task, CORE_BRAIN) != pdPASS)
         {
             LOG_ERROR(TAG, "Error creating Core0 thread safe executor");
-            ErrorHandle(ErrorStruct::RPCInitFailed);
-            return Error::Unknown;
+            // ErrorHandle(ErrorStruct::RPCInitFailed);
+            return Status::Unknown;
         }
         
         // NOTE : Not creating any task on core 1
         // RPC::Process_Core1() should be executed in the control loop
 
-        return Error::None;
+        return Status::Ok;
     }
 
     /**
      * @brief Deinitializes the RPC layer (stop executor tasks, delete queues, etc.)
      */
-    inline Error DeInit()
+    inline Status DeInit()
     {
         if (core0_executor_task != nullptr)
         {
@@ -132,6 +132,6 @@ namespace RPC
         if (rpcRequestQueue != nullptr) vQueueDelete(rpcRequestQueue);
         if (rpcResponseQueue != nullptr) vQueueDelete(rpcResponseQueue);
         
-        return Error::None;
+        return Status::Ok;
     }
 }

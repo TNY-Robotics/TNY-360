@@ -30,7 +30,7 @@ bool MenuBootCalibration::onBack()
     {
         // store in NVS boot that we skip calib
         NVS::Handle* nvsHandle;
-        if (Error err = NVS::Open("boot", &nvsHandle); err == Error::None)
+        if (Status err = NVS::Open("boot", &nvsHandle); err == Status::Ok)
         {
             nvsHandle->set<bool>("skip_calib", true);
             delete nvsHandle;
@@ -84,7 +84,7 @@ bool MenuBootCalibration::onSelect()
     {
         // TEMPORARY : We add the skip flag to be sure
         NVS::Handle* nvsHandle;
-        if (Error err = NVS::Open("boot", &nvsHandle); err == Error::None)
+        if (Status err = NVS::Open("boot", &nvsHandle); err == Status::Ok)
         {
             nvsHandle->set<bool>("skip_calib", true);
             delete nvsHandle;

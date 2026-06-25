@@ -14,11 +14,17 @@ namespace I2C
      * @brief Initializes the I2C module.
      * @return Error code indicating success or failure.
      */
-    Error Init();
+    Status Init();
 
-    Error ProbeAddress(i2c_master_bus_handle_t handle, uint8_t address);
+    /**
+     * @brief Deinitializes the I2C module.
+     * @return Error code indicating success or failure.
+     */
+    Status Deinit();
 
-    Error WriteRegisters(i2c_master_bus_handle_t handle, uint8_t address, uint8_t reg_address, const uint8_t* data, size_t length);
+    Status ProbeAddress(i2c_master_bus_handle_t handle, uint8_t address);
 
-    Error ReadRegisters(i2c_master_bus_handle_t handle, uint8_t address, uint8_t reg_address, uint8_t* data, size_t length);
+    Status WriteRegisters(i2c_master_bus_handle_t handle, uint8_t address, uint8_t reg_address, const uint8_t* data, size_t length);
+
+    Status ReadRegisters(i2c_master_bus_handle_t handle, uint8_t address, uint8_t reg_address, uint8_t* data, size_t length);
 }

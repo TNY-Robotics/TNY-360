@@ -4,6 +4,7 @@
 #include <cmath>
 #include <memory.h>
 #include "common/Log.hpp"
+#include "common/LED.Error.hpp"
 
 namespace LED
 {
@@ -16,6 +17,8 @@ namespace LED
     static constexpr uint16_t WS2812_T0L_TICKS = 9;  // 0.9us (Total 1.3us for '0')
     static constexpr uint16_t WS2812_T1H_TICKS = 8;  // 0.8us
     static constexpr uint16_t WS2812_T1L_TICKS = 5;  // 0.5us (Total 1.3us for '1')
+
+    static bool is_initialized = false;
 
     static uint8_t target_pixels[LED_COUNT * 3] = {0}; // target color to reach after all transitions
     static uint8_t last_pixels[LED_COUNT * 3] = {0}; // current color shown on the strip (last one sent)
@@ -38,9 +41,14 @@ namespace LED
 
     void _update_task(void* param); // forward declaration
 
-    Error Init()
+    Status Init()
     {
         LOG_SCOPE(TAG, "LED::Init");
+
+        if (is_initialized) {
+            LOG_WARNING(TAG, "LED module already initialized");
+            return Status::Ok;
+        }
 
         // setup led control using RMT
         rmt_tx_channel_config_t tx_chan_config = {
@@ -61,7 +69,11 @@ namespace LED
             }
         };
 
-        ESP_ERROR_CHECK(rmt_new_tx_channel(&tx_chan_config, &rmt_tx_channel));
+        if (esp_err_t err = rmt_new_tx_channel(&tx_chan_config, &rmt_tx_channel); err != ESP_OK)
+        {
+            Error::RegisterErrorEvent(ErrorEventTXChannelInit(err));
+            return Status::Failure;
+        }
 
         rmt_bytes_encoder_config_t bytes_encoder_config = {
             .bit0 = {
@@ -80,26 +92,35 @@ namespace LED
                 .msb_first = 1 // WS2812 data is MSB first
             }
         };
-        ESP_ERROR_CHECK(rmt_new_bytes_encoder(&bytes_encoder_config, &rmt_bytes_encoder));
+        if (esp_err_t err = rmt_new_bytes_encoder(&bytes_encoder_config, &rmt_bytes_encoder); err != ESP_OK)
+        {
+            Error::RegisterErrorEvent(ErrorEventEncoderInit(err));
+            return Status::Failure;
+        }
 
-        ESP_ERROR_CHECK(rmt_enable(rmt_tx_channel));
+        if (esp_err_t err = rmt_enable(rmt_tx_channel); err != ESP_OK)
+        {
+            Error::RegisterErrorEvent(ErrorEventEnable(err));
+            return Status::Failure;
+        }
 
         // launch background task for led update at fixed interval
         TaskHandle_t task_handle;
         BaseType_t err = xTaskCreatePinnedToCore(_update_task, "updateLEDs", 4096, nullptr, 5, &task_handle, CORE_BRAIN);
-        if (err != pdPASS) {
-            LOG_ERROR(TAG, "Failed to create update task");
-            return Error::Unknown;
+        if (err != pdPASS)
+        {
+            Error::RegisterErrorEvent(ErrorEventTaskInit(err));
+            return Status::Failure;
         }
 
-        return Error::None;
+        is_initialized = true;
+        return Status::Ok;
     }
 
-    Error SetColor(Id id, Color color)
+    Status SetColor(Id id, Color color)
     {
-        if (id >= LED_COUNT) {
-            return Error::InvalidParameters;
-        }
+        if (!is_initialized) return Status::InvalidState;
+        if (id >= LED_COUNT) return Status::InvalidParameters;
 
         target_pixels[id * 3 + 0] = color.g; // WS2812 expects GRB order
         target_pixels[id * 3 + 1] = color.r;
@@ -107,19 +128,16 @@ namespace LED
         last_pixels[id * 3 + 0] = color.g; // apply immediately
         last_pixels[id * 3 + 1] = color.r;
         last_pixels[id * 3 + 2] = color.b;
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error SetColor(Id id, Color color, float duration_s)
+    Status SetColor(Id id, Color color, float duration_s)
     {
-        if (id >= LED_COUNT) {
-            return Error::InvalidParameters;
-        }
+        if (!is_initialized) return Status::InvalidState;
+        if (id >= LED_COUNT) return Status::InvalidParameters;
 
         const float updates_count = duration_s * 1000.0f / static_cast<float>(UPDATE_TASK_INTERVAL_MS);
-        if (updates_count <= 0.0f) {
-            return SetColor(id, color); // apply immediately
-        }
+        if (updates_count <= 0.0f) return SetColor(id, color); // apply immediately
 
         target_pixels[id * 3 + 0] = color.g; // WS2812 expects GRB order
         target_pixels[id * 3 + 1] = color.r;
@@ -134,80 +152,92 @@ namespace LED
         adder_pixels[id * 3 + 1] = static_cast<uint8_t>(std::ceil(static_cast<float>(r_diff) / updates_count));
         adder_pixels[id * 3 + 2] = static_cast<uint8_t>(std::ceil(static_cast<float>(b_diff) / updates_count));
 
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error SetColors(const Color colors[])
+    Status SetColors(const Color colors[])
     {
-        for (Id i = 0; i < LED_COUNT; ++i) {
+        if (!is_initialized) return Status::InvalidState;
+
+        for (Id i = 0; i < LED_COUNT; ++i)
+        {
             SetColor(i, colors[i]);
         }
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error SetColors(const Color colors[], const float durations_s[])
+    Status SetColors(const Color colors[], const float durations_s[])
     {
-        for (Id i = 0; i < LED_COUNT; ++i) {
+        if (!is_initialized) return Status::InvalidState;
+
+        for (Id i = 0; i < LED_COUNT; ++i)
+        {
             SetColor(i, colors[i], durations_s[i]);
         }
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error SetColors(const Id ids[], const Color colors[], uint8_t count)
+    Status SetColors(const Id ids[], const Color colors[], uint8_t count)
     {
-        for (uint8_t i = 0; i < count; ++i) {
+        if (!is_initialized) return Status::InvalidState;
+
+        for (uint8_t i = 0; i < count; ++i)
+        {
             SetColor(ids[i], colors[i]);
         }
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error SetColors(const Id ids[], const Color colors[], const float durations_s[], uint8_t count)
+    Status SetColors(const Id ids[], const Color colors[], const float durations_s[], uint8_t count)
     {
-        for (uint8_t i = 0; i < count; ++i) {
+        if (!is_initialized) return Status::InvalidState;
+
+        for (uint8_t i = 0; i < count; ++i)
+        {
             SetColor(ids[i], colors[i], durations_s[i]);
         }
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error GetColor(Id id, Color* outColor)
+    Status GetColor(Id id, Color* outColor)
     {
-        if (id >= LED_COUNT || outColor == nullptr) {
-            return Error::InvalidParameters;
-        }
+        if (!is_initialized) return Status::InvalidState;
+        if (id >= LED_COUNT || outColor == nullptr) return Status::InvalidParameters;
+
         outColor->g = target_pixels[id * 3 + 0]; // WS2812 stores in GRB order
         outColor->r = target_pixels[id * 3 + 1];
         outColor->b = target_pixels[id * 3 + 2];
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error GetColors(Color* outColors)
+    Status GetColors(Color* outColors)
     {
-        if (outColors == nullptr) {
-            return Error::InvalidParameters;
-        }
-        for (Id i = 0; i < LED_COUNT; ++i) {
+        if (!is_initialized) return Status::InvalidState;
+        if (outColors == nullptr) return Status::InvalidParameters;
+
+        for (Id i = 0; i < LED_COUNT; ++i)
+        {
             outColors[i].g = target_pixels[i * 3 + 0]; // WS2812 stores in GRB order
             outColors[i].r = target_pixels[i * 3 + 1];
             outColors[i].b = target_pixels[i * 3 + 2];
         }
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error GetColors(const Id ids[], Color* outColors, uint8_t count)
+    Status GetColors(const Id ids[], Color* outColors, uint8_t count)
     {
-        if (ids == nullptr || outColors == nullptr) {
-            return Error::InvalidParameters;
-        }
-        for (uint8_t i = 0; i < count; ++i) {
+        if (!is_initialized) return Status::InvalidState;
+        if (ids == nullptr || outColors == nullptr) return Status::InvalidParameters;
+
+        for (uint8_t i = 0; i < count; ++i)
+        {
             Id id = ids[i];
-            if (id >= LED_COUNT) {
-                return Error::InvalidParameters;
-            }
+            if (id >= LED_COUNT) return Status::InvalidParameters;
             outColors[i].g = target_pixels[id * 3 + 0]; // WS2812 stores in GRB order
             outColors[i].r = target_pixels[id * 3 + 1];
             outColors[i].b = target_pixels[id * 3 + 2];
         }
-        return Error::None;
+        return Status::Ok;
     }
 
     TaskHandle_t errorLoopTask = nullptr;
@@ -262,12 +292,17 @@ namespace LED
         TickType_t xLastWakeTime = xTaskGetTickCount();
         const TickType_t xFrequency = pdMS_TO_TICKS(UPDATE_TASK_INTERVAL_MS);
 
-        while (true) {
-            for (size_t i = 0; i < LED_COUNT * 3; ++i) {
-                if (last_pixels[i] != target_pixels[i]) {
-                    if (last_pixels[i] < target_pixels[i]) {
+        while (true)
+        {
+            for (size_t i = 0; i < LED_COUNT * 3; ++i)
+            {
+                if (last_pixels[i] != target_pixels[i])
+                {
+                    if (last_pixels[i] < target_pixels[i])
+                    {
                         last_pixels[i] += std::min(adder_pixels[i], static_cast<uint8_t>(target_pixels[i] - last_pixels[i]));
-                    } else {
+                    } else
+                    {
                         last_pixels[i] -= std::min(adder_pixels[i], static_cast<uint8_t>(last_pixels[i] - target_pixels[i]));
                     }
                 }
@@ -278,7 +313,8 @@ namespace LED
             memcpy(rmt_buffer[current_buffer_idx], last_pixels, sizeof(last_pixels));
 
             esp_err_t err = rmt_transmit(rmt_tx_channel, rmt_bytes_encoder, rmt_buffer[current_buffer_idx], sizeof(last_pixels), &transmit_config);
-            if (err != ESP_OK) {
+            if (err != ESP_OK)
+            {
                 LOG_ERROR(TAG, "RMT TX transmit failed: %s", esp_err_to_name(err));
             }
             

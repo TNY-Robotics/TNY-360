@@ -24,21 +24,21 @@ namespace WiFi
     {
         BinaryReader reader(payload, ctx.expected_len);
         char ssid[32];
-        if (reader.readString(ssid, sizeof(ssid)) != Error::None)
+        if (reader.readString(ssid, sizeof(ssid)) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
 
         char password[64];
-        if (reader.readString(password, sizeof(password)) != Error::None)
+        if (reader.readString(password, sizeof(password)) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
 
-        Error err = Robot::GetInstance().getNetworkManager().getWiFiManager().connect(ssid, password);
-        ctx.respond(err == Error::None ? ResponseStatus::Ok : ResponseStatus::InvalidParameters);
+        Status err = Robot::GetInstance().getNetworkManager().getWiFiManager().connect(ssid, password);
+        ctx.respond(err == Status::Ok ? ResponseStatus::Ok : ResponseStatus::InvalidParameters);
     }
 
 

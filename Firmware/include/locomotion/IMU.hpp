@@ -13,20 +13,20 @@ public:
     * @brief Initializes the IMU controller.
     * @return Error code indicating success or failure.
     */
-    Error init();
+    Status init();
 
     /**
     * @brief Deinitializes the IMU controller.
     * @return Error code indicating success or failure.
     */
-    Error deinit();
+    Status deinit();
 
     /**
      * @brief Update the IMU controller state.
      * @param dt delta time in seconds
      * @return Error code indicating success or failure.
      */
-    Error estimateState(float dt);
+    Status estimateState(float dt);
 
     /**
      * @brief Get the down vector representing gravity direction in body frame

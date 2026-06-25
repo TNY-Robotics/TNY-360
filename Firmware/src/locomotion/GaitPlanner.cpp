@@ -34,7 +34,7 @@ void GaitPlanner::setGaitConfig(const GaitConfig& config)
     apply_gait_offsets();
 }
 
-Error GaitPlanner::update(float dt, BodyCartesianState& state)
+Status GaitPlanner::update(float dt, BodyCartesianState& state)
 {
     if (cmd_vel_linear.x == 0 && cmd_vel_linear.y == 0 && cmd_vel_angular == 0)
     {
@@ -50,7 +50,7 @@ Error GaitPlanner::update(float dt, BodyCartesianState& state)
             state.legs[i].is_swinging = false;
         }
 
-        return Error::None;
+        return Status::Ok;
     }
     if (!is_moving) // just started moving, reset gait phase
     {
@@ -118,7 +118,7 @@ Error GaitPlanner::update(float dt, BodyCartesianState& state)
         }
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
 void GaitPlanner::apply_gait_offsets()

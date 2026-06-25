@@ -9,27 +9,27 @@ IMU::IMU()
     
 }
 
-Error IMU::init()
+Status IMU::init()
 {
     LOG_SCOPE(TAG, "IMU::init");
     
-    if (Error err = IMUDriver::Init(); err != Error::None)
+    if (Status err = IMUDriver::Init(); err != Status::Ok)
     {
         return err;
     }
-    return Error::None;
+    return Status::Ok;
 }
 
-Error IMU::deinit()
+Status IMU::deinit()
 {
-    if (Error err = IMUDriver::Deinit(); err != Error::None)
+    if (Status err = IMUDriver::Deinit(); err != Status::Ok)
     {
         return err;
     }
-    return Error::None;
+    return Status::Ok;
 }
 
-Error IMU::estimateState(float dt)
+Status IMU::estimateState(float dt)
 {
     // Get the data
     IMUDriver::IMUData& data = IMUDriver::GetData();
@@ -56,5 +56,5 @@ Error IMU::estimateState(float dt)
     orientation.y = atan2f(-downVector.x, sqrtf(downVector.y * downVector.y + downVector.z * downVector.z));
     orientation.z = 0.0f;
 
-    return Error::None;
+    return Status::Ok;
 }

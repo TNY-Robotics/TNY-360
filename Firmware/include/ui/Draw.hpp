@@ -1,4 +1,5 @@
 #include "drivers/ScreenDriver.hpp"
+#include <cstdlib>
 
 namespace Draw
 {
@@ -15,8 +16,8 @@ namespace Draw
     template <bool SafeMode = false>
     void Line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, ScreenDriver::Color c = ScreenDriver::COLOR_WHITE)
     {
-        int16_t dx = abs(x2 - x1);
-        int16_t dy = abs(y2 - y1);
+        int16_t dx = std::abs(x2 - x1);
+        int16_t dy = std::abs(y2 - y1);
         
         int16_t sx = (x1 < x2) ? 1 : -1;
         int32_t sy = (y1 < y2) ? ScreenDriver::info.width : -ScreenDriver::info.width;
@@ -64,8 +65,8 @@ namespace Draw
         CircleFilled<SafeMode>(x1, y1, w / 2, c);
         CircleFilled<SafeMode>(x2, y2, w / 2, c);
 
-        int16_t dx = abs(x2 - x1);
-        int16_t dy = abs(y2 - y1);
+        int16_t dx = std::abs(x2 - x1);
+        int16_t dy = std::abs(y2 - y1);
         
         int16_t sx = (x1 < x2) ? 1 : -1;
         int16_t sy = (y1 < y2) ? 1 : -1;

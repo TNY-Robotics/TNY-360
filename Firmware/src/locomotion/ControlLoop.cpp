@@ -10,6 +10,7 @@
 #include "drivers/AnalogDriver.hpp"
 #include "drivers/MotorDriver.hpp"
 #include "drivers/IMUDriver.hpp"
+#include "common/analysis/PerfMonitor.hpp"
 
 // Perf monitoring : Remove this when control loop is optimized and stable
 PerfMonitor perf_global;
@@ -37,12 +38,12 @@ ControlLoop::ControlLoop()
 {
 }
 
-Error ControlLoop::init()
+Status ControlLoop::init()
 {
     // FIXME : It would really be better if we made sure everything is in DRAM
     //         to avoid cache issues and delays in the control loop when brain core is doing heavy operations
 
-    if (initialized) return Error::None;
+    if (initialized) return Status::Ok;
 
     // Initialize kinematics engine with the right config
     kinematics_engine = KinematicsEngine(KinematicsEngine::KinematicsConfig{
@@ -59,7 +60,7 @@ Error ControlLoop::init()
         },
     });
 
-    if (Error err = create_internal_task(); err != Error::None)
+    if (Status err = create_internal_task(); err != Status::Ok)
     {
         return err;
     }
@@ -79,7 +80,7 @@ Error ControlLoop::init()
     if (esp_err_t err = gptimer_new_timer(&timer_config, &timer); err != ESP_OK)
     {
         LOG_ERROR(TAG, "gptimer_new_timer failed");
-        return Error::SoftwareFailure;
+        return Status::Failure;
     }
 
     gptimer_event_callbacks_t cbs = {
@@ -88,7 +89,7 @@ Error ControlLoop::init()
     if (esp_err_t err = gptimer_register_event_callbacks(timer, &cbs, NULL); err != ESP_OK)
     {
         LOG_ERROR(TAG, "gptimer_register_event_callbacks failed");
-        return Error::SoftwareFailure;
+        return Status::Failure;
     }
 
     gptimer_alarm_config_t alarm_config = {
@@ -101,23 +102,23 @@ Error ControlLoop::init()
     if (esp_err_t err = gptimer_set_alarm_action(timer, &alarm_config); err != ESP_OK)
     {
         LOG_ERROR(TAG, "gptimer_set_alarm_action failed");
-        return Error::SoftwareFailure;
+        return Status::Failure;
     }
 
     // Enable the timer
     if (esp_err_t err = gptimer_enable(timer); err != ESP_OK)
     {
         LOG_ERROR(TAG, "gptimer_enable failed");
-        return Error::SoftwareFailure;
+        return Status::Failure;
     }
 
     initialized = true;
-    return Error::None;
+    return Status::Ok;
 }
 
-Error ControlLoop::start()
+Status ControlLoop::start()
 {
-    if (Error err = create_internal_task(); err != Error::None)
+    if (Status err = create_internal_task(); err != Status::Ok)
     {
         return err;
     }
@@ -126,23 +127,23 @@ Error ControlLoop::start()
     if (esp_err_t err = gptimer_start(timer); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Error starting Control Loop timer : 0x%0X", err);
-        return Error::HardwareFailure;
+        return Status::Failure;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
 
-Error ControlLoop::stop()
+Status ControlLoop::stop()
 {
     running = false; // ask the control loop to end
     if (esp_err_t err = gptimer_stop(timer); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Error stopping Control Loop timer : 0x%0X", err);
-        return Error::HardwareFailure;
+        return Status::Failure;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
 bool ControlLoop::isRunning() const
@@ -150,9 +151,9 @@ bool ControlLoop::isRunning() const
     return running;
 }
 
-Error ControlLoop::deinit()
+Status ControlLoop::deinit()
 {
-    if (!initialized) return Error::None;
+    if (!initialized) return Status::Ok;
 
     running = false; // ask the control loop to end
 
@@ -168,14 +169,14 @@ Error ControlLoop::deinit()
     if (esp_err_t err = gptimer_disable(timer); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Error disabling Control Loop gptimer ; 0x%0X", err);
-        return Error::HardwareFailure;
+        return Status::Failure;
     }
 
     initialized = false;
-    return Error::None;
+    return Status::Ok;
 }
 
-Error ControlLoop::control_task()
+Status ControlLoop::control_task()
 {
     perf_global.start();
 
@@ -211,14 +212,14 @@ Error ControlLoop::control_task()
 
     // Read the ADC channels and IMU Data
     perf_reader.start();
-    if (Error err = AnalogDriver::ReadAllChannels(); err != Error::None)
+    if (Status err = AnalogDriver::ReadAllChannels(); err != Status::Ok)
     {
         LOG_ERROR(TAG, "Error reading all ADC channels");
     }
     perf_reader.stop();
 
     perf_imu.start();
-    if (Error err = IMUDriver::ReadData(); err != Error::None)
+    if (Status err = IMUDriver::ReadData(); err != Status::Ok)
     {
         LOG_ERROR(TAG, "Error reading data from IMU");
     }
@@ -226,7 +227,7 @@ Error ControlLoop::control_task()
 
     // Estimate body state from new IMU and Analog data (calls Legs, Joint, IMU estimateState functions)
     perf_estimation.start();
-    if (Error err = Robot::GetInstance().getBody().estimateState(CONTROL_LOOP_DT_S); err != Error::None)
+    if (Status err = Robot::GetInstance().getBody().estimateState(CONTROL_LOOP_DT_S); err != Status::Ok)
     {
         LOG_ERROR(TAG, "Error estimating body state");
     }
@@ -308,9 +309,9 @@ Error ControlLoop::control_task()
 
     // IK
     perf_ik.start();
-    if (Error err = kinematics_engine.computeBodyIK(cartesian_state, joint_state); err != Error::None)
+    if (Status err = kinematics_engine.computeBodyIK(cartesian_state, joint_state); err != Status::Ok)
     {
-        LOG_ERROR(TAG, "KinematicsEngine failed to calculate body IK with error: %s", ErrorToString(err));
+        // LOG_ERROR(TAG, "KinematicsEngine failed to calculate body IK with error: %s", ErrorToString(err));
         return err;
     }
     perf_ik.stop();
@@ -349,18 +350,18 @@ Error ControlLoop::control_task()
 
     // Update the body (this updates all joints in the body)
     perf_command.start();
-    if (Error err = Robot::GetInstance().getBody().applyCommand(joint_state, CONTROL_LOOP_DT_S); err != Error::None)
+    if (Status err = Robot::GetInstance().getBody().applyCommand(joint_state, CONTROL_LOOP_DT_S); err != Status::Ok)
     {
-        LOG_ERROR(TAG, "Failed to apply command in control task with error: %s", ErrorToString(err));
+        // LOG_ERROR(TAG, "Failed to apply command in control task with error: %s", ErrorToString(err));
         // return err;
     }
     perf_command.stop();
     
     // Send the new motor values
     perf_driver.start();
-    if (Error err = MotorDriver::SendData(); err != Error::None)
+    if (Status err = MotorDriver::SendData(); err != Status::Ok)
     {
-        LOG_ERROR(TAG, "Error sending MotorDriver data with error: %s", ErrorToString(err));
+        // // LOG_ERROR(TAG, "Error sending MotorDriver data with error: %s", ErrorToString(err));
     }
     perf_driver.stop();
 
@@ -397,10 +398,10 @@ Error ControlLoop::control_task()
         perf_driver.reset();
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error ControlLoop::create_internal_task()
+Status ControlLoop::create_internal_task()
 {
     // Create the control loop task ON REFLEX CORE
     BaseType_t err = xTaskCreatePinnedToCore([](void* PvParams){
@@ -428,9 +429,9 @@ Error ControlLoop::create_internal_task()
     if (err != pdPASS)
     {
         LOG_ERROR(TAG, "Failed to create timer task");
-        ErrorHandle(ErrorStruct::ControlLoopInitFailed);
-        return Error::SoftwareFailure;
+        // ErrorHandle(ErrorStruct::ControlLoopInitFailed);
+        return Status::Failure;
     }
 
-    return Error::None;
+    return Status::Ok;
 }

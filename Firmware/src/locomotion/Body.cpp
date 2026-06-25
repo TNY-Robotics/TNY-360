@@ -38,72 +38,72 @@ Body::Body()
     ear_l = Joint(Joint::Id::EarLeft, MotorController(1, 0, MotorController::MOTOR_ATTR_SG90), DEG_TO_RAD(0.0f), DEG_TO_RAD(180.0f), true, false);
 }
 
-Error Body::init()
+Status Body::init()
 {
     LOG_SCOPE(TAG, "Body::Init");
 
     // Initialize the legs
     for (size_t i = 0; i < static_cast<size_t>(Leg::Id::Count); i++)
     {
-        if (Error err = legs[i].init(); err != Error::None)
+        if (Status err = legs[i].init(); err != Status::Ok)
         {
             return err;
         }
     }
 
     // Initialize the ears
-    if (Error err = ear_l.init(); err != Error::None)
+    if (Status err = ear_l.init(); err != Status::Ok)
     {
         return err;
     }
-    if (Error err = ear_r.init(); err != Error::None)
+    if (Status err = ear_r.init(); err != Status::Ok)
     {
         return err;
     }
 
     // Initialize the IMU
-    if (Error err = imu.init(); err != Error::None)
+    if (Status err = imu.init(); err != Status::Ok)
     {
         return err;
     }
 
     // Initialize the PowerDriver
-    if (Error err = PowerDriver::Init(); err != Error::None)
+    if (Status err = PowerDriver::Init(); err != Status::Ok)
     {
         return err;
     }
 
     // Initialize the IPC layer (for inter-core infos)
-    if (Error err = IPC::Init(); err != Error::None)
+    if (Status err = IPC::Init(); err != Status::Ok)
     {
         return err;
     }
 
     // Initialize the RPC layer (for inter-core calls)
-    if (Error err = RPC::Init(); err != Error::None)
+    if (Status err = RPC::Init(); err != Status::Ok)
     {
         return err;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Body::deinit()
+Status Body::deinit()
 {
     // Deinitialize the RPC layer
-    if (Error err = RPC::DeInit(); err != Error::None)
+    if (Status err = RPC::DeInit(); err != Status::Ok)
     {
         return err;
     }
 
     // Deinitialize the IPC layer (for inter-core infos)
-    if (Error err = IPC::Deinit(); err != Error::None)
+    if (Status err = IPC::Deinit(); err != Status::Ok)
     {
         return err;
     }
 
     // Deinitialize the PowerDriver
-    if (Error err = PowerDriver::Deinit(); err != Error::None)
+    if (Status err = PowerDriver::Deinit(); err != Status::Ok)
     {
         return err;
     }
@@ -111,35 +111,35 @@ Error Body::deinit()
     // Deinitialize the legs
     for (size_t i = 0; i < static_cast<size_t>(Leg::Id::Count); i++)
     {
-        if (Error err = legs[i].deinit(); err != Error::None)
+        if (Status err = legs[i].deinit(); err != Status::Ok)
         {
             return err;
         }
     }
     
     // Deinitialize the ears
-    if (Error err = ear_l.deinit(); err != Error::None)
+    if (Status err = ear_l.deinit(); err != Status::Ok)
     {
         return err;
     }
-    if (Error err = ear_r.deinit(); err != Error::None)
+    if (Status err = ear_r.deinit(); err != Status::Ok)
     {
         return err;
     }
 
     // Deinitialize the IMU
-    if (Error err = imu.deinit(); err != Error::None)
+    if (Status err = imu.deinit(); err != Status::Ok)
     {
         return err;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Body::estimateState(float dt)
+Status Body::estimateState(float dt)
 {
     // update IMU
-    if (Error err = imu.estimateState(dt); err != Error::None)
+    if (Status err = imu.estimateState(dt); err != Status::Ok)
     {
         return err;
     }
@@ -147,85 +147,85 @@ Error Body::estimateState(float dt)
     // update legs
     for (size_t i = 0; i < static_cast<size_t>(Leg::Id::Count); i++)
     {
-        if (Error err = legs[i].estimateState(dt); err != Error::None)
+        if (Status err = legs[i].estimateState(dt); err != Status::Ok)
         {
             return err;
         }
     }
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Body::applyCommand(BodyJointState jointState, float dt)
+Status Body::applyCommand(BodyJointState jointState, float dt)
 {
-    Error err;
+    Status err;
 
     // update legs
     for (size_t i = 0; i < static_cast<size_t>(Leg::Id::Count); i++)
     {
-        if ((err = legs[i].applyCommand(jointState.leg_joints[i], dt)) != Error::None)
+        if ((err = legs[i].applyCommand(jointState.leg_joints[i], dt)) != Status::Ok)
         {
             return err;
         }
     }
     
     // update ears
-    if ((err = ear_l.applyCommand(jointState.ear_l_rad, dt)) != Error::None)
+    if ((err = ear_l.applyCommand(jointState.ear_l_rad, dt)) != Status::Ok)
     {
         return err;
     }
-    if ((err = ear_r.applyCommand(jointState.ear_r_rad, dt)) != Error::None)
+    if ((err = ear_r.applyCommand(jointState.ear_r_rad, dt)) != Status::Ok)
     {
         return err;
     }
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Body::enable()
+Status Body::enable()
 {
-    Error err;
+    Status err;
 
     // enable legs
     for (size_t i = 0; i < static_cast<size_t>(Leg::Id::Count); i++)
     {
-        if ((err = legs[i].enable()) != Error::None)
+        if ((err = legs[i].enable()) != Status::Ok)
         {
             return err;
         }
     }
     
     // enable ears
-    if ((err = ear_l.enable()) != Error::None)
+    if ((err = ear_l.enable()) != Status::Ok)
     {
         return err;
     }
-    if ((err = ear_r.enable()) != Error::None)
+    if ((err = ear_r.enable()) != Status::Ok)
     {
         return err;
     }
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Body::disable()
+Status Body::disable()
 {
-    Error err;
+    Status err;
 
     // disable legs
     for (size_t i = 0; i < static_cast<size_t>(Leg::Id::Count); i++)
     {
-        if ((err = legs[i].disable()) != Error::None)
+        if ((err = legs[i].disable()) != Status::Ok)
         {
             return err;
         }
     }
     
     // disable ears
-    if ((err = ear_l.disable()) != Error::None)
+    if ((err = ear_l.disable()) != Status::Ok)
     {
         return err;
     }
-    if ((err = ear_r.disable()) != Error::None)
+    if ((err = ear_r.disable()) != Status::Ok)
     {
         return err;
     }
-    return Error::None;
+    return Status::Ok;
 }

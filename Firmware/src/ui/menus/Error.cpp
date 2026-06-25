@@ -42,14 +42,14 @@ void MenuError::onRender()
 {
     renderHeader();
 
-    constexpr uint8_t NB_LINE_CHARS = 120/8;
+    // constexpr uint8_t NB_LINE_CHARS = 120/8;
 
-    char errCodeText[NB_LINE_CHARS];
-    sprintf(errCodeText, "Code: 0x%02X", error.code);
-    Draw::Text(2, HEADER_HEIGHT + 4, errCodeText);
+    // char errCodeText[NB_LINE_CHARS];
+    // sprintf(errCodeText, "Code: 0x%02X", error.code);
+    // Draw::Text(2, HEADER_HEIGHT + 4, errCodeText);
 
-    Draw::Text<true>(2, HEADER_HEIGHT + 4 + 12, "Message:");
-    Draw::Text<true>(2, HEADER_HEIGHT + 4 + 12 + 12, error.msg);
+    // Draw::Text<true>(2, HEADER_HEIGHT + 4 + 12, "Message:");
+    // Draw::Text<true>(2, HEADER_HEIGHT + 4 + 12 + 12, error.msg);
 }
 
 void MenuError::onUpdate()
@@ -57,7 +57,7 @@ void MenuError::onUpdate()
     
 }
 
-void MenuError::setError(ErrorStruct::ErrorStruct err)
-{
-    error = err;
-}
+// void MenuError::setError(ErrorStruct::ErrorStruct err)
+// {
+//     error = err;
+// }

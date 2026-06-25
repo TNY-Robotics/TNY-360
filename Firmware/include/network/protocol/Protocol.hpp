@@ -87,13 +87,13 @@ namespace Protocol
      * @brief Initialize the Protocol system
      * @return Error Error code indicating success or failure
      */
-    Error Init();
+    Status Init();
 
     /**
      * @brief Deinitialize the Protocol system
      * @return Error Error code indicating success or failure
      */
-    Error Deinit();
+    Status Deinit();
 
     Dispatcher& GetDispatcher();
 };

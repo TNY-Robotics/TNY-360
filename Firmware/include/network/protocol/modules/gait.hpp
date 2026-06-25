@@ -22,7 +22,7 @@ namespace Gait
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t gaitType;
-        if (reader.read(gaitType) != Error::None)
+        if (reader.read(gaitType) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;

@@ -19,20 +19,20 @@ namespace IMUDriver
     * @brief Initializes the IMU driver.
     * @return Error code indicating success or failure.
     */
-    Error Init();
+    Status Init();
 
     /**
     * @brief Deinitializes the IMU driver.
     * @return Error code indicating success or failure.
     */
-    Error Deinit();
+    Status Deinit();
 
     /**
      * @brief Internal function to read data from the MPU6050.
      * @note YOU SHOULD NOT CALL THIS FUNCTION DIRECTLY.
      * @return void.
      */
-    Error ReadData();
+    Status ReadData();
 
     /**
      * @brief Get the last read values from the MPU6050.

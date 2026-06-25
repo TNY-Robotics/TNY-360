@@ -14,13 +14,13 @@ public:
      * @brief Initialize the web interface.
      * @return Error code indicating success or failure.
      */
-    Error init();
+    Status init();
 
     /**
      * @brief Deinitialize the web interface.
      * @return Error code indicating success or failure.
      */
-    Error deinit();
+    Status deinit();
 
 private:
     httpd_handle_t server = nullptr;

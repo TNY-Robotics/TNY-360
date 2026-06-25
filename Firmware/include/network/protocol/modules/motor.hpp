@@ -22,14 +22,14 @@ namespace Motor
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t joint_id;
-        if (reader.read(joint_id) != Error::None)
+        if (reader.read(joint_id) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
 
         float duty_cycle;
-        if (reader.read(duty_cycle) != Error::None)
+        if (reader.read(duty_cycle) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -43,12 +43,12 @@ namespace Motor
         }
         ::MotorController& motor = joint->getMotorController();
         
-        if (MotorDriver::SetDutyCycle(motor.getMotorChannel(), duty_cycle) != Error::None)
+        if (MotorDriver::SetDutyCycle(motor.getMotorChannel(), duty_cycle) != Status::Ok)
         {
             ctx.respond(ResponseStatus::UnknownError);
             return;
         }
-        if (MotorDriver::SendData() != Error::None)
+        if (MotorDriver::SendData() != Status::Ok)
         {
             ctx.respond(ResponseStatus::UnknownError);
             return;
@@ -70,7 +70,7 @@ namespace Motor
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t joint_id;
-        if (reader.read(joint_id) != Error::None)
+        if (reader.read(joint_id) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -85,7 +85,7 @@ namespace Motor
         ::MotorController& motor = joint->getMotorController();
 
         float duty_cycle;
-        if (MotorDriver::GetDutyCycle(motor.getMotorChannel(), duty_cycle) != Error::None)
+        if (MotorDriver::GetDutyCycle(motor.getMotorChannel(), duty_cycle) != Status::Ok)
         {
             ctx.respond(ResponseStatus::UnknownError);
             return;
@@ -107,7 +107,7 @@ namespace Motor
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t joint_id;
-        if (reader.read(joint_id) != Error::None)
+        if (reader.read(joint_id) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -138,7 +138,7 @@ namespace Motor
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t joint_id;
-        if (reader.read(joint_id) != Error::None)
+        if (reader.read(joint_id) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -168,7 +168,7 @@ namespace Motor
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t joint_id;
-        if (reader.read(joint_id) != Error::None)
+        if (reader.read(joint_id) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -183,17 +183,17 @@ namespace Motor
         ::MotorController& motor = joint->getMotorController();
         
         ::MotorController::CalibrationData calib_data;
-        if (reader.read(calib_data.dc_min) != Error::None) { ctx.respond(ResponseStatus::InvalidParameters); return; }
-        if (reader.read(calib_data.dc_max) != Error::None) { ctx.respond(ResponseStatus::InvalidParameters); return; }
-        if (reader.read(calib_data.dc_deadband) != Error::None) { ctx.respond(ResponseStatus::InvalidParameters); return; }
-        if (reader.read(calib_data.feedback_min) != Error::None) { ctx.respond(ResponseStatus::InvalidParameters); return; }
-        if (reader.read(calib_data.feedback_max) != Error::None) { ctx.respond(ResponseStatus::InvalidParameters); return; }
-        if (reader.read(calib_data.feedback_noise) != Error::None) { ctx.respond(ResponseStatus::InvalidParameters); return; }
-        if (reader.read(calib_data.feedback_latency_ms) != Error::None) { ctx.respond(ResponseStatus::InvalidParameters); return; }
-        if (reader.read(calib_data.feedback_inverted) != Error::None) { ctx.respond(ResponseStatus::InvalidParameters); return; }
-        if (reader.read(calib_data.max_speed) != Error::None) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        if (reader.read(calib_data.dc_min) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        if (reader.read(calib_data.dc_max) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        if (reader.read(calib_data.dc_deadband) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        if (reader.read(calib_data.feedback_min) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        if (reader.read(calib_data.feedback_max) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        if (reader.read(calib_data.feedback_noise) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        if (reader.read(calib_data.feedback_latency_ms) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        if (reader.read(calib_data.feedback_inverted) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        if (reader.read(calib_data.max_speed) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
 
-        if (Error err = motor.setCalibrationData(calib_data); err != Error::None)
+        if (Status err = motor.setCalibrationData(calib_data); err != Status::Ok)
         {
             ctx.respond(ResponseStatus::UnknownError);
             return;
@@ -213,7 +213,7 @@ namespace Motor
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t joint_id;
-        if (reader.read(joint_id) != Error::None)
+        if (reader.read(joint_id) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -227,7 +227,7 @@ namespace Motor
         }
 
         ::MotorController& motor = joint->getMotorController();
-        if (Error err = motor.deleteCalibrationData(); err != Error::None)
+        if (Status err = motor.deleteCalibrationData(); err != Status::Ok)
         {
             ctx.respond(ResponseStatus::UnknownError);
             return;
@@ -247,7 +247,7 @@ namespace Motor
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t joint_id;
-        if (reader.read(joint_id) != Error::None)
+        if (reader.read(joint_id) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -261,7 +261,7 @@ namespace Motor
         }
 
         ::MotorController& motor = joint->getMotorController();
-        if (Error err = motor.startCalibration(); err != Error::None)
+        if (Status err = motor.startCalibration(); err != Status::Ok)
         {
             ctx.respond(ResponseStatus::UnknownError);
             return;
@@ -281,7 +281,7 @@ namespace Motor
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t joint_id;
-        if (reader.read(joint_id) != Error::None)
+        if (reader.read(joint_id) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -295,7 +295,7 @@ namespace Motor
         }
 
         ::MotorController& motor = joint->getMotorController();
-        if (Error err = motor.stopCalibration(); err != Error::None)
+        if (Status err = motor.stopCalibration(); err != Status::Ok)
         {
             ctx.respond(ResponseStatus::UnknownError);
             return;
@@ -316,7 +316,7 @@ namespace Motor
         BinaryReader reader(payload, ctx.expected_len);
 
         uint8_t joint_id;
-        if (reader.read(joint_id) != Error::None)
+        if (reader.read(joint_id) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;

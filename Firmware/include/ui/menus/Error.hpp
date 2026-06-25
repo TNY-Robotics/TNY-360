@@ -7,7 +7,7 @@ public:
     MenuError();
     virtual ~MenuError() = default;
 
-    void setError(ErrorStruct::ErrorStruct err);
+    // void setError(ErrorStruct::ErrorStruct err);
 
 protected:
     virtual bool onBack() override;
@@ -21,5 +21,5 @@ protected:
     virtual void onUpdate() override;
 
 private:
-    ErrorStruct::ErrorStruct error;
+    // ErrorStruct::ErrorStruct error;
 };

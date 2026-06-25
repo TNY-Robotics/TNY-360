@@ -23,14 +23,14 @@ namespace Body
     {
         BinaryReader reader(payload, ctx.expected_len);
         uint16_t enabledFlag;
-        if (reader.read(enabledFlag) != Error::None)
+        if (reader.read(enabledFlag) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
 
-        RPC::ExecuteThreadSafe<Error>([enabledFlag](){
-            Error err;
+        RPC::ExecuteThreadSafe<Status>([enabledFlag](){
+            Status err;
             for (int i = 0; i < (int) Joint::Id::Count; i++)
             {
                 bool isEnabled = (enabledFlag & (1 << i)) != 0;
@@ -38,11 +38,11 @@ namespace Body
                 if (joint == nullptr) continue;
                 if (isEnabled) err = joint->enable();
                 else err = joint->disable();
-                if (err != Error::None) return err;
+                if (err != Status::Ok) return err;
             }
-            return Error::None;
-        }, [ctx](Error err){
-            if (err != Error::None)
+            return Status::Ok;
+        }, [ctx](Status err){
+            if (err != Status::Ok)
                 ctx.respond(ResponseStatus::InvalidParameters);
             else ctx.respond(ResponseStatus::Ok);
         });
@@ -88,13 +88,13 @@ namespace Body
         BinaryReader reader(payload, ctx.expected_len);
         
         float x_ms, y_ms, z_rads;
-        if (reader.read(x_ms) != Error::None || reader.read(y_ms) != Error::None || reader.read(z_rads) != Error::None)
+        if (reader.read(x_ms) != Status::Ok || reader.read(y_ms) != Status::Ok || reader.read(z_rads) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
         bool clearOverrides;
-        if (reader.read(clearOverrides) != Error::None)
+        if (reader.read(clearOverrides) != Status::Ok)
         {
             clearOverrides = true; // clear overrides by default
         }
@@ -143,19 +143,19 @@ namespace Body
         BinaryReader reader(payload, ctx.expected_len);
 
         float x_pos, y_pos, z_pos;
-        if (reader.read(x_pos) != Error::None || reader.read(y_pos) != Error::None || reader.read(z_pos) != Error::None)
+        if (reader.read(x_pos) != Status::Ok || reader.read(y_pos) != Status::Ok || reader.read(z_pos) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
         float x_rot, y_rot, z_rot;
-        if (reader.read(x_rot) != Error::None || reader.read(y_rot) != Error::None || reader.read(z_rot) != Error::None)
+        if (reader.read(x_rot) != Status::Ok || reader.read(y_rot) != Status::Ok || reader.read(z_rot) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
         bool clearOverrides;
-        if (reader.read(clearOverrides) != Error::None)
+        if (reader.read(clearOverrides) != Status::Ok)
         {
             clearOverrides = true; // clear overrides by default
         }

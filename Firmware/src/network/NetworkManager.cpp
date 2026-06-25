@@ -7,81 +7,81 @@ NetworkManager::NetworkManager()
 {
 }
 
-Error NetworkManager::init()
+Status NetworkManager::init()
 {
     LOG_SCOPE(TAG, "NetworkManager::init");
 
     // Initialize the WiFi manager
-    if (Error err = wifi_manager.init(); err != Error::None)
+    if (Status err = wifi_manager.init(); err != Status::Ok)
     {
         return err;
     }
 
     // Initialize the web interface
-    if (Error err = web_interface.init(); err != Error::None)
+    if (Status err = web_interface.init(); err != Status::Ok)
     {
         return err;
     }
 
     // Initialize the websocket server
-    if (Error err = web_socket.init(); err != Error::None)
+    if (Status err = web_socket.init(); err != Status::Ok)
     {
         return err;
     }
 
     // Initialize the update manager
-    if (Error err = update_manager.init(); err != Error::None)
+    if (Status err = update_manager.init(); err != Status::Ok)
     {
         return err;
     }
 
     // Initialize the protocol system
-    if (Error err = Protocol::Init(); err != Error::None)
+    if (Status err = Protocol::Init(); err != Status::Ok)
     {
         return err;
     }
 
     // Initialize the camera server
     // FIXME : The method name shouldn't be start but something like initServer
-    if (Error err = Robot::GetInstance().getUIManager().getCamera().start(); err != Error::None)
+    if (Status err = Robot::GetInstance().getUIManager().getCamera().start(); err != Status::Ok)
     {
         return err;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error NetworkManager::deinit()
+Status NetworkManager::deinit()
 {
     // Deinitialize the protocol system
-    if (Error err = Protocol::Deinit(); err != Error::None)
+    if (Status err = Protocol::Deinit(); err != Status::Ok)
     {
         return err;
     }
 
     // Denitialize the update manager
-    if (Error err = update_manager.deinit(); err != Error::None)
+    if (Status err = update_manager.deinit(); err != Status::Ok)
     {
         return err;
     }
 
     // Deinitialize the websocket server
-    if (Error err = web_socket.deinit(); err != Error::None)
+    if (Status err = web_socket.deinit(); err != Status::Ok)
     {
         return err;
     }
     
     // Deinitialize the web interface
-    if (Error err = web_interface.deinit(); err != Error::None)
+    if (Status err = web_interface.deinit(); err != Status::Ok)
     {
         return err;
     }
 
     // Deinitialize the WiFi manager
-    if (Error err = wifi_manager.deinit(); err != Error::None)
+    if (Status err = wifi_manager.deinit(); err != Status::Ok)
     {
         return err;
     }
 
-    return Error::None;
+    return Status::Ok;
 }

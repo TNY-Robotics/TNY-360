@@ -1,6 +1,7 @@
 #include "locomotion/MotorController.hpp"
 #include "common/Log.hpp"
 #include "Robot.hpp"
+#include "locomotion/MotorController.Errors.hpp"
 #include <cstdio>
 
 constexpr const char* TAG = "MotorController";
@@ -22,38 +23,38 @@ MotorController::MotorController(MotorDriver::Channel motor_channel, AnalogDrive
     disable(); // make sure motor is off by default
 }
 
-Error MotorController::init()
+Status MotorController::init()
 {
     // Check if below drivers are initialized
     LOG_SCOPE(TAG, "MotorController::init [driver=%u, reader=%u]", motor_channel, analog_channel);
 
-    if (Error err = MotorDriver::Init(); err != Error::None)
+    if (Status err = MotorDriver::Init(); err != Status::Ok)
     {
         state = State::ERROR;
         return err;
     }
-    if (Error err = AnalogDriver::Init(); err != Error::None)
+    if (Status err = AnalogDriver::Init(); err != Status::Ok)
     {
         state = State::ERROR;
         return err;
     }
 
     // Try to read calibration data from NVS
-    if (Error err = NVS::Init(); err != Error::None)
+    if (Status err = NVS::Init(); err != Status::Ok)
     {
         state = State::ERROR;
         return err;
     }
     char key[32]; // using motorChannel as identifier
     sprintf(key, "MtrCtrl-%d", static_cast<int>(motor_channel));
-    if (Error err = NVS::Open(key, &nvshandle_ptr); err != Error::None)
+    if (Status err = NVS::Open(key, &nvshandle_ptr); err != Status::Ok)
     {
         state = State::ERROR;
-        LOG_ERROR(TAG, "Failed to open NVS handle for motor channel %d with error [%s]", motor_channel, ErrorToString(err));
-        ErrorHandle(ErrorStruct::MotorControllerInitFailed);
+        // LOG_ERROR(TAG, "Failed to open NVS handle for motor channel %d with error [%s]", motor_channel, ErrorToString(err));
+        // ErrorHandle(ErrorStruct::MotorControllerInitFailed);
         return err;
     }
-    if (nvshandle_ptr->get("calib_data", calibration_data) == Error::None)
+    if (nvshandle_ptr->get("calib_data", calibration_data) == Status::Ok)
     {
         LOG_INFO(TAG, "Calibration data loaded from NVS for motor channel %d", motor_channel);
         state = State::ENABLED;
@@ -68,10 +69,10 @@ Error MotorController::init()
     // Disable motor initially
     disable();
     
-    return Error::None;
+    return Status::Ok;
 }
 
-Error MotorController::deinit()
+Status MotorController::deinit()
 {
     if (nvshandle_ptr)
     {
@@ -79,31 +80,31 @@ Error MotorController::deinit()
         nvshandle_ptr = nullptr;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error MotorController::enable()
+Status MotorController::enable()
 {
     state = State::ENABLED;
     __send_target_position(); // effective right now
-    return Error::None;
+    return Status::Ok;
 }
 
-Error MotorController::disable()
+Status MotorController::disable()
 {
     state = State::DISABLED;
     __send_target_position(); // effective right now
-    return Error::None;
+    return Status::Ok;
 }
 
-Error MotorController::startCalibration()
+Status MotorController::startCalibration()
 {
     LOG_INFO(TAG, "Starting motor calibration");
 
     if (calibration_state == CalibrationState::CALIBRATING)
     {
         LOG_WARNING(TAG, "Motor is already in calibration mode");
-        return Error::InvalidState;
+        return Status::InvalidState;
     }
 
     if (BaseType_t err = xTaskCreatePinnedToCore([](void* param) {
@@ -113,19 +114,19 @@ Error MotorController::startCalibration()
             if (wasRunning)
             {
                 LOG_DEBUG(TAG, "Disabling control loop");
-                if (Error err = ctrl.stop(); err != Error::None)
+                if (Status err = ctrl.stop(); err != Status::Ok)
                 {
-                    LOG_ERROR(TAG, "Failed to stop control loop for motor calibration. Error [%s]", ErrorToString(err));
+                    // LOG_ERROR(TAG, "Failed to stop control loop for motor calibration. Error [%s]", ErrorToString(err));
                     return;
                 }
             }
 
             MotorController* controller = static_cast<MotorController*>(param);
             controller->calibration_state = CalibrationState::CALIBRATING;
-            Error err = controller->run_calibration_sequence();
-            if (err != Error::None)
+            Status err = controller->run_calibration_sequence();
+            if (err != Status::Ok)
             {
-                LOG_ERROR(TAG, "Motor calibration with error [%s]", ErrorToString(err));
+                Error::RegisterErrorEvent(ErrorEventMotorCalibrationFailed(controller->motor_channel, controller->analog_channel));
                 controller->calibration_state = CalibrationState::ERROR;
             }
             else
@@ -134,18 +135,18 @@ Error MotorController::startCalibration()
                 controller->calibration_state = CalibrationState::CALIBRATED;
             }
             // disable motor for safety
-            if (Error err = controller->disable(); err != Error::None)
+            if (Status err = controller->disable(); err != Status::Ok)
             {
-                LOG_ERROR(TAG, "Failed to disable motor after calibration. Error [%s]", ErrorToString(err));
+                // LOG_ERROR(TAG, "Failed to disable motor after calibration. Error [%s]", ErrorToString(err));
             }
 
             // Restart the control loop (back to normal operation)
             if (wasRunning)
             {
                 LOG_DEBUG(TAG, "Restarting control loop");
-                if (Error err = Robot::GetInstance().getControlLoop().start(); err != Error::None)
+                if (Status err = Robot::GetInstance().getControlLoop().start(); err != Status::Ok)
                 {
-                    LOG_ERROR(TAG, "Failed to start control loop after motor calibration. Error [%s]", ErrorToString(err));
+                    // LOG_ERROR(TAG, "Failed to start control loop after motor calibration. Error [%s]", ErrorToString(err));
                     return;
                 }
             }
@@ -155,17 +156,17 @@ Error MotorController::startCalibration()
         }, "MotorCalib", 4096, this, tskIDLE_PRIORITY + 1, &calibration_task_handle, CORE_BRAIN); err != pdPASS)
     {
         LOG_ERROR(TAG, "Failed to create motor calibration task. Error %d", err);
-        return Error::SoftwareFailure;
+        return Status::Failure;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error MotorController::stopCalibration()
+Status MotorController::stopCalibration()
 {
     if (calibration_state != MotorController::CalibrationState::CALIBRATING)
     {
-        return Error::InvalidState;
+        return Status::InvalidState;
     }
 
     if (calibration_task_handle != NULL)
@@ -175,46 +176,46 @@ Error MotorController::stopCalibration()
         LOG_WARNING(TAG, "Stopped motor calibration. This could lead to unexpected behavior.");
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error MotorController::setCalibrationData(CalibrationData& data, bool save)
+Status MotorController::setCalibrationData(CalibrationData& data, bool save)
 {
     calibration_data = data;
     calibration_state = CalibrationState::CALIBRATED;
     if (save)
     {
-        if (Error err = save_calibration_data(); err != Error::None)
+        if (Status err = save_calibration_data(); err != Status::Ok)
         {
             return err;
         }
     }
-    return Error::None;
+    return Status::Ok;
 }
 
-Error MotorController::deleteCalibrationData(bool save)
+Status MotorController::deleteCalibrationData(bool save)
 {
     calibration_state = CalibrationState::UNCALIBRATED;
     calibration_data.dc_min = motor_attributes.dc_min;
     calibration_data.dc_max = motor_attributes.dc_max;
     if (save)
     {
-        if (Error err = delete_calibration_data(); err != Error::None)
+        if (Status err = delete_calibration_data(); err != Status::Ok)
         {
             return err;
         }
     }
-    return Error::None;
+    return Status::Ok;
 }
 
-Error MotorController::setCalibrationState(CalibrationState state)
+Status MotorController::setCalibrationState(CalibrationState state)
 {
     LOG_WARNING(TAG, "Manually changing calibration state to [%d]. This could lead to unexpected behavior.", static_cast<uint8_t>(state));
     calibration_state = state;
-    return Error::None;
+    return Status::Ok;
 }
 
-Error MotorController::setTargetPosition(float position)
+Status MotorController::setTargetPosition(float position)
 {
     // clamp position between 0.0 and 1.0
     if (position < 0.0f) position = 0.0f;
@@ -224,31 +225,31 @@ Error MotorController::setTargetPosition(float position)
     target_position = position;
     if (state == State::ENABLED)
     {
-        if (Error err = __send_target_position(); err != Error::None)
+        if (Status err = __send_target_position(); err != Status::Ok)
         {
             return err;
         }
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error MotorController::getTargetPosition(float& result) const
+Status MotorController::getTargetPosition(float& result) const
 {
     result = target_position;
-    return Error::None;
+    return Status::Ok;
 }
 
-Error MotorController::getCurrentPosition(float& result) const
+Status MotorController::getCurrentPosition(float& result) const
 {
     if (!motor_attributes.has_feedback || calibration_state != CalibrationState::CALIBRATED)
     {
         result = target_position;
-        return Error::None;
+        return Status::Ok;
     }
 
     AnalogDriver::Value voltage_mV = 0;
-    if (Error err = AnalogDriver::GetVoltage(analog_channel, voltage_mV); err != Error::None)
+    if (Status err = AnalogDriver::GetVoltage(analog_channel, voltage_mV); err != Status::Ok)
     {
         return err;
     }
@@ -256,10 +257,10 @@ Error MotorController::getCurrentPosition(float& result) const
                      (calibration_data.feedback_max - calibration_data.feedback_min);
 
     result = position;
-    return Error::None;
+    return Status::Ok;
 }
 
-Error MotorController::__send_target_position()
+Status MotorController::__send_target_position()
 {
     MotorDriver::Value dc_value = 0;
     if (state == State::ENABLED)
@@ -272,31 +273,31 @@ Error MotorController::__send_target_position()
 
     if (calibration_state != CalibrationState::CALIBRATING) // don't listen to anyone if calibrating
     {
-        if (Error err = MotorDriver::SetDutyCycle(motor_channel, dc_value); err != Error::None)
+        if (Status err = MotorDriver::SetDutyCycle(motor_channel, dc_value); err != Status::Ok)
         {
             return err;
         }
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error MotorController::save_calibration_data()
+Status MotorController::save_calibration_data()
 {
-    if (Error err = nvshandle_ptr->set("calib_data", calibration_data); err != Error::None)
+    if (Status err = nvshandle_ptr->set("calib_data", calibration_data); err != Status::Ok)
     {
-        LOG_ERROR(TAG, "Failed to save calibration data to NVS with error [%s]", ErrorToString(err));
+        // LOG_ERROR(TAG, "Failed to save calibration data to NVS with error [%s]", ErrorToString(err));
         return err;
     }
-    return Error::None;
+    return Status::Ok;
 }
 
-Error MotorController::delete_calibration_data()
+Status MotorController::delete_calibration_data()
 {
-    if (Error err = nvshandle_ptr->erase("calib_data"); err != Error::None)
+    if (Status err = nvshandle_ptr->erase("calib_data"); err != Status::Ok)
     {
-        LOG_ERROR(TAG, "Failed to delete calibration data from NVS with error [%s]", ErrorToString(err));
+        // LOG_ERROR(TAG, "Failed to delete calibration data from NVS with error [%s]", ErrorToString(err));
         return err;
     }
-    return Error::None;
+    return Status::Ok;
 }

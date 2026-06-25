@@ -39,23 +39,23 @@ public:
     /**
      * @brief Initializes the Decision Loop module
      */
-    Error init();
+    Status init();
 
     /**
      * @brief Deinitializes the Decision Loop module
      */
-    Error deinit();
+    Status deinit();
 
     /**
      * @brief Starts the decision loop
      * @note This starts a new freertos task.
      */
-    Error start();
+    Status start();
 
     /**
      * @brief Stops the decision loop
      */
-    Error stop();
+    Status stop();
 
     /**
      * @brief Checks if the decision loop is currently running.
@@ -68,7 +68,7 @@ public:
      * @param level The auto life level to set
      * @return Error code indicating success or failure of the operation
      */
-    Error setAutoLifeLevel(uint8_t level);
+    Status setAutoLifeLevel(uint8_t level);
 
     uint8_t getAutoLifeLevel() const { return auto_life_level; }
 
@@ -86,7 +86,7 @@ public:
      * @return Error code indicating success or failure of the operation.
      * @note This velocity will be applied or not depending on the Decision Loop's internal logic (safeguard, auto life level, etc.)
      */
-    Error askBodyVelocity(float x_ms, float y_ms, float z_rads);
+    Status askBodyVelocity(float x_ms, float y_ms, float z_rads);
 
     /**
      * @brief Request a body rotation (robot orientation).
@@ -96,7 +96,7 @@ public:
      * @return Error code indicating success or failure of the operation.
      * @note This rotation will be applied or not depending on the Decision Loop's internal logic (safeguard, auto life level, etc.)
      */
-    Error askBodyRotation(float x_rad, float y_rad, float z_rad);
+    Status askBodyRotation(float x_rad, float y_rad, float z_rad);
 
     /**
      * @brief Request a body position (robot location).
@@ -106,7 +106,7 @@ public:
      * @return Error code indicating success or failure of the operation.
      * @note This position will be applied or not depending on the Decision Loop's internal logic (safeguard, auto life level, etc.)
      */
-    Error askBodyPosition(float x_m, float y_m, float z_m);
+    Status askBodyPosition(float x_m, float y_m, float z_m);
 
     /**
      * @brief Request a leg position (in hip frame).
@@ -118,7 +118,7 @@ public:
      * @return Error code indicating success or failure of the operation.
      * @note This position will be applied or not depending on the Decision Loop's internal logic (safeguard, auto life level, etc.)
      */
-    Error askLegPosition(Leg::Id leg_id, float x_m, float y_m, float z_m, IPC::OverrideMode mode = IPC::OverrideMode::Absolute);
+    Status askLegPosition(Leg::Id leg_id, float x_m, float y_m, float z_m, IPC::OverrideMode mode = IPC::OverrideMode::Absolute);
 
     /**
      * @brief Request a gait type.
@@ -126,7 +126,7 @@ public:
      * @return Error code indicating success or failure of the operation.
      * @note The requested gait will be applied or not depending on the Decision Loop's internal logic (safeguard, auto life level, etc.)
      */
-    Error askGaitType(GaitPlanner::GaitType gait);
+    Status askGaitType(GaitPlanner::GaitType gait);
 
     /**
     * @brief Request a specific joint to be moved to a specific angle.
@@ -136,7 +136,7 @@ public:
     * @return Error code indicating success or failure of the operation.
     * @note This joint command will be applied or not depending on the Decision Loop's internal logic (safeguard, auto life level, etc.)
     */
-    Error askJointAngle(Joint::Id joint_id, float angle_rad, IPC::OverrideMode mode = IPC::OverrideMode::Absolute);
+    Status askJointAngle(Joint::Id joint_id, float angle_rad, IPC::OverrideMode mode = IPC::OverrideMode::Absolute);
 
 private:
     TaskHandle_t decision_loop_task = nullptr;

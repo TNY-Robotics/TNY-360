@@ -3,6 +3,7 @@
 #include "common/I2C.hpp"
 #include "common/Log.hpp"
 #include "common/config.hpp"
+#include "drivers/MotorDriver.Error.hpp"
 #include "pca9685.h"
 #include <cmath>
 #include <memory.h>
@@ -15,16 +16,16 @@ namespace MotorDriver
     pca9685_handle_t pca_handle;
     uint16_t pwm_buffer[CHANNEL_COUNT] = {0};
 
-    Error Init()
+    Status Init()
     {
         LOG_SCOPE(TAG, "MotorDriver::Init");
 
-        if (initialized) return Error::None;
+        if (initialized) return Status::Ok;
 
-        if (Error err = I2C::Init(); err != Error::None)
+        if (Status err = I2C::Init(); err != Status::Ok)
         {
             LOG_ERROR(TAG, "Failed to initialize I2C for motor driver");
-            ErrorHandle(ErrorStruct::DriverInitFailed);
+            Error::RegisterErrorEvent(ErrorEventI2CInitFailed());
             return err;
         }
 
@@ -38,8 +39,8 @@ namespace MotorDriver
             if (err != ESP_OK)
             {
                 LOG_ERROR(TAG, "Failed to create PCA9685 handle with error : 0x%0x", err);
-                ErrorHandle(ErrorStruct::DriverInitFailed);
-                return Error::HardwareFailure;
+                Error::RegisterErrorEvent(ErrorEventCreateFailed(err));
+                return Status::Failure;
             }
         }
 
@@ -49,8 +50,8 @@ namespace MotorDriver
             if (err != ESP_OK)
             {
                 LOG_ERROR(TAG, "Failed to reset PCA9685 with error : 0x%0x", err);
-                ErrorHandle(ErrorStruct::DriverInitFailed);
-                return Error::HardwareFailure;
+                Error::RegisterErrorEvent(ErrorEventResetFailed(err));
+                return Status::Failure;
             }
         }
 
@@ -63,8 +64,8 @@ namespace MotorDriver
             if (err != ESP_OK)
             {
                 LOG_ERROR(TAG, "Failed to configure PCA9685 with error : 0x%0x", err);
-                ErrorHandle(ErrorStruct::DriverInitFailed);
-                return Error::HardwareFailure;
+                Error::RegisterErrorEvent(ErrorEventConfigFailed(err));
+                return Status::Failure;
             }
         }
 
@@ -74,94 +75,104 @@ namespace MotorDriver
             if (err != ESP_OK)
             {
                 LOG_ERROR(TAG, "Failed to wake up PCA9685 with error : 0x%0x", err);
-                ErrorHandle(ErrorStruct::DriverInitFailed);
-                return Error::HardwareFailure;
+                Error::RegisterErrorEvent(ErrorEventWakeUpFailed(err));
+                return Status::Failure;
             }
         }
 
         initialized = true;
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error Deinit()
+    Status Deinit()
     {
-        if (!initialized) return Error::None;
+        if (!initialized) return Status::Ok;
 
         // Disable all motors before deinitializing
         DisableAllMotors();
 
-        pca9685_delete(pca_handle);
+        if (esp_err_t err = pca9685_delete(pca_handle); err != ESP_OK)
+        {
+            LOG_ERROR(TAG, "Failed to delete PCA9685 handle with error : 0x%0x", err);
+            Error::RegisterErrorEvent(ErrorEventDeleteFailed(err));
+            return Status::Failure;
+        }
 
         initialized = false;
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error SetDutyCycle(Channel id, Value duty_cycle)
+    Status SetDutyCycle(Channel id, Value duty_cycle)
     {
         if (!initialized)
         {
             LOG_ERROR(TAG, "MotorDriver not initialized");
-            return Error::InvalidState;
+            return Status::InvalidState;
         }
 
         if (id >= CHANNEL_COUNT)
         {
             LOG_ERROR(TAG, "Invalid motor ID: %d", id);
-            return Error::InvalidParameters;
+            return Status::InvalidParameters;
         }
 
         uint16_t pwm = DC_TO_PWM(duty_cycle);
         if (pwm > 4096)
         {
             LOG_ERROR(TAG, "Invalid duty cycle value: %f", duty_cycle);
-            return Error::InvalidParameters;
+            return Status::InvalidParameters;
         }
 
         pwm_buffer[id] = pwm;
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error GetDutyCycle(Channel id, Value &duty_cycle)
+    Status GetDutyCycle(Channel id, Value &duty_cycle)
     {
         if (!initialized)
         {
             LOG_ERROR(TAG, "MotorDriver not initialized");
-            return Error::InvalidState;
+            return Status::InvalidState;
         }
 
         if (id >= CHANNEL_COUNT)
         {
             LOG_ERROR(TAG, "Invalid motor ID: %d", id);
-            return Error::InvalidParameters;
+            return Status::InvalidParameters;
         }
 
         duty_cycle = PWM_TO_DC(pwm_buffer[id]);
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error DisableAllMotors()
+    Status DisableAllMotors()
     {
         if (!initialized)
         {
             LOG_ERROR(TAG, "MotorDriver not initialized");
-            return Error::InvalidState;
+            return Status::InvalidState;
         }
 
         memset(pwm_buffer, 0, sizeof(pwm_buffer));
 
         // this is generally called when something bad happened, so we send the values immediately
-        SendData();
+        if (Status err = SendData(); err != Status::Ok)
+        {
+            LOG_ERROR(TAG, "Failed to send PWM values to PCA9685");
+            return err;
+        }
 
-        return Error::None;
+        return Status::Ok;
     }
     
-    Error SendData()
+    Status SendData()
     {
         if (esp_err_t err = pca9685_set_pwms(pca_handle, pwm_buffer); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Failed to set PWM values with error : 0x%0x", err);
-            return Error::HardwareFailure;
+            Error::RegisterErrorEvent(ErrorEventSendDataFailed(err));
+            return Status::Failure;
         }
-        return Error::None;
+        return Status::Ok;
     }
 }

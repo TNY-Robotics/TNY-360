@@ -11,7 +11,7 @@ public:
     MusicProvider();
     ~MusicProvider();
 
-    Error loadFromFile(const char* filepath);
+    Status loadFromFile(const char* filepath);
 
     void stop();
 

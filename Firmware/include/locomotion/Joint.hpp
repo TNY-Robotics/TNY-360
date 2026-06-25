@@ -7,7 +7,7 @@
 class Joint
 {
 public:
-    constexpr static float MAX_VELOCITY_RAD_S = 6.0f; // Maximum velocity in radians per second
+    constexpr static float MAX_VELOCITY_RAD_S = 1.0f; // Maximum velocity in radians per second
     constexpr static const char* TAG = "Joint";
 
     enum class Id : uint8_t
@@ -41,7 +41,7 @@ public:
      * @param max_velocity_rad_s Maximum velocity in radians per second. Set to 0 to disable clamping.
      * @return Error code indicating success or failure.
      */
-    static Error ClampVelocity(float max_velocity_rad_s);
+    static Status ClampVelocity(float max_velocity_rad_s);
 
     Joint();
 
@@ -51,40 +51,40 @@ public:
      * @brief Initialize the joint.
      * @return Error code indicating success or failure.
      */
-    Error init();
+    Status init();
 
     /**
      * @brief Deinitialize the joint.
      * @return Error code indicating success or failure.
      */
-    Error deinit();
+    Status deinit();
 
     /**
      * @brief Estimate the joint state.
      * @note This method should not be called manually, it is called internally in the control loop.
      * @return Error code indicating success or failure.
      */
-    Error estimateState(float dt);
+    Status estimateState(float dt);
 
     /**
      * @brief Apply a new command to the joint.
      * @note This method should not be called manually, it is called internally in the control loop.
      * @return Error code indicating success or failure.
      */
-    Error applyCommand(float joint_angle_rad, float dt);
+    Status applyCommand(float joint_angle_rad, float dt);
 
     /**
      * @brief Enable the joint (motor).
      * @return Error code indicating success or failure.
      * @note Useless if no feedback. Motor will be enabled when calling setTarget()
      */
-    Error enable();
+    Status enable();
 
     /**
      * @brief Disable the joint (motor).
      * @return Error code indicating success or failure.
      */
-    Error disable();
+    Status disable();
 
     /**
      * @brief Check if the joint is enabled.
@@ -98,21 +98,21 @@ public:
      * @note Velocity is clamped to the range [0, MAX_VELOCITY_RAD_S].
      * @return Error code indicating success or failure.
      */
-    Error setVelocity(float velocity_rad_s);
+    Status setVelocity(float velocity_rad_s);
 
     /**
      * @brief Get the current velocity of the joint.
      * @param result Velocity in radians per second.
      * @return Error code indicating success or failure.
      */
-    Error getVelocity(float &result) const;
+    Status getVelocity(float &result) const;
 
     /**
      * @brief Get the target angle of the joint.
      * @param result Target angle in radians.
      * @return Error code indicating success or failure.
      */
-    Error getTarget(float &result) const;
+    Status getTarget(float &result) const;
 
     /**
      * @brief Get the current position of the joint.
@@ -120,7 +120,7 @@ public:
      * @note This method fuses feedback and model prediction for improved accuracy.
      * @return Error code indicating success or failure.
      */
-    Error getPosition(float &result) const;
+    Status getPosition(float &result) const;
 
     /**
      * @brief Get the feedback angle of the joint.
@@ -128,7 +128,7 @@ public:
      * @note Typical latency is 40ms between command and feedback.
      * @return Error code indicating success or failure.
      */
-    Error getFeedback(float &result) const;
+    Status getFeedback(float &result) const;
 
     /**
      * @brief Get the predicted angle of the joint (using joint model).
@@ -136,14 +136,14 @@ public:
      * @note Fusion of feedback and model prediction is accessible using getPosition().
      * @return Error code indicating success or failure.
      */
-    Error getPrediction(float &result) const;
+    Status getPrediction(float &result) const;
 
     /**
      * @brief Get the uncertainty of the joint's angle.
      * @param result Uncertainty value.
      * @return Error code indicating success or failure.
      */
-    Error getUncertainty(float &result) const;
+    Status getUncertainty(float &result) const;
 
     /**
      * @brief Return the estimated time to reach the given target from the current position.
@@ -191,8 +191,7 @@ private:
     float estimate_angle_rad = 0;
     float model_angle_rad = 0;
     float velocity_rad_s;
-    bool has_feedback;
 
-    Error send_motorcontroller_position(const float& position);
-    Error get_motorcontroller_position(float &result) const;
+    Status send_motorcontroller_position(const float& position);
+    Status get_motorcontroller_position(float &result) const;
 };

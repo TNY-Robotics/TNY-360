@@ -27,9 +27,9 @@ void app_main()
 
     LOG_INFO(TAG, "Initializing robot (FIRMWARE_VERSION=%s) ...", FIRMWARE_VERSION);
 
-    if (Error err = robot.init(); err != Error::None)
+    if (Status err = robot.init(); err != Status::Ok)
     {
-        LOG_ERROR(TAG, "Failed to initialize robot. Error : %s", ErrorToString(err));
+        // LOG_ERROR(TAG, "Failed to initialize robot. Error : %s", StatusToString(err));
         return;
     }
 
@@ -42,9 +42,9 @@ void app_main()
     
     LOG_INFO(TAG, "Starting robot ...");
 
-    if (Error err = robot.start(); err != Error::None)
+    if (Status err = robot.start(); err != Status::Ok)
     {
-        LOG_ERROR(TAG, "Failed to start robot. Error : %s", ErrorToString(err));
+        // LOG_ERROR(TAG, "Failed to start robot. Error : %s", StatusToString(err));
         return;
     }
 

@@ -11,9 +11,9 @@ public:
 
     SoundMixer(Speaker& speaker);
 
-    Error init();
+    Status init();
 
-    Error deinit();
+    Status deinit();
 
     void setVolume(float volume);
 
@@ -23,7 +23,7 @@ public:
      * @return Error code indicating success or failure
      * @note The ownership of the provider is transferred to the mixer, which will delete it when no longer needed
      */
-    Error addSoundProvider(SoundProvider* provider);
+    Status addSoundProvider(SoundProvider* provider);
 
     /**
      * @brief Internal mixing task

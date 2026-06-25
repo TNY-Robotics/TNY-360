@@ -32,13 +32,13 @@ namespace MotorDriver
     * @brief Initializes the Motor driver.
     * @return Error code indicating success or failure.
     */
-    Error Init();
+    Status Init();
 
     /**
     * @brief Deinitializes the Motor driver.
     * @return Error code indicating success or failure.
     */
-    Error Deinit();
+    Status Deinit();
 
     /**
     * @brief Sets the duty cycle for a motor.
@@ -46,7 +46,7 @@ namespace MotorDriver
     * @param duty_cycle Duty cycle value in milliseconds.
     * @return Error code.
     */
-    Error SetDutyCycle(Channel id, Value duty_cycle);
+    Status SetDutyCycle(Channel id, Value duty_cycle);
 
     /**
      * @brief Gets the current duty cycle for a motor.
@@ -54,18 +54,18 @@ namespace MotorDriver
      * @param duty_cycle Reference to store the duty cycle value in milliseconds.
      * @return Error code.
      */
-    Error GetDutyCycle(Channel id, Value &duty_cycle);
+    Status GetDutyCycle(Channel id, Value &duty_cycle);
 
     /**
      * @brief Disables all motors by setting their duty cycle to 0.
      * @return Error code.
      */
-    Error DisableAllMotors();
+    Status DisableAllMotors();
 
     /**
      * @brief Internal function to send PWM values to PCA9685.
      * @note YOU SHOULD NOT CALL THIS FUNCTION DIRECTLY.
      * @return Error if send failed
      */
-    Error SendData();
+    Status SendData();
 }

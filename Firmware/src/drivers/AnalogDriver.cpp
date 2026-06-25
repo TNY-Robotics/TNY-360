@@ -6,6 +6,7 @@
 #include "common/Log.hpp"
 #include "common/config.hpp"
 #include "common/analysis/ArrayStats.hpp"
+#include "drivers/AnalogDriver.Error.hpp"
 #include <vector>
 #include <algorithm>
 
@@ -23,7 +24,7 @@ namespace AnalogDriver
     
     namespace internal
     {
-        Error select(Channel channel)
+        Status select(Channel channel)
         {
             // NOTE : Really optimised version, we cannot modify select pins anymore
             // // Mask to keep only the 4 LSB (0-15) of the channel, as we have only 4 select lines for the multiplexer
@@ -47,42 +48,49 @@ namespace AnalogDriver
                 gpio_set_level(SCANNER_SLCT_PIN4, (channel & 0b1000) >> 3) != ESP_OK)
             {
                 LOG_ERROR(TAG, "Failed to select index with GPIO");
-                return Error::Unknown;
+                Error::RegisterErrorEvent(ErrorEventGPIOSelectFailed(ESP_FAIL));
+                return Status::Unknown;
             }
-            return Error::None;
+            return Status::Ok;
         }
 
-        Error read(Value& outVoltage)
+        Status read(Value& outVoltage)
         {
             int raw_value;
-            if (adc_oneshot_read(adc_handle, ADC_CHANNEL_1, &raw_value) != ESP_OK)
+            if (esp_err_t err = adc_oneshot_read(adc_handle, ADC_CHANNEL_1, &raw_value); err != ESP_OK)
             {
-                LOG_ERROR(TAG, "Failed to read ADC value");
-                return Error::HardwareFailure;
+                LOG_ERROR(TAG, "Failed to read ADC value with error: 0x%0x", err);
+                Error::RegisterErrorEvent(ErrorEventADCReadFailed(err));
+                return Status::Failure;
             }
             int mv_value;
-            adc_cali_raw_to_voltage(cali_handle, raw_value, &mv_value);
+            if (esp_err_t err = adc_cali_raw_to_voltage(cali_handle, raw_value, &mv_value); err != ESP_OK)
+            {
+                LOG_ERROR(TAG, "Failed to convert ADC raw value to voltage with error: 0x%0x", err);
+                Error::RegisterErrorEvent(ErrorEventConversionFailed(err));
+                return Status::Failure;
+            }
             outVoltage = static_cast<Value>(mv_value) / 1000.f; // convert to Volt
-            return Error::None;
+            return Status::Ok;
         }
 
-        Error read_subsampled(Value& outVoltage, uint16_t nb_subsamples)
+        Status read_subsampled(Value& outVoltage, uint16_t nb_subsamples)
         {
             Value samples[nb_subsamples];
             for (uint16_t i = 0; i < nb_subsamples; i++)
             {
-                RETURN_ERROR(read(samples[i]));
+                RETURN_ON_ERROR(read(samples[i]));
             }
             outVoltage = ArrayStats::GetStats(samples, nb_subsamples).mean;
-            return Error::None;
+            return Status::Ok;
         }
     }
 
-    Error Init()
+    Status Init()
     {
         LOG_SCOPE(TAG, "AnalogDriver::Init");
 
-        if (initialized) return Error::None;
+        if (initialized) return Status::Ok;
 
         // Setup select pins
         gpio_config_t io_conf;
@@ -91,11 +99,11 @@ namespace AnalogDriver
         io_conf.pin_bit_mask = (1ULL << SCANNER_SLCT_PIN1) | (1ULL << SCANNER_SLCT_PIN2) | (1ULL << SCANNER_SLCT_PIN3) | (1ULL << SCANNER_SLCT_PIN4);
         io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE; // should have external pull-down
         io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
-        if (gpio_config(&io_conf) != ESP_OK)
+        if (esp_err_t err = gpio_config(&io_conf); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Failed to configure GPIO for select pins");
-            ErrorHandle(ErrorStruct::ReaderInitFailed);
-            return Error::Unknown;
+            Error::RegisterErrorEvent(ErrorEventGPIOConfigFailed(err));
+            return Status::Unknown;
         }
 
         // Create adc oneshot handle
@@ -104,11 +112,11 @@ namespace AnalogDriver
             .clk_src = ADC_RTC_CLK_SRC_DEFAULT,
             .ulp_mode = ADC_ULP_MODE_DISABLE,
         };
-        if (adc_oneshot_new_unit(&init_config, &adc_handle) != ESP_OK)
+        if (esp_err_t err = adc_oneshot_new_unit(&init_config, &adc_handle); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Failed to create ADC oneshot handle");
-            ErrorHandle(ErrorStruct::ReaderInitFailed);
-            return Error::Unknown;
+            Error::RegisterErrorEvent(ErrorEventOneshotInitFailed(err));
+            return Status::Unknown;
         }
 
         // Configure adc channel
@@ -116,11 +124,11 @@ namespace AnalogDriver
             .atten = ADC_ATTEN_DB_12,
             .bitwidth = ADC_BITWIDTH_DEFAULT,
         };
-        if (adc_oneshot_config_channel(adc_handle, ADC_CHANNEL_1, &config) != ESP_OK)
+        if (esp_err_t err = adc_oneshot_config_channel(adc_handle, ADC_CHANNEL_1, &config); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Failed to configure ADC oneshot channel");
-            ErrorHandle(ErrorStruct::ReaderInitFailed);
-            return Error::Unknown;
+            Error::RegisterErrorEvent(ErrorEventOneshotConfigFailed(err));
+            return Status::Unknown;
         }
 
         // configure calibration handle
@@ -130,52 +138,67 @@ namespace AnalogDriver
             .atten = ADC_ATTEN_DB_12,
             .bitwidth = ADC_BITWIDTH_DEFAULT,
         };
-        adc_cali_create_scheme_curve_fitting(&cali_config, &cali_handle);
+        if (esp_err_t err = adc_cali_create_scheme_curve_fitting(&cali_config, &cali_handle); err != ESP_OK)
+        {
+            LOG_ERROR(TAG, "Failed to create ADC calibration handle");
+            Error::RegisterErrorEvent(ErrorEventCalibrationInitFailed(err));
+            return Status::Unknown;
+        }
 
         // select initial channel
-        internal::select(cur_channel); // 0
+        RETURN_ON_ERROR(internal::select(cur_channel));
 
         initialized = true;
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error Deinit()
+    Status Deinit()
     {
         if (!initialized)
-            return Error::None;
+            return Status::Ok;
 
-        adc_oneshot_del_unit(adc_handle);
+        if (esp_err_t err = adc_oneshot_del_unit(adc_handle); err != ESP_OK)
+        {
+            LOG_ERROR(TAG, "Failed to delete ADC oneshot handle");
+            Error::RegisterErrorEvent(ErrorEventOneshotDeleteFailed(err));
+            return Status::Failure;
+        }
         adc_handle = nullptr;
 
-        adc_cali_delete_scheme_curve_fitting(cali_handle);
+        if (esp_err_t err = adc_cali_delete_scheme_curve_fitting(cali_handle); err != ESP_OK)
+        {
+            LOG_ERROR(TAG, "Failed to delete Curve Fitting calibration handle");
+            Error::RegisterErrorEvent(ErrorEventCalibrationDeleteFailed(err));
+            return Status::Failure;
+        }
         cali_handle = nullptr;
 
         initialized = false;
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error GetVoltage(Channel id, Value& outVoltage)
+    Status GetVoltage(Channel id, Value& outVoltage)
     {
         if (id >= CHANNEL_COUNT)
         {
             LOG_ERROR(TAG, "GetVoltage: Invalid channel id %d", id);
-            return Error::InvalidParameters;
+            return Status::InvalidParameters;
         }
 
         outVoltage = voltages_buffer[id];
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error GetVoltages(Value* outVoltages)
+    Status GetVoltages(Value* outVoltages)
     {
         for (size_t i = 0; i < static_cast<size_t>(CHANNEL_COUNT); i++)
         {
             outVoltages[i] = voltages_buffer[i];
         } // maybe memcpy?
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error GetVoltages(const Channel* ids, Value* outVoltages, uint8_t count)
+    Status GetVoltages(const Channel* ids, Value* outVoltages, uint8_t count)
     {
         for (uint8_t i = 0; i < count; i++)
         {
@@ -183,23 +206,23 @@ namespace AnalogDriver
             if (id >= CHANNEL_COUNT)
             {
                 LOG_ERROR(TAG, "GetVoltages: Invalid channel id %d", id);
-                return Error::InvalidParameters;
+                return Status::InvalidParameters;
             }
             outVoltages[i] = voltages_buffer[id];
         }
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error ReadAllChannels()
+    Status ReadAllChannels()
     {
         float val;
         for (int i = 0; i < CHANNEL_COUNT; i++)
         {
-            RETURN_ERROR(internal::select(i));
+            RETURN_ON_ERROR(internal::select(i));
             esp_rom_delay_us(10); // Wait for signal to stabilize after switching
-            RETURN_ERROR(internal::read(val));
+            RETURN_ON_ERROR(internal::read(val));
             voltages_buffer[i] += ANALOG_EMA_ALPHA * (val - voltages_buffer[i]);
         }
-        return Error::None;
+        return Status::Ok;
     }
 }

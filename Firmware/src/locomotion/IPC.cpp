@@ -14,7 +14,7 @@ namespace IPC
     DRAM_ATTR static StaticQueue_t state_queue_struct;
     QueueHandle_t state_queue = nullptr;
 
-    Error Init()
+    Status Init()
     {
         LOG_SCOPE(TAG, "IPC::Init");
         
@@ -24,26 +24,26 @@ namespace IPC
         if (intent_queue == nullptr || state_queue == nullptr)
         {
             LOG_ERROR(TAG, "Failed to create queues for IPC");
-            ErrorHandle(ErrorStruct::IPCInitFailed);
-            return Error::SoftwareFailure;
+            // ErrorHandle(ErrorStruct::IPCInitFailed);
+            return Status::Failure;
         }
 
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error Deinit()
+    Status Deinit()
     {
-        return Error::None;
+        return Status::Ok;
     }
 
-    Error setIntent(ControlIntent& intent)
+    Status setIntent(ControlIntent& intent)
     {
         if (xQueueOverwrite(intent_queue, &intent) != pdPASS)
         {
             LOG_ERROR(TAG, "Couldn't override intent in the intent queue");
-            return Error::SoftwareFailure;
+            return Status::Failure;
         }
-        return Error::None;
+        return Status::Ok;
     }
 
     bool getIntent(ControlIntent* intent)
@@ -51,14 +51,14 @@ namespace IPC
         return (xQueueReceive(intent_queue, intent, 0) == pdTRUE);
     }
 
-    Error setState(RobotState& state)
+    Status setState(RobotState& state)
     {
         if (xQueueOverwrite(state_queue, &state) != pdPASS)
         {
             LOG_ERROR(TAG, "Couldn't override state in the state queue");
-            return Error::SoftwareFailure;
+            return Status::Failure;
         }
-        return Error::None;
+        return Status::Ok;
     }
 
     bool getState(RobotState* state)

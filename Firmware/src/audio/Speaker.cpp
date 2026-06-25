@@ -11,7 +11,7 @@ Speaker::Speaker()
 {
 }
 
-Error Speaker::init()
+Status Speaker::init()
 {
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_AUTO, I2S_ROLE_MASTER);
     chan_cfg.dma_desc_num = 8;    // Number of DMA buffers
@@ -19,8 +19,8 @@ Error Speaker::init()
     if (esp_err_t err = i2s_new_channel(&chan_cfg, &tx_handle, NULL); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Failed to create I2S channel: %s", esp_err_to_name(err));
-        ErrorHandle(ErrorStruct::SpeakerInitFailed);
-        return Error::SoftwareFailure;
+        // ErrorHandle(ErrorStruct::SpeakerInitFailed);
+        return Status::Failure;
     }
 
     // Config PDM TX
@@ -41,24 +41,24 @@ Error Speaker::init()
     if (esp_err_t err = i2s_channel_init_pdm_tx_mode(tx_handle, &pdm_tx_cfg); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Failed to init PDM TX mode: %s", esp_err_to_name(err));
-        ErrorHandle(ErrorStruct::SpeakerInitFailed);
-        return Error::SoftwareFailure;
+        // ErrorHandle(ErrorStruct::SpeakerInitFailed);
+        return Status::Failure;
     }
 
     // Enable the channel
     if (esp_err_t err = i2s_channel_enable(tx_handle); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Failed to enable I2S channel: %s", esp_err_to_name(err));
-        ErrorHandle(ErrorStruct::SpeakerInitFailed);
-        return Error::SoftwareFailure;
+        // ErrorHandle(ErrorStruct::SpeakerInitFailed);
+        return Status::Failure;
     }
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error Speaker::deinit()
+Status Speaker::deinit()
 {
-    return Error::None;
+    return Status::Ok;
 }
 
 void Speaker::writeSamples(const int16_t* samples, size_t sampleCount)

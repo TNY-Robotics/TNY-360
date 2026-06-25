@@ -10,19 +10,19 @@ UIManager::UIManager()
 
 }
 
-Error UIManager::init()
+Status UIManager::init()
 {
-    if (Error err = ScreenDriver::Init(); err != Error::None)
+    if (Status err = ScreenDriver::Init(); err != Status::Ok)
     {
         return err;
     }
 
-    if (Error err = Menus::Init(); err != Error::None)
+    if (Status err = Menus::Init(); err != Status::Ok)
     {
         return err;
     }
 
-    if (Error err = camera.init(); err != Error::None)
+    if (Status err = camera.init(); err != Status::Ok)
     {
         // not critical, we can still use the ui without camera features
     }
@@ -30,10 +30,10 @@ Error UIManager::init()
     // Display splash screen
     Menus::SetCurrentMenu(Menus::GetMenuSplash());
 
-    return Error::None;
+    return Status::Ok;
 }
 
-Error UIManager::deinit()
+Status UIManager::deinit()
 {
-    return Error::None;
+    return Status::Ok;
 }

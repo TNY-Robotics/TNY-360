@@ -37,9 +37,11 @@ namespace ScreenDriver
 
     extern Info info;
 
-    Error Init();
+    Status Init();
 
-    Error Clear();
+    Status Deinit();
 
-    Error Upload();
+    Status Clear();
+
+    Status Upload();
 }
