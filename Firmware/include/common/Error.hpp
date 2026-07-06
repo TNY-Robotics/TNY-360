@@ -27,18 +27,18 @@ namespace Error
         Bluetooth = 0x13,
         LED = 0x14,
         Screen = 0x15,
-        Error = 0x16,
+        Diagnostic = 0x16,
     };
 
     /** <API_REF>
-     * @type ErrorLevel
+     * @type ErrorSeverity
      * @desc Represents the severity level of an error event.
      * @value Trace Low level problems (debug infos that would be useful in case of problems)
      * @value Warning When non-critical issues occur that may cause further problems
      * @value Error When important issues occur that will degrade normal operation
      * @value Critical When critical issues occur, and the system should stop to prevent further damage
      */
-    enum class ErrorLevel : uint8_t
+    enum class ErrorSeverity : uint8_t
     {
         // Low level problems (debug infos that would be useful in case of problems)
         Trace = 0x01,
@@ -54,14 +54,11 @@ namespace Error
      * @type ErrorEvent
      * @desc Represents an error event that occurred in the system.
      * @field timestampMs uint32 The timestamp of the error event in milliseconds since system start.
-     * @field error struct The error code information
-     * @field error.fullCode uint32 The full error code, which can be used to uniquely identify the error.
-     * @field error.parts struct The individual parts of the error code.
-     * @field error.parts.module uint8 The module ID where the error occurred (see ModuleID).
-     * @field error.parts.subsystem uint8 The subsystem ID within the module where the error occurred.
-     * @field error.parts.code uint8 The specific error code within the subsystem.
-     * @field error.parts.category ErrorLevel The severity level of the error (see ErrorLevel).
      * @field eventId uint16 The unique event ID assigned to this error event.
+     * @field module uint8 The module ID where the error occurred (see ModuleID).
+     * @field subsystem uint8 The subsystem ID within the module where the error occurred.
+     * @field code uint8 The specific error code within the subsystem.
+     * @field severity ErrorSeverity The severity level of the error (see ErrorSeverity).
      * @field payloadSize uint8 The size of the payload data in bytes.
      * @field payload uint8[32] The payload data associated with the error event (up to 32 bytes).
      */
@@ -69,19 +66,12 @@ namespace Error
     {
         uint32_t timestampMs = 0;
 
-        union
-        {
-            uint32_t fullCode = 0;
-            struct
-            {
-                uint8_t module = 0;
-                uint8_t subsystem = 0;
-                uint8_t code = 0;
-                ErrorLevel category = ErrorLevel::Warning;
-            } parts;
-        } error;
-
         uint16_t eventId = 0;
+
+        uint8_t module = 0;
+        uint8_t subsystem = 0;
+        uint8_t code = 0;
+        ErrorSeverity severity = ErrorSeverity::Warning;
 
         uint8_t payloadSize = 0;
         uint8_t payload[32] = {0};
@@ -91,17 +81,17 @@ namespace Error
     {
     public:
         ErrorEventBuilder();
-        ErrorEventBuilder(uint8_t module, uint8_t subsystem, uint8_t code, ErrorLevel category);
+        ErrorEventBuilder(uint8_t module, uint8_t subsystem, uint8_t code, ErrorSeverity severity);
 
         template <typename TModule, typename TSubsystem, typename TCode>
-        ErrorEventBuilder(TModule module, TSubsystem subsystem, TCode code, ErrorLevel category)
-        : ErrorEventBuilder(static_cast<uint8_t>(module), static_cast<uint8_t>(subsystem), static_cast<uint8_t>(code), category)
+        ErrorEventBuilder(TModule module, TSubsystem subsystem, TCode code, ErrorSeverity severity)
+        : ErrorEventBuilder(static_cast<uint8_t>(module), static_cast<uint8_t>(subsystem), static_cast<uint8_t>(code), severity)
         {}
 
         ErrorEventBuilder& setModule(uint8_t module);
         ErrorEventBuilder& setSubsystem(uint8_t subsystem);
         ErrorEventBuilder& setCode(uint8_t code);
-        ErrorEventBuilder& setCategory(ErrorLevel category);
+        ErrorEventBuilder& setSeverity(ErrorSeverity severity);
 
         template <typename T>
         ErrorEventBuilder& setModule(T module) { return setModule(static_cast<uint8_t>(module)); }
@@ -110,7 +100,7 @@ namespace Error
         template <typename T>
         ErrorEventBuilder& setCode(T code) { return setCode(static_cast<uint8_t>(code)); }
         template <typename T>
-        ErrorEventBuilder& setCategory(T category) { return setCategory(static_cast<uint8_t>(category)); }
+        ErrorEventBuilder& setSeverity(T severity) { return setSeverity(static_cast<uint8_t>(severity)); }
 
         template <typename T>
         ErrorEventBuilder& appendPayload(const T& data)
@@ -169,4 +159,10 @@ namespace Error
      * @note If the event ID is not found, an empty event with fullCode == 0 will be returned.
      */
     const ErrorEvent& GetErrorEventById(uint16_t eventId);
+
+    /**
+     * @brief Clear all error events from the buffer.
+     * @note This will remove all stored error events, and the error count will be reset to 0.
+     */
+    void ClearErrorEvents();
 };

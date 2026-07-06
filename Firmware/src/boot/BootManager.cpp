@@ -15,10 +15,10 @@ namespace BootManager
             return true; // block robot from booting as normal
         }
 
-        if (boot_CALIBRATION_needed())
+        if (boot_VERIFICATION_needed())
         {
-            LOG_INFO(TAG, "Calibration data missing. Starting in CALIBRATION boot mode");
-            boot_CALIBRATION();
+            LOG_INFO(TAG, "Verification data missing. Starting in VERIFICATION boot mode");
+            boot_VERIFICATION();
             return true; // don't boot as normal
         }
 

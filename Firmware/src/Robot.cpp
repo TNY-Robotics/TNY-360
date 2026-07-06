@@ -23,17 +23,17 @@ Status Robot::init()
     // Set yellow color (init color)
     LED::SetColor(0, LED::Color(16, 16, 0), 0.1f);
 
+    if (Status err = network_manager.init(); err != Status::Ok)
+    {
+        return err;
+    }
+
     if (Status err = ui_manager.init(); err != Status::Ok)
     {
         return err;
     }
 
     if (Status err = audio_manager.init(); err != Status::Ok)
-    {
-        return err;
-    }
-
-    if (Status err = network_manager.init(); err != Status::Ok)
     {
         return err;
     }

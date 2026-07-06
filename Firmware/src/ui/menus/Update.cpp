@@ -170,6 +170,25 @@ void MenuUpdate::onRender()
             Draw::Text(ScreenDriver::info.width / 2 - width / 2, ScreenDriver::info.height / 2 - height / 2, text);
             break;
         }
+        case UpdateManager::Status::ErrorUnreachable : {
+            const char* text = "No internet";
+            uint16_t width = Draw::GetTextWidth(text);
+            uint16_t height = 8;
+            Draw::Text(ScreenDriver::info.width / 2 - width / 2, ScreenDriver::info.height / 2 - height / 2 - 6, text);
+            const char* text2 = "connection";
+            uint16_t width2 = Draw::GetTextWidth(text2);
+            uint16_t height2 = 8;
+            Draw::Text(ScreenDriver::info.width / 2 - width2 / 2, ScreenDriver::info.height / 2 - height2 / 2 + 6, text2);
+            break;
+        }
+        case UpdateManager::Status::ErrorInvalidJson :
+        case UpdateManager::Status::ErrorEmptyResponse : {
+            const char* text = "Server error";
+            uint16_t width = Draw::GetTextWidth(text);
+            uint16_t height = 8;
+            Draw::Text(ScreenDriver::info.width / 2 - width / 2, ScreenDriver::info.height / 2 - height / 2, text);
+            break;
+        }
         default: {
             const char* text = "Error :(";
             uint16_t width = Draw::GetTextWidth(text);

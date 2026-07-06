@@ -4,6 +4,7 @@
 #include "Robot.hpp"
 
 NetworkManager::NetworkManager()
+    : wifi_manager(), web_interface(&wifi_manager), web_socket(), update_manager()
 {
 }
 
@@ -37,13 +38,6 @@ Status NetworkManager::init()
 
     // Initialize the protocol system
     if (Status err = Protocol::Init(); err != Status::Ok)
-    {
-        return err;
-    }
-
-    // Initialize the camera server
-    // FIXME : The method name shouldn't be start but something like initServer
-    if (Status err = Robot::GetInstance().getUIManager().getCamera().start(); err != Status::Ok)
     {
         return err;
     }

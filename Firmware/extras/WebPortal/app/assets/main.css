@@ -11,7 +11,7 @@
 }
 
 body {
-    @apply flex min-h-screen;
+    @apply flex min-h-dvh;
 }
 
 * {

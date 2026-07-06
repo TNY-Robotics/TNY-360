@@ -1,0 +1,1089 @@
+{
+  "0x08020101": {
+    "desc": "Failed to detect if a motor feedback is inverted or not.",
+    "payload": [
+      {
+        "name": "diff",
+        "type": "float",
+        "desc": "The difference between expected and actual feedback values."
+      },
+      {
+        "name": "noise",
+        "type": "float",
+        "desc": "The noise level in the feedback signal."
+      }
+    ],
+    "values": [],
+    "submodule": "Calibration",
+    "severity": "Trace",
+    "id": "0x08020101",
+    "name": "FeedbackInversion",
+    "fix": "Check motor and analog reader wiring and ensure that everything is properly connected."
+  },
+  "0x08020201": {
+    "desc": "Failed to estimate the deadband size of a motor.",
+    "payload": [
+      {
+        "name": "collected",
+        "type": "uint16",
+        "desc": "The number of valid samples collected during the estimation process."
+      },
+      {
+        "name": "expected",
+        "type": "uint16",
+        "desc": "The expected number of samples to be collected for a reliable estimation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x08020201",
+    "name": "DeadbandSizeEstimation",
+    "fix": "Check motor, analog reader, and motor driver wiring and ensure that everything is properly connected."
+  },
+  "0x08020301": {
+    "desc": "Failed to estimate the feedback latency of a motor, no movement detected before timeout limit reached.",
+    "payload": [
+      {
+        "name": "timeout",
+        "type": "int32",
+        "desc": "The timeout value in milliseconds that was reached during the latency estimation process."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x08020301",
+    "name": "LatencyTimeout",
+    "fix": "Check motor, analog reader, and motor driver wiring and ensure that everything is properly connected."
+  },
+  "0x08020401": {
+    "desc": "Failed to detect a physical bound of a motor, reached duty cycle limit without finding bound.",
+    "payload": [
+      {
+        "name": "direction",
+        "type": "int8",
+        "desc": "The direction in which the bound was being searched (1 for max, -1 for min)."
+      },
+      {
+        "name": "bound_value",
+        "type": "float32",
+        "desc": "The duty cycle value at which the search was stopped due to reaching the limit."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x08020401",
+    "name": "PhysicalBoundNotFound",
+    "fix": "Check motor assembly and ensure that the motor is centered, and check power board wiring."
+  },
+  "0x08020503": {
+    "desc": "Motor calibration sequence failed. See above errors for more details.",
+    "payload": [],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x08020503",
+    "name": "CalibrationFailed",
+    "fix": "Check motor assembly, wiring, and ensure that the motor is centered and properly connected."
+  },
+  "0x11010101": {
+    "desc": "Indicates that an error occurred while configuring the GPIO pins for the ADC multiplexer.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The esp_err_t error code returned by the GPIO configuration operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x11010101",
+    "name": "GPIOConfigFailed",
+    "fix": "Check for any GPIO configuration issues and ensure the GPIO pins are properly initialized."
+  },
+  "0x11010201": {
+    "desc": "Indicates that an error occurred while initializing the ADC oneshot unit.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The esp_err_t error code returned by the ADC oneshot initialization operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x11010201",
+    "name": "OneshotInitFailed",
+    "fix": "Check for any ADC configuration issues and ensure the ADC is properly initialized."
+  },
+  "0x11010301": {
+    "desc": "Indicates that an error occurred while configuring the ADC oneshot channel.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The esp_err_t error code returned by the ADC oneshot channel configuration operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x11010301",
+    "name": "OneshotConfigFailed",
+    "fix": "Check for any ADC configuration issues and ensure the ADC channel is properly initialized."
+  },
+  "0x11010401": {
+    "desc": "Indicates that an error occurred while creating the ADC calibration handle for curve fitting.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The esp_err_t error code returned by the ADC calibration initialization operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x11010401",
+    "name": "CalibrationInitFailed",
+    "fix": "Check for any ADC calibration issues and ensure the calibration handle is properly initialized."
+  },
+  "0x11020101": {
+    "desc": "Indicates that an error occurred while reading from the ADC (Analog-to-Digital Converter).",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The esp_err_t error code returned by the ADC read operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x11020101",
+    "name": "ADCReadFailed",
+    "fix": "Check for any ADC configuration issues and ensure the ADC is properly initialized."
+  },
+  "0x11020201": {
+    "desc": "Indicates that an error occurred while converting the raw ADC value to a voltage.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The esp_err_t error code returned by the ADC conversion operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x11020201",
+    "name": "ConversionFailed",
+    "fix": "Check for any calibration issues and ensure the ADC calibration is properly initialized."
+  },
+  "0x11020301": {
+    "desc": "Indicates that an error occurred while selecting the ADC channel using GPIO pins.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The esp_err_t error code returned by the GPIO selection operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x11020301",
+    "name": "GPIOSelectFailed",
+    "fix": "Check for any GPIO configuration issues and ensure the GPIO pins are properly initialized."
+  },
+  "0x11030101": {
+    "desc": "Indicates that an error occurred while deleting the ADC oneshot unit.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The esp_err_t error code returned by the ADC oneshot deletion operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x11030101",
+    "name": "OneshotDeleteFailed",
+    "fix": "Check for any ADC configuration issues and ensure the ADC is properly deinitialized."
+  },
+  "0x11030201": {
+    "desc": "Indicates that an error occurred while deleting the ADC calibration handle for curve fitting.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The esp_err_t error code returned by the ADC calibration deletion operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x11030201",
+    "name": "CalibrationDeleteFailed",
+    "fix": "Check for any ADC calibration issues and ensure the calibration handle is properly deinitialized."
+  },
+  "0x0D010101": {
+    "desc": "The I2C initialization for the camera driver failed.",
+    "payload": [],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x0D010101",
+    "name": "I2CInitFailed",
+    "fix": "Ensure that the I2C bus is properly configured and available for use by the camera driver."
+  },
+  "0x0D010201": {
+    "desc": "The camera initialization failed.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the camera initialization function."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x0D010201",
+    "name": "CameraInitFailed",
+    "fix": "Ensure that the camera is properly connected, and that the I2C bus is functioning correctly."
+  },
+  "0x0D010301": {
+    "desc": "The camera sensor could not be retrieved after initialization.",
+    "payload": [],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x0D010301",
+    "name": "GetSensorFailed",
+    "fix": "Ensure that the camera is properly connected, isn't damaged, and that the I2C bus is functioning correctly."
+  },
+  "0x0D020101": {
+    "desc": "The camera web server failed to start.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the server start function."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x0D020101",
+    "name": "ServerStartFailed",
+    "fix": "Ensure that the server is properly configured and that there are no port conflicts or other issues preventing it from starting."
+  },
+  "0x0D020201": {
+    "desc": "The camera web server failed to register a URI handler.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the URI handler registration function."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x0D020201",
+    "name": "ServerRegisterFailed",
+    "fix": "Ensure that the server is properly configured and that there are no memory or resource issues / limits."
+  },
+  "0x0D030101": {
+    "desc": "The camera web server failed to stop.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the server stop function."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x0D030101",
+    "name": "ServerStopFailed",
+    "fix": "Ensure that the server is properly configured and that there are no resource issues preventing it from stopping."
+  },
+  "0x0D040101": {
+    "desc": "The camera capture failed.",
+    "payload": [],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x0D040101",
+    "name": "CameraCaptureFailed",
+    "fix": "Ensure that the camera is properly connected, isn't damaged, and that the connector and traces on the pcb are clear."
+  },
+  "0x0D050101": {
+    "desc": "The camera deinitialization failed.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the camera deinitialization function."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x0D050101",
+    "name": "CameraDeinitFailed",
+    "fix": "Ensure that the camera is properly connected, and that the I2C bus is functioning correctly."
+  },
+  "0x09010101": {
+    "desc": "Indicates that the I2C initialization failed during initialization.",
+    "payload": [],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x09010101",
+    "name": "I2CInitFailed",
+    "fix": "Check that the I2C bus is properly configured and available for use by the IMU driver."
+  },
+  "0x09010201": {
+    "desc": "Indicates that the creation of the MPU6050 handle failed during initialization.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x09010201",
+    "name": "CreateFailed",
+    "fix": "Check the I2C connection and ensure that the MPU6050 is properly connected and powered."
+  },
+  "0x09010301": {
+    "desc": "Indicates that the reset operation of the MPU6050 failed during initialization.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x09010301",
+    "name": "ResetFailed",
+    "fix": "Check the I2C connection and ensure that the MPU6050 is properly connected and powered."
+  },
+  "0x09010401": {
+    "desc": "Indicates that the configuration of the MPU6050 failed during initialization.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x09010401",
+    "name": "ConfigFailed",
+    "fix": "Check the I2C connection and ensure that the MPU6050 is properly connected and powered."
+  },
+  "0x09010501": {
+    "desc": "Indicates that the wake-up operation of the MPU6050 failed during initialization.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x09010501",
+    "name": "WakeUpFailed",
+    "fix": "Check the I2C connection and ensure that the MPU6050 is properly connected and powered."
+  },
+  "0x09020101": {
+    "desc": "Indicates that reading data from the MPU6050 failed during runtime.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x09020101",
+    "name": "ReadDataFailed",
+    "fix": "Check the I2C connection and ensure that the MPU6050 is properly connected and powered."
+  },
+  "0x09030101": {
+    "desc": "Indicates that the deletion of the MPU6050 handle failed during cleanup.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x09030101",
+    "name": "DeleteFailed",
+    "fix": "Check the I2C connection and ensure that the MPU6050 is properly connected and powered."
+  },
+  "0x07010101": {
+    "desc": "Indicates that the I2C initialization failed during initialization.",
+    "payload": [],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x07010101",
+    "name": "I2CInitFailed",
+    "fix": "Check that the I2C bus is properly configured and available for use by the Motor driver."
+  },
+  "0x07010201": {
+    "desc": "Indicates that the creation of the PCA9685 handle failed during initialization.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x07010201",
+    "name": "CreateFailed",
+    "fix": "Check the I2C connection and ensure that the PCA9685 is properly connected and powered."
+  },
+  "0x07010301": {
+    "desc": "Indicates that the reset operation of the PCA9685 failed during initialization.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x07010301",
+    "name": "ResetFailed",
+    "fix": "Check the I2C connection and ensure that the PCA9685 is properly connected and powered."
+  },
+  "0x07010401": {
+    "desc": "Indicates that the configuration of the PCA9685 failed during initialization.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x07010401",
+    "name": "ConfigFailed",
+    "fix": "Check the I2C connection and ensure that the PCA9685 is properly connected and powered."
+  },
+  "0x07010501": {
+    "desc": "Indicates that the wake-up operation of the PCA9685 failed during initialization.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x07010501",
+    "name": "WakeUpFailed",
+    "fix": "Check the I2C connection and ensure that the PCA9685 is properly connected and powered."
+  },
+  "0x07020101": {
+    "desc": "Indicates that sending PWM data to the PCA9685 failed during runtime.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x07020101",
+    "name": "SendDataFailed",
+    "fix": "Check the I2C connection and ensure that the PCA9685 is properly connected and powered."
+  },
+  "0x07030101": {
+    "desc": "Indicates that the deletion of the PCA9685 handle failed during cleanup.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x07030101",
+    "name": "DeleteFailed",
+    "fix": "Check the I2C connection and ensure that the PCA9685 is properly connected and powered."
+  },
+  "0x0B010101": {
+    "desc": "Indicates that the I2C initialization failed during initialization.",
+    "payload": [],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x0B010101",
+    "name": "I2CInitFailed",
+    "fix": "Check that the I2C bus is properly configured and available for use by the Power driver."
+  },
+  "0x0B010201": {
+    "desc": "Indicates that the INA219 handle creation failed during initialization.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the INA219 handle creation function."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x0B010201",
+    "name": "CreateFailed",
+    "fix": "Check that the INA219 device is properly connected and available on the I2C bus."
+  },
+  "0x0B010301": {
+    "desc": "Indicates that the INA219 configuration failed during initialization.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the INA219 configuration function."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x0B010301",
+    "name": "ConfigFailed",
+    "fix": "Check that the INA219 device is properly connected and available on the I2C bus."
+  },
+  "0x0B010401": {
+    "desc": "Indicates that the INA219 wake-up failed during initialization.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the INA219 wake-up function."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x0B010401",
+    "name": "WakeUpFailed",
+    "fix": "Check that the INA219 device is properly connected and available on the I2C bus."
+  },
+  "0x0B020101": {
+    "desc": "Indicates that reading the voltage from the INA219 failed during runtime.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the INA219 read voltage function."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x0B020101",
+    "name": "ReadVoltageFailed",
+    "fix": "Check that the INA219 device is properly connected and available on the I2C bus."
+  },
+  "0x0B020201": {
+    "desc": "Indicates that reading the current from the INA219 failed during runtime.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the INA219 read current function."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x0B020201",
+    "name": "ReadCurrentFailed",
+    "fix": "Check that the INA219 device is properly connected and available on the I2C bus."
+  },
+  "0x0B020301": {
+    "desc": "Indicates that reading the power from the INA219 failed during runtime.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the INA219 read power function."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x0B020301",
+    "name": "ReadPowerFailed",
+    "fix": "Check that the INA219 device is properly connected and available on the I2C bus."
+  },
+  "0x0B030101": {
+    "desc": "Indicates that deleting the INA219 handle failed during cleanup.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the INA219 delete function."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x0B030101",
+    "name": "DeleteFailed",
+    "fix": "Check that the INA219 device is properly connected and available on the I2C bus."
+  },
+  "0x15010101": {
+    "desc": "Indicates that the I2C initialization failed during initialization.",
+    "payload": [],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x15010101",
+    "name": "I2CInitFailed",
+    "fix": "Check that the I2C bus is properly configured and available for use by the Screen driver."
+  },
+  "0x15010201": {
+    "desc": "Indicates that the creation of the screen panel failed during initialization.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x15010201",
+    "name": "PanelCreateFailed",
+    "fix": "Check the I2C connection and ensure that the screen is properly connected and powered."
+  },
+  "0x15010301": {
+    "desc": "Indicates that the reset of the screen panel failed during initialization.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x15010301",
+    "name": "PanelResetFailed",
+    "fix": "Check the I2C connection and ensure that the screen is properly connected and powered."
+  },
+  "0x15010401": {
+    "desc": "Indicates that the initialization of the screen panel failed during initialization.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x15010401",
+    "name": "PanelInitFailed",
+    "fix": "Check the I2C connection and ensure that the screen is properly connected and powered."
+  },
+  "0x15010501": {
+    "desc": "Indicates that turning on the display of the screen panel failed during initialization.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x15010501",
+    "name": "PanelDisplayOnFailed",
+    "fix": "Check the I2C connection and ensure that the screen is properly connected and powered."
+  },
+  "0x15020101": {
+    "desc": "Indicates that uploading the screen buffer to the screen panel failed during runtime.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x15020101",
+    "name": "UploadFailed",
+    "fix": "Check the I2C connection and ensure that the screen is properly connected and powered."
+  },
+  "0x15030101": {
+    "desc": "Indicates that deleting the screen panel failed during cleanup.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the failed operation."
+      }
+    ],
+    "values": [],
+    "submodule": null,
+    "severity": null,
+    "id": "0x15030101",
+    "name": "PanelDeleteFailed",
+    "fix": "Check the I2C connection and ensure that the screen is properly connected and powered."
+  },
+  "0x10010101": {
+    "desc": "The primary I2C bus initialization failed.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the I2C initialization function."
+      }
+    ],
+    "values": [],
+    "submodule": "Initialization",
+    "severity": "Trace",
+    "id": "0x10010101",
+    "name": "PrimaryInitFailed",
+    "fix": "Ensure that the I2C bus is properly connected and that the pins are correctly configured."
+  },
+  "0x10010201": {
+    "desc": "The secondary I2C bus initialization failed.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the I2C initialization function."
+      }
+    ],
+    "values": [],
+    "submodule": "Initialization",
+    "severity": "Trace",
+    "id": "0x10010201",
+    "name": "SecondaryInitFailed",
+    "fix": "Ensure that the I2C bus is properly connected and that the pins are correctly configured."
+  },
+  "0x10030101": {
+    "desc": "The primary I2C bus deinitialization failed.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the I2C deinitialization function."
+      }
+    ],
+    "values": [],
+    "submodule": "Cleanup",
+    "severity": "Trace",
+    "id": "0x10030101",
+    "name": "PrimaryDeinitFailed",
+    "fix": "Ensure that the I2C bus is properly connected and that the pins are correctly configured."
+  },
+  "0x10030201": {
+    "desc": "The secondary I2C bus deinitialization failed.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the I2C deinitialization function."
+      }
+    ],
+    "values": [],
+    "submodule": "Cleanup",
+    "severity": "Trace",
+    "id": "0x10030201",
+    "name": "SecondaryDeinitFailed",
+    "fix": "Ensure that the I2C bus has been correctly initialized before and no devices are still connected to it."
+  },
+  "0x10020101": {
+    "desc": "Adding an I2C device to the bus failed.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the I2C add device function."
+      }
+    ],
+    "values": [],
+    "submodule": "Runtime",
+    "severity": "Trace",
+    "id": "0x10020101",
+    "name": "AddDeviceFailed",
+    "fix": "Ensure that the I2C device is properly connected and that the address is correct."
+  },
+  "0x10020201": {
+    "desc": "Failed to remove I2C device from the bus.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the I2C remove device function."
+      }
+    ],
+    "values": [],
+    "submodule": "Runtime",
+    "severity": "Trace",
+    "id": "0x10020201",
+    "name": "RemoveDeviceFailed",
+    "fix": "Ensure that the I2C device is properly connected and that the address is correct."
+  },
+  "0x10020301": {
+    "desc": "Failed to allocate memory for I2C write buffer.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the memory allocation function."
+      }
+    ],
+    "values": [],
+    "submodule": "Runtime",
+    "severity": "Trace",
+    "id": "0x10020301",
+    "name": "BufferAllocFailed",
+    "fix": "Ensure that there is sufficient memory available."
+  },
+  "0x10020401": {
+    "desc": "Failed to write registers to I2C device.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the I2C write function."
+      }
+    ],
+    "values": [],
+    "submodule": "Runtime",
+    "severity": "Trace",
+    "id": "0x10020401",
+    "name": "WriteRegistersFailed",
+    "fix": "Ensure that the I2C device is properly connected and that the address is correct."
+  },
+  "0x10020501": {
+    "desc": "Failed to read registers from I2C device.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The error code returned by the I2C read function."
+      }
+    ],
+    "values": [],
+    "submodule": "Runtime",
+    "severity": "Trace",
+    "id": "0x10020501",
+    "name": "ReadRegistersFailed",
+    "fix": "Ensure that the I2C device is properly connected and that the address is correct."
+  },
+  "0x14010101": {
+    "desc": "Failed to initialize the LED TX channel (RMT).",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The underlying ESP-IDF error code."
+      }
+    ],
+    "values": [],
+    "submodule": "Initialization",
+    "severity": "Trace",
+    "id": "0x14010101",
+    "name": "TXChannel",
+    "fix": "Check if the RMT peripheral is already in use or if the memory is exhausted."
+  },
+  "0x14010201": {
+    "desc": "Failed to initialize the WS2812 bytes encoder.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The underlying ESP-IDF error code."
+      }
+    ],
+    "values": [],
+    "submodule": "Initialization",
+    "severity": "Trace",
+    "id": "0x14010201",
+    "name": "Encoder",
+    "fix": "Check the WS2812 timing configuration parameters."
+  },
+  "0x14010301": {
+    "desc": "Failed to enable the LED TX channel (RMT).",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The underlying ESP-IDF error code."
+      }
+    ],
+    "values": [],
+    "submodule": "Initialization",
+    "severity": "Trace",
+    "id": "0x14010301",
+    "name": "Enable",
+    "fix": "Check if the RMT peripheral is already in use or if the memory is exhausted."
+  },
+  "0x14010401": {
+    "desc": "Failed to create the LED update task.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The underlying FreeRTOS error code."
+      }
+    ],
+    "values": [],
+    "submodule": "Initialization",
+    "severity": "Trace",
+    "id": "0x14010401",
+    "name": "TaskInit",
+    "fix": "Check if the FreeRTOS task creation failed due to insufficient memory or priority issues."
+  },
+  "0x0E010101": {
+    "desc": "The SoundMixer background task could not be created.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The FreeRTOS error code returned by the task creation function."
+      }
+    ],
+    "values": [],
+    "submodule": "SoundMixer",
+    "severity": "Trace",
+    "id": "0x0E010101",
+    "name": "CreateTaskFailed",
+    "fix": "Ensure that there are sufficient resources available to create the task (stack size, heap memory, etc.)"
+  },
+  "0x0E020101": {
+    "desc": "The Speaker I2S channel could not be created.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The ESP-IDF error code returned by the channel creation function."
+      }
+    ],
+    "values": [],
+    "submodule": "Speaker",
+    "severity": "Trace",
+    "id": "0x0E020101",
+    "name": "CreateI2SFailed",
+    "fix": "Ensure that there are sufficient resources available to create the channel (DMA buffers, etc.)"
+  },
+  "0x0E020102": {
+    "desc": "The Speaker PDM TX mode could not be initialized.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The ESP-IDF error code returned by the PDM TX initialization function."
+      }
+    ],
+    "values": [],
+    "submodule": "Speaker",
+    "severity": "Trace",
+    "id": "0x0E020102",
+    "name": "InitPDMFailed",
+    "fix": "Ensure that the I2S channel is properly configured and that there are sufficient resources available to initialize PDM TX mode."
+  },
+  "0x0E020103": {
+    "desc": "The Speaker I2S channel could not be enabled.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The ESP-IDF error code returned by the channel enable function."
+      }
+    ],
+    "values": [],
+    "submodule": "Speaker",
+    "severity": "Trace",
+    "id": "0x0E020103",
+    "name": "EnableI2SFailed",
+    "fix": "Ensure that the I2S channel is properly configured and that there are sufficient resources available to enable the channel."
+  },
+  "0x0E020104": {
+    "desc": "The Speaker I2S channel could not be disabled.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The ESP-IDF error code returned by the channel disable function."
+      }
+    ],
+    "values": [],
+    "submodule": "Speaker",
+    "severity": "Trace",
+    "id": "0x0E020104",
+    "name": "DisableI2SFailed",
+    "fix": "Ensure that the I2S channel is properly configured and that there are sufficient resources available to disable the channel."
+  },
+  "0x0E020105": {
+    "desc": "The Speaker I2S channel could not be deleted.",
+    "payload": [
+      {
+        "name": "err",
+        "type": "uint32",
+        "desc": "The ESP-IDF error code returned by the channel delete function."
+      }
+    ],
+    "values": [],
+    "submodule": "Speaker",
+    "severity": "Trace",
+    "id": "0x0E020105",
+    "name": "DeleteI2SFailed",
+    "fix": "Ensure that the I2S channel is properly configured and that there are sufficient resources available to delete the channel."
+  }
+}

@@ -26,6 +26,11 @@ Status UIManager::init()
     {
         // not critical, we can still use the ui without camera features
     }
+
+    if (Status err = camera.start(); err != Status::Ok)
+    {
+        // not critical, we can still use the ui without camera features
+    }
     
     // Display splash screen
     Menus::SetCurrentMenu(Menus::GetMenuSplash());

@@ -338,6 +338,8 @@ Status WiFiManager::__create_ap()
         return Status::Failure;
     }
 
+    sprintf(ip_address, "192.168.4.1"); // Default AP IP
+
     esp_wifi_set_max_tx_power(40);
     
     LOG_DEBUG(TAG, "Starting AP with config: ssid=%s, password=%s", wifi_config.ap.ssid, wifi_config.ap.password);

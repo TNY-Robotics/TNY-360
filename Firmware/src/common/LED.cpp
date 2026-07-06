@@ -24,6 +24,7 @@ namespace LED
     static uint8_t last_pixels[LED_COUNT * 3] = {0}; // current color shown on the strip (last one sent)
     static uint8_t adder_pixels[LED_COUNT * 3] = {0}; // per update increment to reach target in desired time
 
+    static TaskHandle_t task_handle;
     static rmt_channel_handle_t rmt_tx_channel = NULL;
     static rmt_encoder_handle_t rmt_bytes_encoder = NULL;
     static rmt_transmit_config_t transmit_config = {
@@ -105,7 +106,6 @@ namespace LED
         }
 
         // launch background task for led update at fixed interval
-        TaskHandle_t task_handle;
         BaseType_t err = xTaskCreatePinnedToCore(_update_task, "updateLEDs", 4096, nullptr, 5, &task_handle, CORE_BRAIN);
         if (err != pdPASS)
         {
@@ -114,6 +114,38 @@ namespace LED
         }
 
         is_initialized = true;
+        return Status::Ok;
+    }
+
+    Status Deinit()
+    {
+        LOG_SCOPE(TAG, "LED::Deinit");
+
+        if (!is_initialized) {
+            LOG_WARNING(TAG, "LED module not initialized");
+            return Status::Ok;
+        }
+
+        // Stop the update task
+        if (task_handle != nullptr) {
+            vTaskDelete(task_handle);
+            task_handle = nullptr;
+        }
+
+        // Disable and delete RMT channel
+        if (rmt_tx_channel != nullptr) {
+            rmt_disable(rmt_tx_channel);
+            rmt_del_channel(rmt_tx_channel);
+            rmt_tx_channel = nullptr;
+        }
+
+        // Delete RMT encoder
+        if (rmt_bytes_encoder != nullptr) {
+            rmt_del_encoder(rmt_bytes_encoder);
+            rmt_bytes_encoder = nullptr;
+        }
+
+        is_initialized = false;
         return Status::Ok;
     }
 

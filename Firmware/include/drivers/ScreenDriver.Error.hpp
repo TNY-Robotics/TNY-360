@@ -34,7 +34,7 @@ class ErrorEventI2CInitFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventI2CInitFailed() :
-        ErrorEventBuilder(Error::ModuleID::Screen, SubmoduleID::Initialization, CodeID::I2CInitFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Screen, SubmoduleID::Initialization, CodeID::I2CInitFailed, Error::ErrorSeverity::Trace)
     {
     }
 };
@@ -49,7 +49,7 @@ class ErrorEventPanelCreateFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventPanelCreateFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Screen, SubmoduleID::Initialization, CodeID::PanelCreateFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Screen, SubmoduleID::Initialization, CodeID::PanelCreateFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -65,7 +65,7 @@ class ErrorEventPanelResetFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventPanelResetFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Screen, SubmoduleID::Initialization, CodeID::PanelResetFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Screen, SubmoduleID::Initialization, CodeID::PanelResetFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -81,7 +81,7 @@ class ErrorEventPanelInitFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventPanelInitFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Screen, SubmoduleID::Initialization, CodeID::PanelInitFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Screen, SubmoduleID::Initialization, CodeID::PanelInitFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -97,7 +97,7 @@ class ErrorEventPanelDisplayOnFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventPanelDisplayOnFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Screen, SubmoduleID::Initialization, CodeID::PanelDisplayOnFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Screen, SubmoduleID::Initialization, CodeID::PanelDisplayOnFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -113,7 +113,7 @@ class ErrorEventUploadFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventUploadFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Screen, SubmoduleID::Runtime, CodeID::UploadFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Screen, SubmoduleID::Runtime, CodeID::UploadFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -129,7 +129,7 @@ class ErrorEventPanelDeleteFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventPanelDeleteFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Screen, SubmoduleID::Cleanup, CodeID::PanelDeleteFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Screen, SubmoduleID::Cleanup, CodeID::PanelDeleteFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }

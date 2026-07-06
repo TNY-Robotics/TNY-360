@@ -37,7 +37,7 @@ class ErrorEventGPIOConfigFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventGPIOConfigFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Initialization, CodeID::GPIOConfigFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Initialization, CodeID::GPIOConfigFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -53,7 +53,7 @@ class ErrorEventOneshotInitFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventOneshotInitFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Initialization, CodeID::OneshotInitFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Initialization, CodeID::OneshotInitFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -69,7 +69,7 @@ class ErrorEventOneshotConfigFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventOneshotConfigFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Initialization, CodeID::OneshotConfigFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Initialization, CodeID::OneshotConfigFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -85,7 +85,7 @@ class ErrorEventCalibrationInitFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventCalibrationInitFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Initialization, CodeID::CalibrationInitFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Initialization, CodeID::CalibrationInitFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -101,7 +101,7 @@ class ErrorEventADCReadFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventADCReadFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Runtime, CodeID::ADCReadFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Runtime, CodeID::ADCReadFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -117,7 +117,7 @@ class ErrorEventConversionFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventConversionFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Runtime, CodeID::ConversionFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Runtime, CodeID::ConversionFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -133,7 +133,7 @@ class ErrorEventGPIOSelectFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventGPIOSelectFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Runtime, CodeID::GPIOSelectFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Runtime, CodeID::GPIOSelectFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -149,7 +149,7 @@ class ErrorEventOneshotDeleteFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventOneshotDeleteFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Cleanup, CodeID::OneshotDeleteFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Cleanup, CodeID::OneshotDeleteFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -165,7 +165,7 @@ class ErrorEventCalibrationDeleteFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventCalibrationDeleteFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Cleanup, CodeID::CalibrationDeleteFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::ADC, SubmoduleID::Cleanup, CodeID::CalibrationDeleteFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }

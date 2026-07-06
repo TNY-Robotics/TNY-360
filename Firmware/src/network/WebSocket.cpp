@@ -77,9 +77,10 @@ Status WebSocket::register_uri_handlers()
         .uri        = "/",
         .method     = HTTP_GET,
         .handler    = [](httpd_req_t* req) {
-            return Robot::GetInstance().getNetworkManager().getWebSocket().ws_handler(req);
+            WebSocket* self = static_cast<WebSocket*>(req->user_ctx);
+            return self->ws_handler(req);
         },
-        .user_ctx   = NULL,
+        .user_ctx   = this,
         .is_websocket = true,
         .handle_ws_control_frames = false,
         .supported_subprotocol = ""
@@ -118,6 +119,30 @@ void WebSocket::sendResponse(void* context, const Protocol::MessageHeader& heade
         free(packet);
         delete work_arg;
     }
+}
+
+uint8_t WebSocket::getNbClients() const
+{
+    if (!server_handle) {
+        return 0;
+    }
+
+    constexpr size_t max_clients = 3;
+    int client_fds[max_clients] = {0};
+    size_t client_count = max_clients;
+
+    if (httpd_get_client_list(server_handle, &client_count, client_fds) != ESP_OK) {
+        return 0;
+    }
+
+    uint8_t ws_clients = 0;
+    for (size_t index = 0; index < client_count; ++index) {
+        if (httpd_ws_get_fd_info(server_handle, client_fds[index]) == HTTPD_WS_CLIENT_WEBSOCKET) {
+            ++ws_clients;
+        }
+    }
+
+    return ws_clients;
 }
 
 esp_err_t WebSocket::ws_handler(httpd_req_t* ws_req)

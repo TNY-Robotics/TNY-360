@@ -1,8 +1,8 @@
 <template>
-    <div class="flex flex-col lg:flex-row grow p-4 min-h-0 max-h-full">
-        <div class="flex flex-col w-full lg:w-1/2 space-y-4">
-            <div class="flex flex-col lg:flex-row gap-4">
-                <div class="p-2">
+    <div class="flex flex-col lg:flex-row grow p-2 lg:p-4 min-h-0 max-h-full gap-4">
+        <div class="show-right flex flex-col w-full lg:w-1/2 lg:space-y-4">
+            <div class="flex flex-col lg:flex-row gap-2 lg:gap-4">
+                <div class="px-2">
                     <h2> CPU Usage ({{ Math.round(stats?.temp_c * 10) / 10 }}°C) </h2>
                     <div class="flex space-x-8 p-2">
                         <div>
@@ -21,7 +21,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="p-2">
+                <div class="px-2">
                     <h2> RAM Usage </h2>
                     <div class="flex space-x-8 p-2">
                         <div>
@@ -46,7 +46,7 @@
                 <p class="text-lg lg:text-2xl font-mono"> {{ latency !== null ? Math.round(latency) + ' ms' : 'N/A' }} </p>
             </div>
         </div>
-        <div class="flex h-full flex-col w-full lg:w-1/2 space-y-4 max-h-full min-h-0">
+        <div class="show-left flex h-full flex-col w-full lg:w-1/2 space-y-4 max-h-full min-h-0">
             <div class="flex w-full justify-between">
                 <h2> Logs </h2>
                 <div class="flex space-x-4">

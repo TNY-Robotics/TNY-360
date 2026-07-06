@@ -35,7 +35,7 @@ class ErrorEventI2CInitFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventI2CInitFailed() :
-        ErrorEventBuilder(Error::ModuleID::Power, SubmoduleID::Initialization, CodeID::I2CInitFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Power, SubmoduleID::Initialization, CodeID::I2CInitFailed, Error::ErrorSeverity::Trace)
     {}
 };
 
@@ -49,7 +49,7 @@ class ErrorEventCreateFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventCreateFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Power, SubmoduleID::Initialization, CodeID::CreateFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Power, SubmoduleID::Initialization, CodeID::CreateFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -65,7 +65,7 @@ class ErrorEventConfigFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventConfigFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Power, SubmoduleID::Initialization, CodeID::ConfigFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Power, SubmoduleID::Initialization, CodeID::ConfigFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -81,7 +81,7 @@ class ErrorEventWakeUpFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventWakeUpFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Power, SubmoduleID::Initialization, CodeID::WakeUpFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Power, SubmoduleID::Initialization, CodeID::WakeUpFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -97,7 +97,7 @@ class ErrorEventReadVoltageFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventReadVoltageFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Power, SubmoduleID::Runtime, CodeID::ReadVoltageFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Power, SubmoduleID::Runtime, CodeID::ReadVoltageFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -113,7 +113,7 @@ class ErrorEventReadCurrentFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventReadCurrentFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Power, SubmoduleID::Runtime, CodeID::ReadCurrentFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Power, SubmoduleID::Runtime, CodeID::ReadCurrentFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -129,7 +129,7 @@ class ErrorEventReadPowerFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventReadPowerFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Power, SubmoduleID::Runtime, CodeID::ReadPowerFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Power, SubmoduleID::Runtime, CodeID::ReadPowerFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -145,7 +145,7 @@ class ErrorEventDeleteFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventDeleteFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Power, SubmoduleID::Cleanup, CodeID::DeleteFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Power, SubmoduleID::Cleanup, CodeID::DeleteFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }

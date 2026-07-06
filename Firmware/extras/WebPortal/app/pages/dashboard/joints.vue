@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div v-for="leg in joints" :key="leg.name" class="p-4">
+        <div v-for="(leg, index) in joints" :key="leg.name" class="show-up p-2 lg:p-4" :class="`delay-${index * 100}`">
             <div class="flex items-center justify-start space-x-4">
                 <h2 class="font-bold text-xl"> {{ leg.name }} </h2>
                 <UButton :color="leg.enableLoading? 'neutral' : (leg.enabled? 'success': 'error')" variant="soft" @click="toggleLegEnabled(leg)" :icon="leg.enabled? 'i-lucide-check' : 'i-lucide-x'" trailing :loading="leg.enableLoading">

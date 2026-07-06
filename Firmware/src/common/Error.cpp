@@ -9,40 +9,43 @@ namespace Error
 {
     ErrorEventBuilder::ErrorEventBuilder()
     {
-        errorEvent.error.fullCode = 0;
+        errorEvent.module = 0;
+        errorEvent.subsystem = 0;
+        errorEvent.code = 0;
+        errorEvent.severity = ErrorSeverity::Trace;
         errorEvent.payloadSize = 0;
     }
 
-    ErrorEventBuilder::ErrorEventBuilder(uint8_t module, uint8_t subsystem, uint8_t code, ErrorLevel category)
+    ErrorEventBuilder::ErrorEventBuilder(uint8_t module, uint8_t subsystem, uint8_t code, ErrorSeverity severity)
     {
-        errorEvent.error.parts.code = code;
-        errorEvent.error.parts.module = module;
-        errorEvent.error.parts.subsystem = subsystem;
-        errorEvent.error.parts.category = category;
+        errorEvent.code = code;
+        errorEvent.module = module;
+        errorEvent.subsystem = subsystem;
+        errorEvent.severity = severity;
         errorEvent.payloadSize = 0;
     }
 
     ErrorEventBuilder& ErrorEventBuilder::setModule(uint8_t module)
     {
-        errorEvent.error.parts.module = module;
+        errorEvent.module = module;
         return *this;
     }
 
     ErrorEventBuilder& ErrorEventBuilder::setSubsystem(uint8_t subsystem)
     {
-        errorEvent.error.parts.subsystem = subsystem;
+        errorEvent.subsystem = subsystem;
         return *this;
     }
 
     ErrorEventBuilder& ErrorEventBuilder::setCode(uint8_t code)
     {
-        errorEvent.error.parts.code = code;
+        errorEvent.code = code;
         return *this;
     }
 
-    ErrorEventBuilder& ErrorEventBuilder::setCategory(ErrorLevel category)
+    ErrorEventBuilder& ErrorEventBuilder::setSeverity(ErrorSeverity severity)
     {
-        errorEvent.error.parts.category = category;
+        errorEvent.severity = severity;
         return *this;
     }
 
@@ -60,10 +63,11 @@ namespace Error
     
     static const ErrorEvent emptyEvent = {
         .timestampMs = 0,
-        .error = {
-            .fullCode = 0
-        },
         .eventId = 0,
+        .module = 0,
+        .subsystem = 0,
+        .code = 0,
+        .severity = ErrorSeverity::Trace,
         .payloadSize = 0,
         .payload = {0}
     };
@@ -124,5 +128,13 @@ namespace Error
             }
         }
         return emptyEvent;
+    }
+
+    void ClearErrorEvents()
+    {
+        std::lock_guard<std::mutex> lock(errorMutex);
+        head = 0;
+        count = 0;
+        nextEventId = 1;
     }
 }

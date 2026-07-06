@@ -21,6 +21,9 @@ enum class CodeID : uint8_t
 
 /** <API_REF>
  * @error 0x08020101 FeedbackInversion
+ * @module MotorController
+ * @submodule Calibration
+ * @severity Trace
  * @desc Failed to detect if a motor feedback is inverted or not.
  * @fix Check motor and analog reader wiring and ensure that everything is properly connected.
  * @payload diff float The difference between expected and actual feedback values.
@@ -30,7 +33,7 @@ class ErrorEventFeedbackInversionFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventFeedbackInversionFailed(float diff, float noise) :
-        ErrorEventBuilder(Error::ModuleID::MotorController, SubmoduleID::Calibration, CodeID::FeedbackInversion, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::MotorController, SubmoduleID::Calibration, CodeID::FeedbackInversion, Error::ErrorSeverity::Trace)
     {
         appendPayload(diff);
         appendPayload(noise);
@@ -48,7 +51,7 @@ class ErrorEventDeadbandSizeEstimationFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventDeadbandSizeEstimationFailed(uint16_t collected, uint16_t expected) :
-        ErrorEventBuilder(Error::ModuleID::MotorController, SubmoduleID::Calibration, CodeID::DeadbandSizeEstimation, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::MotorController, SubmoduleID::Calibration, CodeID::DeadbandSizeEstimation, Error::ErrorSeverity::Trace)
     {
         appendPayload(collected);
         appendPayload(expected);
@@ -65,7 +68,7 @@ class ErrorEventLatencyTimeout : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventLatencyTimeout(int32_t timeout) :
-        ErrorEventBuilder(Error::ModuleID::MotorController, SubmoduleID::Calibration, CodeID::LatencyTimeout, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::MotorController, SubmoduleID::Calibration, CodeID::LatencyTimeout, Error::ErrorSeverity::Trace)
     {
         appendPayload(timeout);
     }
@@ -82,7 +85,7 @@ class ErrorEventPhysicalBoundNotFound : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventPhysicalBoundNotFound(int8_t direction, float bound_value) :
-        ErrorEventBuilder(Error::ModuleID::MotorController, SubmoduleID::Calibration, CodeID::PhysicalBoundNotFound, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::MotorController, SubmoduleID::Calibration, CodeID::PhysicalBoundNotFound, Error::ErrorSeverity::Trace)
     {
         appendPayload(direction);
         appendPayload(bound_value);
@@ -98,7 +101,7 @@ class ErrorEventMotorCalibrationFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventMotorCalibrationFailed(uint8_t motor_channel, uint8_t analog_channel) :
-        ErrorEventBuilder(Error::ModuleID::MotorController, SubmoduleID::Calibration, CodeID::CalibrationFailed, Error::ErrorLevel::Error)
+        ErrorEventBuilder(Error::ModuleID::MotorController, SubmoduleID::Calibration, CodeID::CalibrationFailed, Error::ErrorSeverity::Error)
     {
         appendPayload(motor_channel);
         appendPayload(analog_channel);

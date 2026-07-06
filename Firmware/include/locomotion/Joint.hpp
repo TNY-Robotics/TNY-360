@@ -7,7 +7,7 @@
 class Joint
 {
 public:
-    constexpr static float MAX_VELOCITY_RAD_S = 1.0f; // Maximum velocity in radians per second
+    constexpr static float MAX_VELOCITY_RAD_S = 99.0f; // Maximum velocity in radians per second
     constexpr static const char* TAG = "Joint";
 
     enum class Id : uint8_t

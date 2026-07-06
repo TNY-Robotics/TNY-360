@@ -2,7 +2,7 @@
     <div class="flex flex-col space-y-4">
         <div class="space-y-2">
             <h2 class="text-xl font-semibold"> Wi-Fi </h2>
-            <div class="flex space-x-4 justify-start items-end pl-4">
+            <div class="flex flex-col lg:flex-row gap-4 lg:justify-start lg:items-end lg:pl-4">
                 <UFormField label="SSID">
                     <UInput v-model="ssid" type="text" />
                 </UFormField>

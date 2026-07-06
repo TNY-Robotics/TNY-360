@@ -24,6 +24,12 @@ namespace LED
     Status Init();
 
     /**
+     * @brief Deinitializes the LED module.
+     * @return Error code indicating success or failure.
+     */
+    Status Deinit();
+
+    /**
      * @brief Sets the color of a specific LED.
      * @param id The LED identifier.
      * @param color The color to set.

@@ -1,6 +1,6 @@
 <template>
     <div class="relative">
-        <div class="flex flex-col space-y-4 p-4">
+        <div class="show-right flex flex-col space-y-4 p-4">
             <h2>Body control</h2>
             <div class="flex flex-col space-y-2 p-2">
                 <p class="text-lg">Translation X</p>
@@ -51,7 +51,7 @@
                 </div>
             </div>
         </div>
-        <div class="flex flex-col space-y-4 p-4">
+        <div class="show-right delay-200 flex flex-col space-y-4 p-4">
             <h2>Movement Control</h2>
             <div class="flex flex-col space-y-2 p-2">
                 <p class="text-lg">Translation speed</p>

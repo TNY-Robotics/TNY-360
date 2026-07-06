@@ -1,6 +1,8 @@
 #include "audio/Speaker.hpp"
 #include "common/config.hpp"
 #include "common/Log.hpp"
+#include "common/Error.hpp"
+#include "audio/Speaker.Error.hpp"
 #include <freertos/FreeRTOS.h>
 #include <driver/i2s_pdm.h>
 #include <vector>
@@ -19,7 +21,7 @@ Status Speaker::init()
     if (esp_err_t err = i2s_new_channel(&chan_cfg, &tx_handle, NULL); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Failed to create I2S channel: %s", esp_err_to_name(err));
-        // ErrorHandle(ErrorStruct::SpeakerInitFailed);
+        Error::RegisterErrorEvent(ErrorEventCreateI2SFailed(err));
         return Status::Failure;
     }
 
@@ -41,7 +43,7 @@ Status Speaker::init()
     if (esp_err_t err = i2s_channel_init_pdm_tx_mode(tx_handle, &pdm_tx_cfg); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Failed to init PDM TX mode: %s", esp_err_to_name(err));
-        // ErrorHandle(ErrorStruct::SpeakerInitFailed);
+        Error::RegisterErrorEvent(ErrorEventInitPDMFailed(err));
         return Status::Failure;
     }
 
@@ -49,7 +51,7 @@ Status Speaker::init()
     if (esp_err_t err = i2s_channel_enable(tx_handle); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Failed to enable I2S channel: %s", esp_err_to_name(err));
-        // ErrorHandle(ErrorStruct::SpeakerInitFailed);
+        Error::RegisterErrorEvent(ErrorEventEnableI2SFailed(err));
         return Status::Failure;
     }
 
@@ -58,6 +60,25 @@ Status Speaker::init()
 
 Status Speaker::deinit()
 {
+    // Disable the channel
+    if (tx_handle != NULL)
+    {
+        if (esp_err_t err = i2s_channel_disable(tx_handle); err != ESP_OK)
+        {
+            LOG_ERROR(TAG, "Failed to disable I2S channel: %s", esp_err_to_name(err));
+            Error::RegisterErrorEvent(ErrorEventDisableI2SFailed(err));
+            return Status::Failure;
+        }
+
+        // Delete the channel
+        if (esp_err_t err = i2s_del_channel(tx_handle); err != ESP_OK)
+        {
+            LOG_ERROR(TAG, "Failed to delete I2S channel: %s", esp_err_to_name(err));
+            Error::RegisterErrorEvent(ErrorEventDeleteI2SFailed(err));
+            return Status::Failure;
+        }
+        tx_handle = NULL;
+    }
     return Status::Ok;
 }
 

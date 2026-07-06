@@ -11,8 +11,8 @@ extern const uint8_t safemode_html_start[] asm("_binary_safemode_html_start");
 extern const uint8_t safemode_html_end[]   asm("_binary_safemode_html_end");
 
 
-WebInterface::WebInterface(uint16_t web_port)
-    : port(web_port)
+WebInterface::WebInterface(WiFiManager* wifi_manager, uint16_t web_port)
+    : wifi_manager(wifi_manager), port(web_port)
 {
 }
 
@@ -115,7 +115,10 @@ void WebInterface::registerURIHandlers()
     httpd_uri_t catch_all_uri = {
         .uri       = "/*", // Wildcard
         .method    = HTTP_GET,
-        .handler   = main_request_handler,
+        .handler   = [](httpd_req_t *req) -> esp_err_t {
+            auto self = static_cast<WebInterface*>(req->user_ctx);
+            return self->main_request_handler(req);
+        },
         .user_ctx  = this,
         .is_websocket = false,
         .handle_ws_control_frames = false,
@@ -205,7 +208,7 @@ esp_err_t WebInterface::main_request_handler(httpd_req_t *req)
     // Check host type to detect captive portal requests
     char host_header[64];
     char my_ip[16];
-    strncpy(my_ip, Robot::GetInstance().getNetworkManager().getWiFiManager().getIPAddr(), sizeof(my_ip) - 1);
+    strncpy(my_ip, wifi_manager->getIPAddr(), sizeof(my_ip) - 1);
     if (httpd_req_get_hdr_value_str(req, "Host", host_header, sizeof(host_header)) == ESP_OK)
     {
         if (strstr(host_header, my_ip) == NULL && strstr(host_header, "localhost") == NULL)

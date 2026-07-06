@@ -13,6 +13,8 @@
 #include "network/protocol/modules/adc.hpp"
 #include "network/protocol/modules/i2c.hpp"
 #include "network/protocol/modules/wifi.hpp"
+#include "network/protocol/modules/error.hpp"
+#include "network/protocol/modules/diagnostic.hpp"
 
 namespace Protocol
 {
@@ -33,6 +35,8 @@ Status Protocol::Init()
     ADC::Register(dispatcher);
     I2C::Register(dispatcher);
     WiFi::Register(dispatcher);
+    Error::Register(dispatcher);
+    Diagnostic::Register(dispatcher);
     // ErrorHandle(ErrorStruct::ProtocolInitFailed);
     return Status::Ok;
 }

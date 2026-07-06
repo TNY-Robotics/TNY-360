@@ -2,10 +2,9 @@
     <div class="relative min-h-screen min-w-screen max-w-screen max-h-screen w-screen h-screen overflow-hidden">
         <!-- CAMERA FEED -->
         <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black dark:bg-black">
-            <img 
+            <img
                 class="w-full h-full object-cover" 
                 :src="streamUrl ?? ''"
-                alt="Camera Stream" 
             />
         </div>
 
@@ -13,7 +12,7 @@
         <UButton class="absolute top-4 left-4" variant="ghost" color="neutral" @click="goBack" icon="lucide:arrow-left" />
 
         <!-- TOP STATUS BAR -->
-        <div class="absolute top-2 right-0 left-0 h-fit flex justify-center items-center">
+        <div class="absolute top-2 right-0 left-0 h-fit flex justify-center items-center pointer-events-none">
             <div class="w-fit h-fit bg-slate-200/30 dark:bg-slate-800/70 border border-white/50 dark:border-slate-800 rounded-lg shadow-lg px-2 py-1">
                 <p class="text-sm text-slate-900 dark:text-slate-50"> Latency: <code class="bg-white/50 dark:bg-slate-950/50 px-1 rounded-sm">{{ Math.round(tny?.latency ?? 0) }} ms</code> </p>
             </div>
@@ -33,8 +32,7 @@ const tny = useTNY360();
 const tnyAddr = ref<string | null>(null);
 
 const streamUrl = computed(() => {
-    const host = tnyAddr.value || window.location.hostname;
-    return host ? `${window.location.protocol}//${host}:90?t=${Date.now()}` : null;
+    return tny.value?.ip ? `${window.location.protocol}//${tny.value.ip}:90?t=${Date.now()}` : null;
 });
 
 watch(tny, (newVal) => {

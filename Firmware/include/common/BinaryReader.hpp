@@ -44,7 +44,13 @@ public:
             return Status::OutOfBounds;
         }
 
-        return readBytes((uint8_t*) out, strLength);
+        if (readBytes((uint8_t*) out, strLength) != Status::Ok)
+        {
+            return Status::OutOfBounds;
+        }
+
+        out[strLength] = '\0'; // Null-terminate the string
+        return Status::Ok;
     }
 
 private:

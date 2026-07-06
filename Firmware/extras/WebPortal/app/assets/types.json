@@ -1,0 +1,379 @@
+{
+  "CalibrationData": {
+    "desc": "Calibration data for the motor controller.",
+    "fields": [
+      {
+        "name": "dc_min",
+        "fullName": "dc_min",
+        "type": "float32",
+        "desc": "Minimum Duty Cycle value corresponding to the minimum physical position of the motor.",
+        "indent": 0
+      },
+      {
+        "name": "dc_max",
+        "fullName": "dc_max",
+        "type": "float32",
+        "desc": "Maximum Duty Cycle value corresponding to the maximum physical position of the motor.",
+        "indent": 0
+      },
+      {
+        "name": "dc_deadband",
+        "fullName": "dc_deadband",
+        "type": "float32",
+        "desc": "Deadband width in Duty Cycle unit.",
+        "indent": 0
+      },
+      {
+        "name": "feedback_min",
+        "fullName": "feedback_min",
+        "type": "float32",
+        "desc": "Feedback value corresponding to the minimum physical position of the motor.",
+        "indent": 0
+      },
+      {
+        "name": "feedback_max",
+        "fullName": "feedback_max",
+        "type": "float32",
+        "desc": "Feedback value corresponding to the maximum physical position of the motor.",
+        "indent": 0
+      },
+      {
+        "name": "feedback_noise",
+        "fullName": "feedback_noise",
+        "type": "float32",
+        "desc": "Feedback noise level in Volt (standard deviation).",
+        "indent": 0
+      },
+      {
+        "name": "feedback_latency_ms",
+        "fullName": "feedback_latency_ms",
+        "type": "float32",
+        "desc": "Latency between command and movement in ms.",
+        "indent": 0
+      },
+      {
+        "name": "feedback_inverted",
+        "fullName": "feedback_inverted",
+        "type": "bool",
+        "desc": "Flag indicating whether the feedback is inverted or not.",
+        "indent": 0
+      },
+      {
+        "name": "max_speed",
+        "fullName": "max_speed",
+        "type": "float32",
+        "desc": "Maximum speed of the motor in range/s (range = [max bound - min bound]).",
+        "indent": 0
+      }
+    ],
+    "payload": [],
+    "values": [],
+    "name": "CalibrationData"
+  },
+  "ErrorSeverity": {
+    "desc": "Represents the severity level of an error event.",
+    "fields": [],
+    "payload": [],
+    "values": [
+      {
+        "name": "Trace",
+        "desc": "Low level problems (debug infos that would be useful in case of problems)"
+      },
+      {
+        "name": "Warning",
+        "desc": "When non-critical issues occur that may cause further problems"
+      },
+      {
+        "name": "Error",
+        "desc": "When important issues occur that will degrade normal operation"
+      },
+      {
+        "name": "Critical",
+        "desc": "When critical issues occur, and the system should stop to prevent further damage"
+      }
+    ],
+    "name": "ErrorSeverity"
+  },
+  "ErrorEvent": {
+    "desc": "Represents an error event that occurred in the system.",
+    "fields": [
+      {
+        "name": "timestampMs",
+        "fullName": "timestampMs",
+        "type": "uint32",
+        "desc": "The timestamp of the error event in milliseconds since system start.",
+        "indent": 0
+      },
+      {
+        "name": "eventId",
+        "fullName": "eventId",
+        "type": "uint16",
+        "desc": "The unique event ID assigned to this error event.",
+        "indent": 0
+      },
+      {
+        "name": "module",
+        "fullName": "module",
+        "type": "uint8",
+        "desc": "The module ID where the error occurred (see ModuleID).",
+        "indent": 0
+      },
+      {
+        "name": "subsystem",
+        "fullName": "subsystem",
+        "type": "uint8",
+        "desc": "The subsystem ID within the module where the error occurred.",
+        "indent": 0
+      },
+      {
+        "name": "code",
+        "fullName": "code",
+        "type": "uint8",
+        "desc": "The specific error code within the subsystem.",
+        "indent": 0
+      },
+      {
+        "name": "severity",
+        "fullName": "severity",
+        "type": "ErrorSeverity",
+        "desc": "The severity level of the error (see ErrorSeverity).",
+        "indent": 0
+      },
+      {
+        "name": "payloadSize",
+        "fullName": "payloadSize",
+        "type": "uint8",
+        "desc": "The size of the payload data in bytes.",
+        "indent": 0
+      },
+      {
+        "name": "payload",
+        "fullName": "payload",
+        "type": "uint8[32]",
+        "desc": "The payload data associated with the error event (up to 32 bytes).",
+        "indent": 0
+      }
+    ],
+    "payload": [],
+    "values": [],
+    "name": "ErrorEvent"
+  },
+  "Vec3f": {
+    "desc": "A 3D vector with x, y, z components represented as floats.",
+    "fields": [
+      {
+        "name": "x",
+        "fullName": "x",
+        "type": "float",
+        "desc": "The x component of the vector.",
+        "indent": 0
+      },
+      {
+        "name": "y",
+        "fullName": "y",
+        "type": "float",
+        "desc": "The y component of the vector.",
+        "indent": 0
+      },
+      {
+        "name": "z",
+        "fullName": "z",
+        "type": "float",
+        "desc": "The z component of the vector.",
+        "indent": 0
+      }
+    ],
+    "payload": [],
+    "values": [],
+    "name": "Vec3f"
+  },
+  "Vec3i": {
+    "desc": "A 3D vector with x, y, z components represented as integers.",
+    "fields": [
+      {
+        "name": "x",
+        "fullName": "x",
+        "type": "int",
+        "desc": "The x component of the vector.",
+        "indent": 0
+      },
+      {
+        "name": "y",
+        "fullName": "y",
+        "type": "int",
+        "desc": "The y component of the vector.",
+        "indent": 0
+      },
+      {
+        "name": "z",
+        "fullName": "z",
+        "type": "int",
+        "desc": "The z component of the vector.",
+        "indent": 0
+      }
+    ],
+    "payload": [],
+    "values": [],
+    "name": "Vec3i"
+  },
+  "Vec2f": {
+    "desc": "A 2D vector with x, y components represented as floats.",
+    "fields": [
+      {
+        "name": "x",
+        "fullName": "x",
+        "type": "float",
+        "desc": "The x component of the vector.",
+        "indent": 0
+      },
+      {
+        "name": "y",
+        "fullName": "y",
+        "type": "float",
+        "desc": "The y component of the vector.",
+        "indent": 0
+      }
+    ],
+    "payload": [],
+    "values": [],
+    "name": "Vec2f"
+  },
+  "Vec2i": {
+    "desc": "A 2D vector with x, y components represented as integers.",
+    "fields": [
+      {
+        "name": "x",
+        "fullName": "x",
+        "type": "int",
+        "desc": "The x component of the vector.",
+        "indent": 0
+      },
+      {
+        "name": "y",
+        "fullName": "y",
+        "type": "int",
+        "desc": "The y component of the vector.",
+        "indent": 0
+      }
+    ],
+    "payload": [],
+    "values": [],
+    "name": "Vec2i"
+  },
+  "Quatf": {
+    "desc": "A quaternion with x, y, z, w components represented as floats.",
+    "fields": [
+      {
+        "name": "x",
+        "fullName": "x",
+        "type": "float",
+        "desc": "The x component of the quaternion.",
+        "indent": 0
+      },
+      {
+        "name": "y",
+        "fullName": "y",
+        "type": "float",
+        "desc": "The y component of the quaternion.",
+        "indent": 0
+      },
+      {
+        "name": "z",
+        "fullName": "z",
+        "type": "float",
+        "desc": "The z component of the quaternion.",
+        "indent": 0
+      },
+      {
+        "name": "w",
+        "fullName": "w",
+        "type": "float",
+        "desc": "The w component of the quaternion.",
+        "indent": 0
+      }
+    ],
+    "payload": [],
+    "values": [],
+    "name": "Quatf"
+  },
+  "Transformf": {
+    "desc": "A transformation consisting of a position and rotation, represented with float components.",
+    "fields": [
+      {
+        "name": "position",
+        "fullName": "position",
+        "type": "Vec3f",
+        "desc": "The position component of the transformation.",
+        "indent": 0
+      },
+      {
+        "name": "rotation",
+        "fullName": "rotation",
+        "type": "Quatf",
+        "desc": "The rotation component of the transformation.",
+        "indent": 0
+      }
+    ],
+    "payload": [],
+    "values": [],
+    "name": "Transformf"
+  },
+  "CPUUsage": {
+    "desc": "Statistics about the CPU usage of the robot.",
+    "fields": [
+      {
+        "name": "core0",
+        "fullName": "core0",
+        "type": "float32",
+        "desc": "CPU usage percentage of core 0 (0-100).",
+        "indent": 0
+      },
+      {
+        "name": "core1",
+        "fullName": "core1",
+        "type": "float32",
+        "desc": "CPU usage percentage of core 1 (0-100).",
+        "indent": 0
+      }
+    ],
+    "payload": [],
+    "values": [],
+    "name": "CPUUsage"
+  },
+  "RAMUsage": {
+    "desc": "Statistics about the robot's memory usage.",
+    "fields": [
+      {
+        "name": "internal_total",
+        "fullName": "internal_total",
+        "type": "uint32",
+        "desc": "Total number of bytes in internal RAM.",
+        "indent": 0
+      },
+      {
+        "name": "internal_used",
+        "fullName": "internal_used",
+        "type": "uint32",
+        "desc": "Number of bytes used in internal RAM.",
+        "indent": 0
+      },
+      {
+        "name": "psram_total",
+        "fullName": "psram_total",
+        "type": "uint32",
+        "desc": "Total number of bytes in PSRAM.",
+        "indent": 0
+      },
+      {
+        "name": "psram_used",
+        "fullName": "psram_used",
+        "type": "uint32",
+        "desc": "Number of bytes used in PSRAM.",
+        "indent": 0
+      }
+    ],
+    "payload": [],
+    "values": [],
+    "name": "RAMUsage"
+  }
+}

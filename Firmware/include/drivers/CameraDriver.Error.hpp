@@ -40,7 +40,7 @@ class ErrorEventI2CInitFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventI2CInitFailed() :
-        ErrorEventBuilder(Error::ModuleID::Camera, SubmoduleID::Initialization, CodeID::I2CInitFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Camera, SubmoduleID::Initialization, CodeID::I2CInitFailed, Error::ErrorSeverity::Trace)
     {
     }
 };
@@ -49,13 +49,13 @@ public:
  * @error 0x0D010201 CameraInitFailed
  * @desc The camera initialization failed.
  * @fix Ensure that the camera is properly connected, and that the I2C bus is functioning correctly.
- * @payload err esp_err_t The error code returned by the camera initialization function.
+ * @payload err uint32 The error code returned by the camera initialization function.
  */
 class ErrorEventCameraInitFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventCameraInitFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Camera, SubmoduleID::Initialization, CodeID::CameraInitFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Camera, SubmoduleID::Initialization, CodeID::CameraInitFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -70,7 +70,7 @@ class ErrorEventGetSensorFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventGetSensorFailed() :
-        ErrorEventBuilder(Error::ModuleID::Camera, SubmoduleID::Initialization, CodeID::GetSensorFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Camera, SubmoduleID::Initialization, CodeID::GetSensorFailed, Error::ErrorSeverity::Trace)
     {
     }
 };
@@ -85,7 +85,7 @@ class ErrorEventServerStartFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventServerStartFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Camera, SubmoduleID::Startup, CodeID::ServerStartFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Camera, SubmoduleID::Startup, CodeID::ServerStartFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -101,7 +101,7 @@ class ErrorEventServerRegisterFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventServerRegisterFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Camera, SubmoduleID::Startup, CodeID::ServerRegisterFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Camera, SubmoduleID::Startup, CodeID::ServerRegisterFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -117,7 +117,7 @@ class ErrorEventServerStopFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventServerStopFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Camera, SubmoduleID::Stop, CodeID::ServerStopFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Camera, SubmoduleID::Stop, CodeID::ServerStopFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }
@@ -132,7 +132,7 @@ class ErrorEventCameraCaptureFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventCameraCaptureFailed() :
-        ErrorEventBuilder(Error::ModuleID::Camera, SubmoduleID::Runtime, CodeID::CameraCaptureFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Camera, SubmoduleID::Runtime, CodeID::CameraCaptureFailed, Error::ErrorSeverity::Trace)
     {
     }
 };
@@ -147,7 +147,7 @@ class ErrorEventCameraDeinitFailed : public Error::ErrorEventBuilder
 {
 public:
     ErrorEventCameraDeinitFailed(esp_err_t err) :
-        ErrorEventBuilder(Error::ModuleID::Camera, SubmoduleID::Cleanup, CodeID::CameraDeinitFailed, Error::ErrorLevel::Trace)
+        ErrorEventBuilder(Error::ModuleID::Camera, SubmoduleID::Cleanup, CodeID::CameraDeinitFailed, Error::ErrorSeverity::Trace)
     {
         appendPayload(err);
     }

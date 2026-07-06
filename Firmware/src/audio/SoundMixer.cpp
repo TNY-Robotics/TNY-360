@@ -3,6 +3,8 @@
 #include <freertos/task.h>
 #include <memory.h>
 #include "common/Log.hpp"
+#include "common/Error.hpp"
+#include "audio/Speaker.Error.hpp"
 
 SoundMixer::SoundMixer(Speaker& speaker) : speaker(speaker)
 {
@@ -27,7 +29,7 @@ Status SoundMixer::init()
     if (ret != pdPASS)
     {
         LOG_ERROR(TAG, "Failed to create SoundMixer task");
-        // ErrorHandle(ErrorStruct::MixerInitFailed);
+        Error::RegisterErrorEvent(ErrorEventCreateTaskFailed(ret));
         return Status::Failure;
     }
 

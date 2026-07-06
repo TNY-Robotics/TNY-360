@@ -1,6 +1,6 @@
 <template>
     <TresCanvas :clear-alpha="0" :antialias="true">
-        <TNY360View />
+        <TNY360View class="show" />
     </TresCanvas>
 </template>
 

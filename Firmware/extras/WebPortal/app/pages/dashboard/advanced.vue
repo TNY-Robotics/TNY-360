@@ -1,7 +1,7 @@
 <template>
     <div class="p-4 space-y-4">
         <h2>Loop Control</h2>
-        <div class="space-y-8">
+        <div class="show-right space-y-8">
             <div class="flex space-x-4">
                 <p class="text-lg font-semibold">Control Loop</p>
                 <UButton :label="controlLoopEnabled ? 'Enabled' : 'Disabled'" :icon="controlLoopEnabled? 'lucide:check': 'lucide:x'" :color="controlLoopLoading? 'neutral' : (controlLoopEnabled? 'success' : 'error')"
@@ -14,7 +14,7 @@
             </div>
         </div>
         <h2>ADC Voltages</h2>
-        <div class="space-y-8">
+        <div class="show-up space-y-8">
             <div class="pl-4">
                 <h3 class="text-xl font-bold"> Front-Left Leg </h3>
                 <div class="flex flex-col lg:flex-row space-x-4">

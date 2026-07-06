@@ -26,6 +26,8 @@ public:
 
     void sendResponse(void* context, const Protocol::MessageHeader& header, const uint8_t* payload);
 
+    uint8_t getNbClients() const;
+
 private:
     esp_err_t ws_handler(httpd_req_t* req);
 

@@ -16,7 +16,7 @@ namespace Error
      * @action getErrorCount 0x00
      * @desc Gets the number of errors.
      * @result count uint16 The number of errors.
-      * @impl done
+     * @impl done
      */
     static void GetErrorCount(const RequestContext& ctx, const uint8_t* payload)
     {
@@ -30,7 +30,7 @@ namespace Error
      * @desc Gets the error event at the specified index.
      * @arg index uint16 The index of the error event to retrieve (0 is the most recent event).
      * @result event ErrorEvent The error event at the specified index.
-      * @impl done
+     * @impl done
      */
     static void GetErrorEventByIndex(const RequestContext& ctx, const uint8_t* payload)
     {
@@ -53,7 +53,7 @@ namespace Error
      * @desc Gets the error event with the specified event ID.
      * @arg event_id uint16 The event ID of the error event to retrieve.
      * @result event ErrorEvent The error event with the specified event ID.
-      * @impl done
+     * @impl done
      */
     static void GetErrorEventById(const RequestContext& ctx, const uint8_t* payload)
     {
@@ -70,10 +70,23 @@ namespace Error
         ctx.respond(ResponseStatus::Ok, (uint8_t*)&ev, sizeof(ev));
     }
 
+    /** <API_REF>
+     * @module error 0x13
+     * @action clearErrorEvents 0x03
+     * @desc Clears all error events.
+     * @impl done
+     */
+    static void ClearErrorEvents(const RequestContext& ctx, const uint8_t* payload)
+    {
+        ::Error::ClearErrorEvents();
+        ctx.respond(ResponseStatus::Ok);
+    }
+
     static ActionCallback actions[] = {
         GetErrorCount,                // 0x00
         GetErrorEventByIndex,         // 0x01
         GetErrorEventById,            // 0x02
+        ClearErrorEvents,             // 0x03
     };
 
     static void Register(Dispatcher& dispatcher)

@@ -16,6 +16,9 @@
                             <p class="text-lg font-semibold" :class="selected(page.path) ? 'text-primary-500': ''">{{ page.name }}</p>
                         </NuxtLink>
                     </div>
+                    <div class="flex w-full justify-end">
+                        <UButton icon="lucide:settings" variant="link" color="neutral" size="xl" @click="openSettings" />
+                    </div>
                 </div>
             </div>
         </div>
