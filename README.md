@@ -11,7 +11,7 @@
 
 **A compact, open-source robot dog designed to *Understand*, *Interact*, and *Learn*.**
 
-[🌐 Website](https://tny-robotics.com/tny-360) • [📸 Instagram](https://instagram.com/furwaz_) • [💬 Discord](https://discord.gg/XGABkx5A4y) • [📖 Documentation](https://tny-robotics.com/docs/tny-360/)
+[🌐 Website](https://tny-robotics.com/tny-360) • [📸 Instagram](https://instagram.com/furwaz_) • [💬 Discord](https://discord.gg/XGABkx5A4y) • [📖 Documentation](https://tny-robotics.com/docs/tny-360/) • [☕ Support Us](https://ko-fi.com/tnyrobotics)
 
 </div>
 
@@ -46,15 +46,6 @@ If you know what you are doing and just want the raw files, here is your toolkit
 * 🧩 **STEM & Expansion Ready:**<br> Program the robot using [TNY-Coder](https://github.com/TNY-Robotics/TNY-Coder) (our block-based web app) or build custom hardware modules using the dorsal I2C/Power expansion port.
 * 🔋 **Industrial Power:**<br> A custom 3S 18650 battery pack capable of 15A continuous discharge, featuring an integrated BMS and Fuse, for 1h+ of runtime.
 
-## 🧠 The Engineering: Beyond a Budget Robot
-
-Most budget quadrupeds suffer from analog noise and jitter when hacking servos for feedback. Simply soldering a wire to a servo's internal potentiometer creates an antenna for EMI and draws current that destabilizes the servo's internal control loop.
-
-**The TNY-360 Solution:** We designed a custom micro-PCB that fits inside the servo, featuring an **Operational Amplifier (Op-Amp) in a voltage follower (buffer) configuration**. 
-This provides near-infinite input impedance (zero interference with the motor) and low output impedance to send a clean analog signal over the robot's wiring harness. Coupled with a software low-pass filter, the ESP32 can cleanly poll all 12 legs at 200Hz.
-
-👉 **[Read the full technical deep-dive and the step-by-step Servo Modding Guide on our documentation site.](https://tny-robotics.com/docs/tny-360/anatomy/electronics/mg996r-mod)**
-
 ## ⚙️ Hardware Specs
 
 ### 🧠 Core & Power
@@ -83,6 +74,16 @@ This provides near-infinite input impedance (zero interference with the motor) a
 * `Electronics/PCBs/` — **PCB Designs.** Gerber files, BOMs, and Pick'n'Place for all PCBs.
 * `Firmware/` — **Codebase.** PlatformIO project (C++/ESP-IDF).
 * `Firmware/components/` — **Drivers.** Custom libraries for sensors/actuators.
+
+## ☕ Support the Project
+
+TNY-360 is, and will always be, 100% free and open-source. 
+
+If you love the project, learned something new, or just want to help us build the next generation of affordable robots, consider supporting our R&D! Your tips help us buy prototyping materials (filament, PCBs, burned servos 😅) and keep the servers running.
+
+<a href='https://ko-fi.com/tnyrobotics' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+
+*(Even if you can't donate, simply starring this repository or sharing it with a friend is already a massive support!)*
 
 ## 🤝 Contributing
 
