@@ -15,17 +15,17 @@ namespace BootManager
             return true; // block robot from booting as normal
         }
 
-        if (boot_VERIFICATION_needed())
-        {
-            LOG_INFO(TAG, "Verification data missing. Starting in VERIFICATION boot mode");
-            boot_VERIFICATION();
-            return true; // don't boot as normal
-        }
-
         if (boot_UPDATE_needed())
         {
             LOG_INFO(TAG, "Update is pending. Starting in UPDATE boot mode");
             boot_UPDATE();
+            return true; // don't boot as normal
+        }
+
+        if (boot_VERIFICATION_needed())
+        {
+            LOG_INFO(TAG, "Verification data missing. Starting in VERIFICATION boot mode");
+            boot_VERIFICATION();
             return true; // don't boot as normal
         }
         
