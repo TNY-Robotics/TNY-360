@@ -1,6 +1,11 @@
 <template>
     <div class="relative">
         <div class="show-right flex flex-col space-y-4 p-4">
+            <h2>Joint Enabled</h2>
+            <UButton :label="areJointsEnabled ? 'Enabled' : 'Disabled'" :icon="areJointsEnabled? 'lucide:check': 'lucide:x'" :color="(areJointsEnabled===undefined)? 'neutral' : (areJointsEnabled? 'success' : 'error')"
+                    @click="onEnableButtonClicked" :loading="(areJointsEnabled===undefined)" variant="subtle" trailing class="w-fit" />
+        </div>
+        <div class="show-right flex flex-col space-y-4 p-4">
             <h2>Body control</h2>
             <div class="flex flex-col space-y-2 p-2">
                 <p class="text-lg">Translation X</p>
@@ -173,6 +178,8 @@ onMounted(() => {
     for (const gpd of navigator.getGamepads()) {
         if (gpd !== null) gamepadList.value.push(gpd);
     }
+
+    checkJointsEnabled();
 });
 
 onUnmounted(() => {
@@ -185,10 +192,14 @@ const movement = reactive({
     z: 0,
 });
 
+let lastVelocity = {x: 0, y: 0, z: 0};
 async function updateMovement() {
     movement.x = (keys.px ? translation_speed.value : 0) - (keys.mx ? translation_speed.value : 0);
     movement.y = (keys.py ? translation_speed.value : 0) - (keys.my ? translation_speed.value : 0);
     movement.z = (keys.pz ? rotation_speed.value : 0) - (keys.mz ? rotation_speed.value : 0);
+    const newVelocity = {x: movement.x, y: movement.y, z: movement.z * DEG2RAD};
+    if (newVelocity.x === lastVelocity.x && newVelocity.y === lastVelocity.y && newVelocity.z === lastVelocity.z) return;
+    lastVelocity = newVelocity;
     await tny.value?.body.setVelocity(movement.x, movement.y, movement.z * DEG2RAD, true); // deg/s to rad/s
 }
 
@@ -264,6 +275,36 @@ async function pollGamepad(gamepad: Gamepad) {
     }
 
     if (shouldPoll) setTimeout(() => pollGamepad(gamepad), 100);
+}
+
+function onEnableButtonClicked() {
+    if (areJointsEnabled.value === undefined) return;
+    if (areJointsEnabled.value === true) disableJoints();
+    else enableJoints();
+}
+
+const areJointsEnabled = ref<boolean|undefined>(undefined);
+async function checkJointsEnabled() {
+    areJointsEnabled.value = undefined;
+    const enabledFlag = await tny.value?.body.getEnabled();
+    if (enabledFlag === undefined) throw new Error('Failed to get enabled flag');
+    areJointsEnabled.value = ((enabledFlag as number) & 0b111111111111) > 0;
+}
+
+async function enableJoints() {
+    areJointsEnabled.value = undefined;
+    const time = await tny.value?.body.enableSmooth();
+    if (!time) throw new Error('Failed to run smooth enable');
+    await new Promise((resolve) => setTimeout(resolve, time * 1000));
+    checkJointsEnabled();
+}
+
+async function disableJoints() {
+    areJointsEnabled.value = undefined;
+    const time = await tny.value?.body.disableSmooth();
+    if (!time) throw new Error('Failed to run smooth enable');
+    await new Promise((resolve) => setTimeout(resolve, time * 1000));
+    checkJointsEnabled();
 }
 
 function stopGamepadPolling() {

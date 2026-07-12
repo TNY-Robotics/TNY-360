@@ -127,6 +127,12 @@ Status Joint::applyCommand(float joint_angle_rad, float dt)
     }
     target_angle_rad = joint_angle_rad;
 
+    if (motor_controller.getState() == MotorController::State::DISABLED)
+    {
+        // If the motor is disabled, don't do anything
+        return Status::Ok;
+    }
+
     float clamped_velocity_rad_s = std::min(velocity_rad_s, joint_velocity_clamp_rad_s);
 
     // Update model angle based on velocity and target
@@ -149,7 +155,7 @@ Status Joint::applyCommand(float joint_angle_rad, float dt)
     }
 
     // If no feedback, set feedback and estimate angles to model
-    if (!motor_controller.getMotorAttributes().has_feedback && motor_controller.getState() == MotorController::State::DISABLED)
+    if (!motor_controller.getMotorAttributes().has_feedback)
     {
         feedback_angle_rad = model_angle_rad;
         estimate_angle_rad = model_angle_rad;

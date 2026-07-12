@@ -51,6 +51,20 @@ public:
     Status disable();
 
     /**
+     * @brief Enables all legs and ears of the body smoothly, slowing down the joints to avoid sudden movements.
+     * @note This methods creates a new FreeRTOS task to handle the process. It will return immediately, run in background, and finish in [returnValue] seconds.
+     * @return Time estimate for the smooth enable process in seconds, -1 if an error occurred.
+     */
+    float enableSmooth();
+
+    /**
+     * @brief Disables all legs and ears of the body smoothly, moving into a safe position before disabling the joints.
+     * @note This methods creates a new FreeRTOS task to handle the process. It will return immediately, run in background, and finish in [returnValue] seconds.
+     * @return Time estimate for the smooth disable process in seconds, -1 if an error occurred.
+     */
+    float disableSmooth();
+
+    /**
      * @brief Get a given leg from its id
      * @param id The leg id, see Leg::Id.
      * @return Reference to the Leg.

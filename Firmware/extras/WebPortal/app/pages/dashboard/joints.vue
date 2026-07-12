@@ -3,9 +3,6 @@
         <div v-for="(leg, index) in joints" :key="leg.name" class="show-up p-2 lg:p-4" :class="`delay-${index * 100}`">
             <div class="flex items-center justify-start space-x-4">
                 <h2 class="font-bold text-xl"> {{ leg.name }} </h2>
-                <UButton :color="leg.enableLoading? 'neutral' : (leg.enabled? 'success': 'error')" variant="soft" @click="toggleLegEnabled(leg)" :icon="leg.enabled? 'i-lucide-check' : 'i-lucide-x'" trailing :loading="leg.enableLoading">
-                    {{ leg.enabled? 'Enabled' : 'Disabled' }}
-                </UButton>
             </div>
             <div class="flex flex-col lg:flex-row justify-evenly">
                 <div v-for="joint in leg.joints" :key="joint.driverIndex" class="p-4">
@@ -31,8 +28,6 @@ const joints = reactive([
             { driverIndex: 1, readerIndex: 1, name: 'Hip Pitch', range: [-135, 45], blockUpdates: false },
             { driverIndex: 2, readerIndex: 2, name: 'Knee Pitch', range: [0, 155], blockUpdates: false },
         ],
-        enabled: false,
-        enableLoading: false,
     },
     {
         index: 1,
@@ -42,8 +37,6 @@ const joints = reactive([
             { driverIndex: 4, readerIndex: 5, name: 'Hip Pitch', range: [-135, 45], blockUpdates: false },
             { driverIndex: 5, readerIndex: 6, name: 'Knee Pitch', range: [0, 155], blockUpdates: false },
         ],
-        enabled: false,
-        enableLoading: false,
     },
     {
         index: 2,
@@ -53,8 +46,6 @@ const joints = reactive([
             { driverIndex: 7, readerIndex: 9, name: 'Hip Pitch', range: [-135, 45], blockUpdates: false },
             { driverIndex: 8, readerIndex: 10, name: 'Knee Pitch', range: [0, 155], blockUpdates: false },
         ],
-        enabled: false,
-        enableLoading: false,
     },
     {
         index: 3,
@@ -64,8 +55,6 @@ const joints = reactive([
             { driverIndex: 10, readerIndex: 13, name: 'Hip Pitch', range: [-135, 45], blockUpdates: false },
             { driverIndex: 11, readerIndex: 14, name: 'Knee Pitch', range: [0, 155], blockUpdates: false },
         ],
-        enabled: false,
-        enableLoading: false,
     },
 ]);
 

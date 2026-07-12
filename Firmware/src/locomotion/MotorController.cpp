@@ -20,7 +20,6 @@ MotorController::MotorController(MotorDriver::Channel motor_channel, AnalogDrive
     // set default pwm bounds to motor attributes
     calibration_data.dc_min = motor_attributes.dc_min;
     calibration_data.dc_max = motor_attributes.dc_max;
-    disable(); // make sure motor is off by default
 }
 
 Status MotorController::init()

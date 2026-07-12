@@ -63,6 +63,11 @@ Status Robot::init()
 
 Status Robot::start()
 {
+    // Set default standing pose to avoid any weird position error or anything
+    decision_loop.askBodyPosition(0, 0, DEFAULT_BODY_HEIGHT_M);
+    decision_loop.askBodyRotation(0, 0, 0);
+    decision_loop.askBodyVelocity(0, 0, 0);
+
     // Start the decision loop
     if (Status err = decision_loop.start(); err != Status::Ok)
     {
@@ -109,7 +114,7 @@ Status Robot::stop()
 Status Robot::deinit()
 {
     // Deinitialize the control loop
-    if (Status err = control_loop.init(); err != Status::Ok)
+    if (Status err = control_loop.deinit(); err != Status::Ok)
     {
         return err;
     }

@@ -34,11 +34,6 @@ void app_main()
     }
 
     LOG_INFO(TAG, "Robot initialized successfully.");
-
-    // TEMPORARY : To avoid impossible position errors
-    robot.getDecisionLoop().askBodyPosition(0, 0, DEFAULT_BODY_HEIGHT_M);
-    robot.getDecisionLoop().askBodyRotation(0, 0, 0);
-    robot.getDecisionLoop().askBodyVelocity(0, 0, 0);
     
     LOG_INFO(TAG, "Starting robot ...");
 
@@ -50,16 +45,8 @@ void app_main()
 
     LOG_INFO(TAG, "Robot started successfully !");
 
-    // RPC::ExecuteThreadSafe<Error>([](){
-    //     return Robot::GetInstance().getBody().enable();
-    // }, [](Error err){});
+    // Nothing to do here
 
-    // FIXME : I'm putting this comment here because it's important.
-    //         There's no movement synchronization like on the previous version
-    //         (Getting movement time estimation and going at the slowest motor speed)
-    //         This fucks up the body coordination and blocks the robot from walking properly.
-    //         Oh, and also check why is the control loop so slow ... It should be around 4ms not 8ms per iteration.
-    
     LOG_INFO(TAG, ">>> Robot is operational.");
 }
 #ifdef __cplusplus

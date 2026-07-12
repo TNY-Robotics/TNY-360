@@ -194,6 +194,32 @@ namespace Body
         ctx.respond(ResponseStatus::Ok, (uint8_t*) &posture, sizeof(posture));
     }
 
+    /** <API_REF>
+     * @module body 0x03
+     * @action enableSmooth 0x06
+     * @desc Enables the whole body smoothly, going slowly into stand position.
+     * @result time float32 Estimated time in seconds for the smooth enable to complete.
+     * @impl done
+     */
+    static void EnableSmooth(const RequestContext& ctx, const uint8_t* payload)
+    {
+        float time = Robot::GetInstance().getBody().enableSmooth();
+        ctx.respond(ResponseStatus::Ok, (uint8_t*) &time, sizeof(time));
+    }
+
+    /** <API_REF>
+     * @module body 0x03
+     * @action disableSmooth 0x07
+     * @desc Disables the whole body smoothly, going slowly to a rest position before disabling all joints.
+     * @result time float32 Estimated time in seconds for the smooth disable to complete.
+     * @impl done
+     */
+    static void DisableSmooth(const RequestContext& ctx, const uint8_t* payload)
+    {
+        float time = Robot::GetInstance().getBody().disableSmooth();
+        ctx.respond(ResponseStatus::Ok, (uint8_t*) &time, sizeof(time));
+    }
+
 
     static ActionCallback actions[] = {
         SetEnabled,                // 0x00
@@ -202,6 +228,8 @@ namespace Body
         GetTargetVelocity,         // 0x03
         SetPosture,                // 0x04
         GetPosture,                // 0x05
+        EnableSmooth,              // 0x06
+        DisableSmooth              // 0x07
     };
 
     static void Register(Dispatcher& dispatcher)
