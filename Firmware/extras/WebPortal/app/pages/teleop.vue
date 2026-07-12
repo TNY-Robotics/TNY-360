@@ -73,13 +73,10 @@ async function enableRobot() {
         if (enabledFlag === undefined) throw new Error('Failed to get enabled flag');
         if (((enabledFlag as number) & 0b111111111111) <= 0)
         {
-            console.log('Detected robot is disabled, running smooth enable...');
             const time = await tny.value?.body.enableSmooth();
             if (!time) throw new Error('Failed to run smooth enable');
-            console.log(`Smooth enable finishes in ${time} s`);
             await new Promise((resolve) => setTimeout(resolve, time * 1000));
-            console.log('Robot is now enabled');
-        } else console.log('Detected robot is already enabled, skipping smooth enable...');
+        }
     } catch (err) {
         console.error(err);
     }
@@ -91,13 +88,10 @@ async function disableRobot() {
         if (enabledFlag === undefined) throw new Error('Failed to get enabled flag');
         if (((enabledFlag as number) & 0b111111111111) > 0)
         {
-            console.log('Detected robot is enabled, running smooth disable...');
             const time = await tny.value?.body.disableSmooth();
             if (!time) throw new Error('Failed to run smooth disable');
-            console.log(`Smooth disable finishes in ${time} s`);
             await new Promise((resolve) => setTimeout(resolve, time * 1000));
-            console.log('Robot is now disabled');
-        } else console.log('Detected robot is already disabled, skipping smooth disable...');
+        }
     } catch (err) {
         console.error(err);
     }

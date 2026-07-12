@@ -59,16 +59,9 @@ const joints = reactive([
 ]);
 
 watch(joints, () => {
-    // for all joints, if one asks to block, we block
+    // for all joints, if one asks to block, we block everything
     shouldUpdate.value = !joints.some(leg => leg.joints.some(joint => joint.blockUpdates));
 }, { deep: true });
-
-async function toggleLegEnabled(leg: any) {
-    leg.enableLoading = true;
-    leg.enabled = !leg.enabled;
-    await robot.value?.leg.setEnabled(leg.index, leg.enabled ? LegJointFlag.HipPitch | LegJointFlag.KneePitch | LegJointFlag.HipRoll : 0, true);
-    leg.enableLoading = false;
-}
 
 </script>
 
