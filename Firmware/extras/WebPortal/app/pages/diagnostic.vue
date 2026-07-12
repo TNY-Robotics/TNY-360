@@ -195,8 +195,6 @@ async function onAllTestsPassed() {
     const rect = stepsContainer.value.getBoundingClientRect();
     stepsContainer.value.style.maxHeight = `${rect.height}px`;
     stepsSuccess.value.style.maxHeight = `0px`;
-    
-    await robot.value?.diagnostic.setDiagnosticMode(false);
 
     stepsContainer.value.style.maxHeight = `0px`;
     const rect2 = stepsSuccess.value.firstElementChild?.getBoundingClientRect();

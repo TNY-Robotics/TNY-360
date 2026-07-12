@@ -20,7 +20,7 @@ namespace BootManager
             NVS::Handle* nvsHandle;
             if (Status err = NVS::Open("boot", &nvsHandle); err != Status::Ok)
             {
-                // LOG_ERROR(TAG, "Error opening NVS 'boot' namespace : %s", ErrorToString(err));
+                LOG_ERROR(TAG, "Error opening NVS 'boot' namespace : %d", err);
                 return true; // block robot from booting as normal
             }
 
@@ -28,8 +28,6 @@ namespace BootManager
             if (Status err = nvsHandle->get<bool>("skip_diag", skip_diag); err != Status::Ok)
             {
                 LOG_ERROR(TAG, "Error reading skip diagnostic flag from NVS : %d", err);
-                NVS::Close(nvsHandle);
-                return true; // block robot from booting as normal
             }
             NVS::Close(nvsHandle);
 
@@ -40,7 +38,7 @@ namespace BootManager
             }
         }
 
-        return false;
+        return true; // default to booting into diagnostic mode (if skip_diag is false or not set)
     }
 
     void boot_DIAGNOSTIC()

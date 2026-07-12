@@ -1,5 +1,6 @@
 #include "ui/menus/Info.hpp"
 #include "ui/Icons.hpp"
+#include "ui/Draw.hpp"
 
 MenuInfo::MenuInfo(Menu* parent)
     : Menu("Info", parent, Icons::InfoMenu)
@@ -38,6 +39,8 @@ void MenuInfo::onHide()
 void MenuInfo::onRender()
 {
     renderHeader();
+    Draw::Text(0, HEADER_HEIGHT + 2, "Firmware version");
+    Draw::Text(0, HEADER_HEIGHT + 12, FIRMWARE_VERSION);
 }
 
 void MenuInfo::onUpdate()

@@ -17,15 +17,15 @@ namespace BootManager
 
         if (boot_UPDATE_needed())
         {
-            LOG_INFO(TAG, "Update is pending. Starting in UPDATE boot mode");
+            LOG_INFO(TAG, "Starting in UPDATE boot mode");
             boot_UPDATE();
             return true; // don't boot as normal
         }
 
-        if (boot_VERIFICATION_needed())
+        if (boot_DIAGNOSTIC_needed())
         {
-            LOG_INFO(TAG, "Verification data missing. Starting in VERIFICATION boot mode");
-            boot_VERIFICATION();
+            LOG_INFO(TAG, "Starting in DIAGNOSTIC boot mode");
+            boot_DIAGNOSTIC();
             return true; // don't boot as normal
         }
         
