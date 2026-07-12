@@ -9,6 +9,9 @@
                 <UButton class="show-up delay-600 flex justify-between w-fit" size="xl" variant="subtle" href="/dashboard" label="Voir le Panneau de Contrôle" icon="lucide:gauge" />
             </div>
         </div>
+        <div class="flex w-full justify-between">
+            <UButton variant="soft" label="Diagnostic Mode" icon="lucide:wrench" @click="onDiagModeClicked" />
+        </div>
     </div>
     <UModal v-model:open="calibrationPopupOpen" title="Not Calibrated">
         <template #body>
@@ -24,6 +27,22 @@
             <div class="flex justify-between w-full space-x-4">
                 <UButton variant="link" color="neutral" label="Skip" icon="lucide:x" @click="() => { calibrationPopupOpen = false }" />
                 <UButton variant="solid" color="primary" label="Calibrate" icon="lucide:arrow-right" trailing href="/calibration" />
+            </div>
+        </template>
+    </UModal>
+    <UModal v-model:open="diagnosticPopupOpen" title="Diagnostic Mode">
+        <template #body>
+            <div class="space-y-4">
+                <div class="space-y-1">
+                    <p> Your robot will need to reboot into diagnostic mode before you can start the diagnostic. </p>
+                </div>
+                <p> Do you want to reboot into diagnostic mode? </p>
+            </div>
+        </template>
+        <template #footer>
+            <div class="flex justify-between w-full space-x-4">
+                <UButton variant="link" color="neutral" label="Cancel" @click="() => { diagnosticPopupOpen = false }" />
+                <UButton variant="solid" color="primary" label="Reboot" icon="lucide:arrow-right" trailing @click="onDiagModeReboot" :loading="diagModeBtnLoading" />
             </div>
         </template>
     </UModal>
@@ -53,6 +72,21 @@ watch(robot, async (tny) => {
         if (hasUncalibrated) calibrationPopupOpen.value = true;
     });
 }, { immediate: true });
+
+const diagnosticPopupOpen = ref(false);
+const diagModeBtnLoading = ref(false);
+function onDiagModeClicked() {
+    diagnosticPopupOpen.value = true;
+    diagModeBtnLoading.value = false;
+}
+
+async function onDiagModeReboot() {
+    diagModeBtnLoading.value = true;
+    robot.value?.diagnostic.rebootInDiagnosticMode();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    diagnosticPopupOpen.value = false;
+    window.close();
+}
 
 </script>
 
