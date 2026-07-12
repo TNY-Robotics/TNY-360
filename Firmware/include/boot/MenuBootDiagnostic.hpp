@@ -4,14 +4,14 @@
 #include "ui/widgets/qrcode.hpp"
 #include "network/NetworkManager.hpp"
 
-class MenuBootVerification : public Menus::Menu
+class MenuBootDiagnostic : public Menus::Menu
 {
 public:
-    constexpr static const char* TAG = "MenuBootVerif";
+    constexpr static const char* TAG = "MenuBootDiag";
 
-    MenuBootVerification() = default;
-    MenuBootVerification(NetworkManager* networkManager);
-    virtual ~MenuBootVerification() = default;
+    MenuBootDiagnostic() = default;
+    MenuBootDiagnostic(NetworkManager* networkManager);
+    virtual ~MenuBootDiagnostic() = default;
 
 protected:
     virtual bool onBack() override;

@@ -24,24 +24,14 @@ namespace Diagnostic
 
     /** <API_REF>
      * @module diagnostic 0x14
-     * @action setDiagnosticMode 0x01
-     * @desc Sets the diagnostic mode of the robot.
-     * @param enable bool Whether to enable diagnostic mode.
+     * @action RebootInDiagnosticMode 0x01
+     * @desc Reboots the robot in diagnostic mode.
      * @impl done
      */
-    static void SetDiagnosticMode(const RequestContext& ctx, const uint8_t* payload)
+    static void RebootInDiagnosticMode(const RequestContext& ctx, const uint8_t* payload)
     {
-        BinaryReader reader(payload, ctx.expected_len);
-
-        bool enable;
-        if (reader.read(enable) != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
-
-        ::Diagnostic::SetDiagnosticMode(enable);
-        ctx.respond(ResponseStatus::Ok);
+        Status status = ::Diagnostic::RebootInDiagnosticMode();
+        ctx.respond(status == Status::Ok ? ResponseStatus::Ok : ResponseStatus::UnknownError);
     }
 
     /** <API_REF>
@@ -203,7 +193,7 @@ namespace Diagnostic
 
     static ActionCallback actions[] = {
         IsEnabled, // 0x00
-        SetDiagnosticMode, // 0x01
+        RebootInDiagnosticMode, // 0x01
         CheckLED, // 0x02
         CheckI2C, // 0x03
         CheckSpeaker, // 0x04

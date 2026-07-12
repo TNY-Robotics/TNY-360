@@ -1,4 +1,4 @@
-#include "boot/MenuBootVerification.hpp"
+#include "boot/MenuBootDiagnostic.hpp"
 #include "ui/Icons.hpp"
 #include "ui/Draw.hpp"
 #include "common/config.hpp"
@@ -7,8 +7,8 @@
 #include "drivers/MotorDriver.hpp"
 #include "ui/Animations.hpp"
 
-MenuBootVerification::MenuBootVerification(NetworkManager* networkManager)
-    : Menu("Verification"),
+MenuBootDiagnostic::MenuBootDiagnostic(NetworkManager* networkManager)
+    : Menu("Diagnostic"),
     phone_spawn((uint8_t*)Animation::PhoneQRSpawn, 7, 0, 0, 64, 64, false, false),
     phone_scan((uint8_t*)Animation::PhoneQRScan, 15, 0, 0, 64, 64, false, false),
     phone_connected((uint8_t*)Animation::PhoneQRConnected, 6, 0, 0, 64, 64, false, false),
@@ -27,37 +27,37 @@ MenuBootVerification::MenuBootVerification(NetworkManager* networkManager)
         qr_code.setData(wifi_str);
     }
 
-bool MenuBootVerification::onBack()
+bool MenuBootDiagnostic::onBack()
 {
     return false;
 }
 
-bool MenuBootVerification::onSelect()
+bool MenuBootDiagnostic::onSelect()
 {
     return false;
 }
 
-bool MenuBootVerification::onNext()
+bool MenuBootDiagnostic::onNext()
 {
     return false;
 }
 
-bool MenuBootVerification::onPrev()
+bool MenuBootDiagnostic::onPrev()
 {
     return false;
 }
 
 
-void MenuBootVerification::onShow()
+void MenuBootDiagnostic::onShow()
 {
     triggerRender();
 }
 
-void MenuBootVerification::onHide()
+void MenuBootDiagnostic::onHide()
 { 
 }
 
-void MenuBootVerification::onRender()
+void MenuBootDiagnostic::onRender()
 {
     if (spawning)
     {
@@ -77,7 +77,7 @@ void MenuBootVerification::onRender()
     qr_code.render();
 }
 
-void MenuBootVerification::onUpdate()
+void MenuBootDiagnostic::onUpdate()
 {
     if (spawning)
     {
@@ -133,13 +133,13 @@ void MenuBootVerification::onUpdate()
                 NVS::Handle* nvsHandle;
                 if (Status err = NVS::Open("boot", &nvsHandle); err != Status::Ok)
                 {
-                    // LOG_ERROR(TAG, "Error opening NVS 'boot' namespace : %s", ErrorToString(err));
+                    LOG_ERROR(TAG, "Error opening NVS 'boot' namespace : %d", err);
                     return;
                 }
-                bool skip_verif = true;
-                if (Status err = nvsHandle->set<bool>("skip_verif", skip_verif); err != Status::Ok)
+                bool skip_diag = true;
+                if (Status err = nvsHandle->set<bool>("skip_diag", skip_diag); err != Status::Ok)
                 {
-                    // LOG_ERROR ...
+                    LOG_ERROR(TAG, "Error writing skip diagnostic flag to NVS : %d", err);
                 }
                 NVS::Close(nvsHandle);
             }

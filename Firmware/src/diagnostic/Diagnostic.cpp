@@ -1,6 +1,8 @@
 #include "diagnostic/Diagnostic.hpp"
 #include "common/LED.hpp"
 #include "common/I2C.hpp"
+#include "common/Log.hpp"
+#include "common/NVS.hpp"
 #include "audio/Speaker.hpp"
 #include "audio/SoundMixer.hpp"
 #include "drivers/CameraDriver.hpp"
@@ -11,6 +13,7 @@
 
 namespace Diagnostic
 {
+    static constexpr const char* TAG = "Diagnostic";
     static bool diag_mode_enabled = false;
 
     Status Init()
@@ -28,6 +31,27 @@ namespace Diagnostic
     void SetDiagnosticMode(bool enable)
     {
         diag_mode_enabled = enable;
+    }
+
+    Status RebootInDiagnosticMode()
+    {
+        NVS::Handle* nvsHandle;
+        if (Status err = NVS::Open("boot", &nvsHandle); err != Status::Ok)
+        {
+            LOG_ERROR(TAG, "Error opening NVS 'boot' namespace : %d", err);
+            return Status::Failure;
+        }
+        // Don't skip diagnostic on next boot (false)
+        bool skip_diag = false;
+        if (Status err = nvsHandle->set<bool>("skip_diag", skip_diag); err != Status::Ok)
+        {
+            LOG_ERROR(TAG, "Error writing skip diagnostic flag to NVS : %d", err);
+            NVS::Close(nvsHandle);
+            return Status::Failure;
+        }
+        NVS::Close(nvsHandle);
+        esp_restart();
+        return Status::Ok; // Will never be reached but compiler goes brrr if not here
     }
 
     bool IsDiagnosticModeEnabled()

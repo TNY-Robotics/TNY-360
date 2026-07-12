@@ -13,11 +13,11 @@ namespace BootManager
     bool CheckForSpecialBoot();
 
     /**
-     * @brief Checks if the boot sequence should enter VERIFICATION mode.
-     * @note VERIFICATION mode is used on the very first boot to check for assembly issues and to verify that the robot is functioning properly. 
-     * @returns boolean true if VERIFICATION mode is needed, else false.
+     * @brief Checks if the boot sequence should enter DIAGNOSTIC mode.
+     * @note DIAGNOSTIC mode is used to perform system diagnostics and checks.
+     * @returns boolean true if DIAGNOSTIC mode is needed, else false.
      */
-    bool boot_VERIFICATION_needed();
+    bool boot_DIAGNOSTIC_needed();
 
     /**
      * @brief Checks if the boot sequence should enter UPDATE mode.
@@ -27,10 +27,10 @@ namespace BootManager
     bool boot_UPDATE_needed();
 
     /**
-     * @brief INTERNAL, boot sequence in VERIFICATION mode
+     * @brief INTERNAL, boot sequence in DIAGNOSTIC mode
      * @note This function should only be called internally by the boot manager.
      */
-    void boot_VERIFICATION();
+    void boot_DIAGNOSTIC();
 
     /**
      * @brief INTERNAL, boot sequence in UPDATE mode

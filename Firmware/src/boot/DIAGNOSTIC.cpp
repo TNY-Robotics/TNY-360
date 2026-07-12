@@ -1,5 +1,5 @@
 #include "boot/BootManager.hpp"
-#include "boot/MenuBootVerification.hpp"
+#include "boot/MenuBootDiagnostic.hpp"
 #include "common/Log.hpp"
 #include "common/LED.hpp"
 #include "common/I2C.hpp"
@@ -13,7 +13,7 @@
 
 namespace BootManager
 {
-    bool boot_VERIFICATION_needed()
+    bool boot_DIAGNOSTIC_needed()
     {
         // Check for skip verification flag
         {
@@ -24,26 +24,26 @@ namespace BootManager
                 return true; // block robot from booting as normal
             }
 
-            bool skip_verif = false;
-            if (Status err = nvsHandle->get<bool>("skip_verif", skip_verif); err != Status::Ok)
+            bool skip_diag = false;
+            if (Status err = nvsHandle->get<bool>("skip_diag", skip_diag); err != Status::Ok)
             {
-                // LOG_ERROR(TAG, "Error reading skip verification flag from NVS : %s", ErrorToString(err));
+                LOG_ERROR(TAG, "Error reading skip diagnostic flag from NVS : %d", err);
                 NVS::Close(nvsHandle);
                 return true; // block robot from booting as normal
             }
             NVS::Close(nvsHandle);
 
-            if (skip_verif)
+            if (skip_diag)
             {
-                LOG_DEBUG(TAG, "Verification skip flag found. Skipping verification boot.");
-                return false; // skip verification boot
+                LOG_DEBUG(TAG, "Diagnostic skip flag found. Skipping diagnostic boot.");
+                return false; // skip diagnostic boot
             }
         }
 
         return false;
     }
 
-    void boot_VERIFICATION()
+    void boot_DIAGNOSTIC()
     {
         // Initialize LED module for error display
         if (Status err = LED::Init(); err != Status::Ok)
@@ -97,8 +97,8 @@ namespace BootManager
             return;
         }
 
-        // All done, display the verification menu
-        MenuBootVerification menu(&man);
+        // All done, display the diagnostic menu
+        MenuBootDiagnostic menu(&man);
         Menus::SetCurrentMenu(&menu);
 
         while (true) { vTaskDelay(pdMS_TO_TICKS(1000)); }
