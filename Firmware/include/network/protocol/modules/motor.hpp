@@ -130,7 +130,7 @@ namespace Motor
      * @action getCalibrationData 0x03
      * @desc Gets the calibration data of a motor.
      * @arg joint_id uint8 ID of the joint to get the calibration data for.
-     * @result calib_data CalibrationData Current calibration data.
+     * @result calib_data MotorController::CalibrationData Current calibration data.
      * @impl done
      */
     static void GetCalibrationData(const RequestContext& ctx, const uint8_t* payload)
@@ -160,7 +160,7 @@ namespace Motor
      * @action setCalibrationData 0x04
      * @desc Sets the calibration data of a motor.
      * @arg joint_id uint8 ID of the joint to set the calibration data for.
-     * @arg calib_data CalibrationData New calibration data.
+     * @arg calib_data MotorController::CalibrationData New calibration data.
      * @impl done
      */
     static void SetCalibrationData(const RequestContext& ctx, const uint8_t* payload)

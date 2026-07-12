@@ -22,8 +22,7 @@ namespace IMU
     static void GetAcceleration(const RequestContext& ctx, const uint8_t* payload)
     {
         RPC::ExecuteThreadSafe<Vec3f>([](){
-            IMUDriver::IMUData data = IMUDriver::GetData();
-            return Vec3f(data.accel_x_g * GRAVITY, data.accel_y_g * GRAVITY, data.accel_z_g * GRAVITY);
+            return Robot::GetInstance().getBody().getIMUController().getAcceleration();
         }, [ctx](Vec3f vec){
             ctx.respond(ResponseStatus::Ok, (uint8_t*) &vec, sizeof(vec));
         });
@@ -39,8 +38,7 @@ namespace IMU
     static void GetAngularVelocity(const RequestContext& ctx, const uint8_t* payload)
     {
         RPC::ExecuteThreadSafe<Vec3f>([](){
-            IMUDriver::IMUData data = IMUDriver::GetData();
-            return Vec3f(DEG_TO_RAD(data.gyro_x_ds), DEG_TO_RAD(data.gyro_y_ds), DEG_TO_RAD(data.gyro_z_ds));
+            return Robot::GetInstance().getBody().getIMUController().getAngularVelocity();
         }, [ctx](Vec3f vec){
             ctx.respond(ResponseStatus::Ok, (uint8_t*) &vec, sizeof(vec));
         });
