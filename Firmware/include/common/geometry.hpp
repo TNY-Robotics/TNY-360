@@ -87,17 +87,17 @@ public:
 /** <API_REF>
  * @type Vec3f
  * @desc A 3D vector with x, y, z components represented as floats.
- * @field x float The x component of the vector.
- * @field y float The y component of the vector.
- * @field z float The z component of the vector.
+ * @field x float32 The x component of the vector.
+ * @field y float32 The y component of the vector.
+ * @field z float32 The z component of the vector.
  */
 using Vec3f = Vec3<float>;
 /** <API_REF>
  * @type Vec3i
  * @desc A 3D vector with x, y, z components represented as integers.
- * @field x int The x component of the vector.
- * @field y int The y component of the vector.
- * @field z int The z component of the vector.
+ * @field x int32 The x component of the vector.
+ * @field y int32 The y component of the vector.
+ * @field z int32 The z component of the vector.
  */
 using Vec3i = Vec3<int>;
 
@@ -147,15 +147,15 @@ public:
 /** <API_REF>
  * @type Vec2f
  * @desc A 2D vector with x, y components represented as floats.
- * @field x float The x component of the vector.
- * @field y float The y component of the vector.
+ * @field x float32 The x component of the vector.
+ * @field y float32 The y component of the vector.
  */
 using Vec2f = Vec2<float>;
 /** <API_REF>
  * @type Vec2i
  * @desc A 2D vector with x, y components represented as integers.
- * @field x int The x component of the vector.
- * @field y int The y component of the vector.
+ * @field x int32 The x component of the vector.
+ * @field y int32 The y component of the vector.
  */
 using Vec2i = Vec2<int>;
 
@@ -247,10 +247,10 @@ public:
 /** <API_REF>
  * @type Quatf
  * @desc A quaternion with x, y, z, w components represented as floats.
- * @field x float The x component of the quaternion.
- * @field y float The y component of the quaternion.
- * @field z float The z component of the quaternion.
- * @field w float The w component of the quaternion.
+ * @field x float32 The x component of the quaternion.
+ * @field y float32 The y component of the quaternion.
+ * @field z float32 The z component of the quaternion.
+ * @field w float32 The w component of the quaternion.
  */
 using Quatf = Quat<float>;
 
