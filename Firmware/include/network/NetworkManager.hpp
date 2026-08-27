@@ -4,6 +4,7 @@
 #include "network/WebInterface.hpp"
 #include "network/WebSocket.hpp"
 #include "network/UpdateManager.hpp"
+#include "network/DNSServer.hpp"
 
 class NetworkManager
 {
@@ -59,4 +60,6 @@ private:
     WebInterface web_interface;
     WebSocket web_socket;
     UpdateManager update_manager;
+
+    DNSServer dnsServer;
 };

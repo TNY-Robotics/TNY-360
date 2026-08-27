@@ -43,6 +43,12 @@ Status NetworkManager::init()
         return err;
     }
 
+    // Initialize the DNS server for captive portal functionality
+    if (Status err = dnsServer.init(); err != Status::Ok)
+    {
+        return err;
+    }
+
     return Status::Ok;
 }
 
@@ -64,6 +70,12 @@ Status NetworkManager::start()
 
 Status NetworkManager::deinit()
 {
+    // Deinitialize the DNS server
+    if (Status err = dnsServer.deinit(); err != Status::Ok)
+    {
+        return err;
+    }
+
     // Deinitialize the protocol system
     if (Status err = Protocol::Deinit(); err != Status::Ok)
     {

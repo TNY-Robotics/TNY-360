@@ -1,4 +1,4 @@
-#include "settings/settings.hpp"
+#include "settings/Settings.hpp"
 
 void RobotConfig::loadFromStream(std::istream &inputStream)
 {
