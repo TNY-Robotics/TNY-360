@@ -51,9 +51,9 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Build Web Portal
+      - name: Build Web Interface
         run: |
-          cd extras/WebPortal
+          cd extras/WebInterface
           npm install
           npm run generate
 
