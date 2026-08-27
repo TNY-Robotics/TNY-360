@@ -222,6 +222,17 @@ namespace Icons
         0b01111000,
         0b00111000,
     };
+
+    constexpr uint8_t DiagnosticMenu[8] = {
+        0b00000000,
+        0b00000011,
+        0b00000111,
+        0b00001110,
+        0b11011100,
+        0b11111000,
+        0b01110000,
+        0b00100000,
+    };
     
     constexpr uint8_t SplashScreen[8*8*8] = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x80, 0x00, 0x00, 0x00, 

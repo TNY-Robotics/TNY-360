@@ -4,6 +4,7 @@
 #include "common/LED.hpp"
 #include "common/I2C.Error.hpp"
 #include <memory.h>
+#include "settings/Settings.hpp"
 
 namespace I2C
 {
@@ -23,8 +24,8 @@ namespace I2C
         // First setup the primary I2C bus
         i2c_master_bus_config_t primary_config = {
             .i2c_port = I2C_NUM_0,
-            .sda_io_num = I2C_PRIMARY_SDA_GPIO_NUM,
-            .scl_io_num = I2C_PRIMARY_SCL_GPIO_NUM,
+            .sda_io_num = static_cast<gpio_num_t>(Settings::GetConfig().i2c.primary.gpio_sda.get()), // I2C_PRIMARY_SDA_GPIO_NUM,
+            .scl_io_num = static_cast<gpio_num_t>(Settings::GetConfig().i2c.primary.gpio_scl.get()), // I2C_PRIMARY_SCL_GPIO_NUM,
             .clk_source = I2C_CLK_SRC_DEFAULT,
             .glitch_ignore_cnt = 7,
             .intr_priority = 0,
@@ -40,14 +41,14 @@ namespace I2C
             handle_primary = nullptr;
             LOG_ERROR(TAG, "Failed to initialize primary I2C bus");
             Error::RegisterErrorEvent(ErrorEventPrimaryInitFailed(err));
-            return Status::Unknown;
+            return Status::Failure;
         }
 
         // Then setup the secondary I2C bus
         i2c_master_bus_config_t secondary_config = {
             .i2c_port = I2C_NUM_1,
-            .sda_io_num = I2C_SECONDARY_SDA_GPIO_NUM,
-            .scl_io_num = I2C_SECONDARY_SCL_GPIO_NUM,
+            .sda_io_num = static_cast<gpio_num_t>(Settings::GetConfig().i2c.secondary.gpio_sda.get()), // I2C_SECONDARY_SDA_GPIO_NUM,
+            .scl_io_num = static_cast<gpio_num_t>(Settings::GetConfig().i2c.secondary.gpio_scl.get()), // I2C_SECONDARY_SCL_GPIO_NUM,
             .clk_source = I2C_CLK_SRC_DEFAULT,
             .glitch_ignore_cnt = 7,
             .intr_priority = 0,
@@ -63,9 +64,10 @@ namespace I2C
             handle_secondary = nullptr;
             LOG_ERROR(TAG, "Failed to initialize secondary I2C bus");
             Error::RegisterErrorEvent(ErrorEventSecondaryInitFailed(err));
-            return Status::Unknown;
+            return Status::Failure;
         }
 
+        LOG_DEBUG(TAG, "I2C buses initialized successfully");
         initialized = true;
         return Status::Ok;
     }

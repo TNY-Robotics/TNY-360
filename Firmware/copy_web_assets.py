@@ -5,7 +5,7 @@ from pathlib import Path
 Import("env")
 
 # --- CONFIGURATION ---
-NUXT_OUTPUT_DIR = Path("extras/WebPortal/.output/public")
+NUXT_OUTPUT_DIR = Path("extras/WebInterface/.output/public")
 DATA_DIR = Path("data/web")
 
 COLOR = {
@@ -33,7 +33,7 @@ def copy_web_assets(*args, **kwargs):
     # 1. Check if the Nuxt build exists
     if not NUXT_OUTPUT_DIR.exists():
         print(f"{coloredString('WARNING', COLOR['YELLOW'])}: The folder {coloredString(NUXT_OUTPUT_DIR, COLOR['BLUE'])} does not exist. The web dashboard will not be available.")
-        print(f"-> Run [{coloredString('npm install', COLOR['GREEN'])}] and [{coloredString('npm run generate', COLOR['GREEN'])}] in your [{coloredString('/extras/WebPortal', COLOR['BLUE'])}] folder first!\n")
+        print(f"-> Run [{coloredString('npm install', COLOR['GREEN'])}] and [{coloredString('npm run generate', COLOR['GREEN'])}] in your [{coloredString('/extras/WebInterface', COLOR['BLUE'])}] folder first!\n")
         return
 
     # 2. Clean the existing data folder (to avoid old ghost files)
@@ -61,7 +61,8 @@ def copy_web_assets(*args, **kwargs):
                 file.endswith(".br"),
                 file.endswith(".map"),
                 file.startswith(".") or file == "Thumbs.db",
-                "meta" in rel_path.split(os.sep)
+                "meta" in rel_path.split(os.sep),
+                (not file.endswith(".gz")) and (Path(root) / f"{file}.gz").exists()
             ]
 
             if any(ignore_conditions):

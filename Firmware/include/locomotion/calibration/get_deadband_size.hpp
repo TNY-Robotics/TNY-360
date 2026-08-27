@@ -23,7 +23,7 @@ struct DeadbandSizeParams
     /// @brief Wait delay after centering motor
     uint16_t base_delay_ms = 500;
     /// @brief Wait delay after each movement
-    uint16_t move_delay_ms = 500;
+    uint16_t move_delay_ms = 200;
 };
 
 /**
@@ -57,7 +57,7 @@ Status get_deadband_size(DeadbandSizeParams params, MotorDriver::Channel motor_c
     while (sample_index < params.nb_samples && current_dc < params.max_dc)
     {
         // Move the motor a bit and wait
-        current_dc += 1;
+        current_dc += MotorDriver::PWM_TO_DC(1); // Move by 1 PWM increment (resolution of 4096, so around 0.01)
         RETURN_ON_ERROR(MotorDriver::SetDutyCycle(motor_channel, current_dc));
         RETURN_ON_ERROR(MotorDriver::SendData());
         vTaskDelay(pdMS_TO_TICKS(params.move_delay_ms));
@@ -68,7 +68,7 @@ Status get_deadband_size(DeadbandSizeParams params, MotorDriver::Channel motor_c
 
         // If feedback has changed, record deadband size
         AnalogDriver::Value abs_diff = std::abs(new_feedback - last_feedback);
-        if (abs_diff > params.feedback_noise) // Little margin to be sure
+        if (abs_diff > params.feedback_noise) // 2x margin to be sure (should be feedback_noise/2, but we add a safety margin to avoid false positives)
         {
             deadbands[sample_index] = current_dc - last_dc;
             last_feedback = new_feedback;

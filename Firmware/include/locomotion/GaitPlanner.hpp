@@ -24,6 +24,8 @@ public:
         float step_height_m = 0.02f;
         /// @brief Distance pushed by feets into the ground in meters
         float stance_depth_m = 0.0f;
+        /// @brief Spread of each leg (X and Y in meters) from body center
+        Vec2f leg_spread_m = Vec2f(DEFAULT_FEET_SPREAD_X_M, DEFAULT_FEET_SPREAD_Y_M);
         /// @brief Type of gait to base the movements of
         GaitType gait_type = GaitType::Walk;
     };
@@ -54,7 +56,7 @@ public:
      * @brief Set the gait configuration parameters
      * @param config GaitConfig struct containing the desired gait parameters
      */
-    void setGaitConfig(const GaitConfig& config);
+    void setConfig(const GaitConfig& config);
 
     /**
      * @brief Get the current gait configuration
@@ -75,6 +77,9 @@ private:
     Vec3f leg_default_pos[4]; // neutral position of each leg relative to the body center
     
     float leg_phase_offsets[4]; // gait cycle offset
+
+    /// @brief Loads the leg_default_pos with the leg spread values from gait_config
+    void apply_leg_spread();
 
     /// @brief Loads the leg_phase_offsets with the gait offsets matching the current GaitType
     void apply_gait_offsets();

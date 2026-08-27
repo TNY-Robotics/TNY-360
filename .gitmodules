@@ -10,3 +10,6 @@
 [submodule "Firmware/components/ina219"]
 	path = Firmware/components/ina219
 	url = https://github.com/TNY-Robotics/ina219-esp-idf.git
+[submodule "Firmware/extras/WebInterface"]
+	path = Firmware/extras/WebInterface
+	url = https://github.com/TNY-Robotics/TNY-360-Web.git

@@ -47,7 +47,7 @@ void MenuLogs::onRender()
         uint16_t index = NB_LINES - i - 1;
         const Log::LineInfo& line = Log::GetLine(index);
         char str[128/8 + 1];
-        snprintf(str, sizeof(str), "[%c] %.12s", "IWEDS"[static_cast<uint8_t>(line.level)], line.message);
+        snprintf(str, sizeof(str), "%.16s", line.message);
         Draw::Text(0, Menu::HEADER_HEIGHT + i * 12 + 4, str);
     }
 }

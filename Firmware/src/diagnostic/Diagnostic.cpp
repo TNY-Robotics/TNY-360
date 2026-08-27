@@ -18,23 +18,44 @@ namespace Diagnostic
 
     Status Init()
     {
-        // Initialize diagnostic system
+        // Read NVS to set diag_mode_enabled
+        NVS::Handle* nvsHandle;
+        if (Status err = NVS::Open("boot", &nvsHandle); err != Status::Ok)
+        {
+            LOG_ERROR(TAG, "Error opening NVS 'boot' namespace : %d", err);
+            return Status::Failure;
+        }
+        if (Status err = nvsHandle->get<bool>("skip_diag", diag_mode_enabled); err != Status::Ok)
+        {
+            if (err == Status::NotFound)
+            {
+                diag_mode_enabled = false; // Default to false if the key doesn't exist
+            }
+            else
+            {
+                LOG_ERROR(TAG, "Error reading skip diagnostic flag from NVS : %d", err);
+                NVS::Close(nvsHandle);
+                return Status::Failure;
+            }
+        }
+        diag_mode_enabled = !diag_mode_enabled; // Invert the flag to determine if we should enter diagnostic mode
+        NVS::Close(nvsHandle);
         return Status::Ok;
     }
     
-    Status Denit()
+    Status Deinit()
     {
-        // Deinitialize diagnostic system
         return Status::Ok;
-    }
-
-    void SetDiagnosticMode(bool enable)
-    {
-        diag_mode_enabled = enable;
     }
 
     Status RebootInDiagnosticMode()
     {
+        if (IsDiagnosticModeEnabled())
+        {
+            LOG_DEBUG(TAG, "RebootInDiagnosticMode called in diagnostic mode, no need to reboot");
+            return Status::Ok;
+        }
+
         NVS::Handle* nvsHandle;
         if (Status err = NVS::Open("boot", &nvsHandle); err != Status::Ok)
         {
@@ -52,6 +73,33 @@ namespace Diagnostic
         NVS::Close(nvsHandle);
         esp_restart();
         return Status::Ok; // Will never be reached but compiler goes brrr if not here
+    }
+
+    Status RebootInNormalMode()
+    {
+        if (!IsDiagnosticModeEnabled())
+        {
+            LOG_DEBUG(TAG, "RebootInNormalMode called in normal mode, no need to reboot");
+            return Status::Ok;
+        }
+
+        NVS::Handle* nvsHandle;
+        if (Status err = NVS::Open("boot", &nvsHandle); err != Status::Ok)
+        {
+            LOG_ERROR(TAG, "Error opening NVS 'boot' namespace : %d", err);
+            return Status::Failure;
+        }
+        // Skip diagnostic on next boot (true)
+        bool skip_diag = true;
+        if (Status err = nvsHandle->set<bool>("skip_diag", skip_diag); err != Status::Ok)
+        {
+            LOG_ERROR(TAG, "Error writing skip diagnostic flag to NVS : %d", err);
+            NVS::Close(nvsHandle);
+            return Status::Failure;
+        }
+        NVS::Close(nvsHandle);
+        esp_restart();
+        return Status::Ok; // same as above
     }
 
     bool IsDiagnosticModeEnabled()

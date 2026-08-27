@@ -37,7 +37,6 @@ namespace IPC
         uint32_t timestamp_ms = 0; // timestamp for safeguard watchdog
 
         // movement planning infos
-        GaitPlanner::GaitType gait = GaitPlanner::GaitType::Walk;
         Vec3f body_vel = Vec3f::Zero();
         Vec3f body_rot = Vec3f::Zero();
         Vec3f body_pos = Vec3f::Zero();

@@ -36,7 +36,19 @@ namespace Diagnostic
 
     /** <API_REF>
      * @module diagnostic 0x14
-     * @action checkLED 0x02
+     * @action RebootInNormalMode 0x02
+     * @desc Reboots the robot in normal mode.
+     * @impl done
+     */
+    static void RebootInNormalMode(const RequestContext& ctx, const uint8_t* payload)
+    {
+        Status status = ::Diagnostic::RebootInNormalMode();
+        ctx.respond(status == Status::Ok ? ResponseStatus::Ok : ResponseStatus::UnknownError);
+    }
+
+    /** <API_REF>
+     * @module diagnostic 0x14
+     * @action checkLED 0x03
      * @desc Checks the status of the LED module.
      * @result result uint8_t 0 in case of success, error id otherwise.
      * @impl done
@@ -49,7 +61,7 @@ namespace Diagnostic
 
     /** <API_REF>
      * @module diagnostic 0x14
-     * @action checkI2C 0x03
+     * @action checkI2C 0x04
      * @desc Checks the status of the I2C module.
      * @result result uint8_t 0 in case of success, error id otherwise.
      * @impl done
@@ -62,7 +74,7 @@ namespace Diagnostic
 
     /** <API_REF>
      * @module diagnostic 0x14
-     * @action checkSpeaker 0x04
+     * @action checkSpeaker 0x05
      * @desc Checks the status of the Speaker module.
      * @result result uint8_t 0 in case of success, error id otherwise.
      * @impl done
@@ -75,7 +87,7 @@ namespace Diagnostic
 
     /** <API_REF>
      * @module diagnostic 0x14
-     * @action checkMicrophone 0x05
+     * @action checkMicrophone 0x06
      * @desc Checks the status of the Microphone module.
      * @result result uint8_t 0 in case of success, error id otherwise.
      * @impl done
@@ -88,7 +100,7 @@ namespace Diagnostic
 
     /** <API_REF>
      * @module diagnostic 0x14
-     * @action checkCamera 0x06
+     * @action checkCamera 0x07
      * @desc Checks the status of the Camera module.
      * @result result uint8_t 0 in case of success, error id otherwise.
      * @impl done
@@ -101,7 +113,7 @@ namespace Diagnostic
 
     /** <API_REF>
      * @module diagnostic 0x14
-     * @action checkLaser 0x07
+     * @action checkLaser 0x08
      * @desc Checks the status of the Laser module.
      * @result result uint8_t 0 in case of success, error id otherwise.
      * @impl done
@@ -114,7 +126,7 @@ namespace Diagnostic
 
     /** <API_REF>
      * @module diagnostic 0x14
-     * @action checkIMU 0x08
+     * @action checkIMU 0x09
      * @desc Checks the status of the IMU module.
      * @result result uint8_t 0 in case of success, error id otherwise.
      * @impl done
@@ -127,7 +139,7 @@ namespace Diagnostic
 
     /** <API_REF>
      * @module diagnostic 0x14
-     * @action checkPower 0x09
+     * @action checkPower 0x0A
      * @desc Checks the status of the Power module.
      * @result result uint8_t 0 in case of success, error id otherwise.
      * @impl done
@@ -140,7 +152,7 @@ namespace Diagnostic
 
     /** <API_REF>
      * @module diagnostic 0x14
-     * @action checkMotorDriver 0x0A
+     * @action checkMotorDriver 0x0B
      * @desc Checks the status of the Motor Driver module.
      * @result result uint8_t 0 in case of success, error id otherwise.
      * @impl done
@@ -153,7 +165,7 @@ namespace Diagnostic
 
     /** <API_REF>
      * @module diagnostic 0x14
-     * @action checkAnalogReader 0x0B
+     * @action checkAnalogReader 0x0C
      * @desc Checks the status of the Analog Reader module.
      * @result result uint8_t 0 in case of success, error id otherwise.
      * @impl done
@@ -166,7 +178,7 @@ namespace Diagnostic
 
     /** <API_REF>
      * @module diagnostic 0x14
-     * @action checkControlLoop 0x0C
+     * @action checkControlLoop 0x0D
      * @desc Checks the status of the Control Loop module.
      * @result result uint8_t 0 in case of success, error id otherwise.
      * @impl done
@@ -179,7 +191,7 @@ namespace Diagnostic
 
     /** <API_REF>
      * @module diagnostic 0x14
-     * @action checkDecisionLoop 0x0D
+     * @action checkDecisionLoop 0x0E
      * @desc Checks the status of the Decision Loop module.
      * @result result uint8_t 0 in case of success, error id otherwise.
      * @impl done
@@ -194,18 +206,19 @@ namespace Diagnostic
     static ActionCallback actions[] = {
         IsEnabled, // 0x00
         RebootInDiagnosticMode, // 0x01
-        CheckLED, // 0x02
-        CheckI2C, // 0x03
-        CheckSpeaker, // 0x04
-        CheckMicrophone, // 0x05
-        CheckCamera, // 0x06
-        CheckLaser, // 0x07
-        CheckIMU, // 0x08
-        CheckPower, // 0x09
-        CheckMotorDriver, // 0x0A
-        CheckAnalogReader, // 0x0B
-        CheckControlLoop, // 0x0C
-        CheckDecisionLoop // 0x0D
+        RebootInNormalMode, // 0x02
+        CheckLED, // 0x03
+        CheckI2C, // 0x04
+        CheckSpeaker, // 0x05
+        CheckMicrophone, // 0x06
+        CheckCamera, // 0x07
+        CheckLaser, // 0x08
+        CheckIMU, // 0x09
+        CheckPower, // 0x0A
+        CheckMotorDriver, // 0x0B
+        CheckAnalogReader, // 0x0C
+        CheckControlLoop, // 0x0D
+        CheckDecisionLoop // 0x0E
     };
 
     static void Register(Dispatcher& dispatcher)

@@ -1,6 +1,7 @@
 #include "Robot.hpp"
 #include "common/Log.hpp"
 #include "common/LED.hpp"
+#include "settings/Settings.hpp"
 
 Robot* Robot::instance = nullptr;
 
@@ -12,6 +13,13 @@ Robot::Robot()
 Status Robot::init()
 {
     LOG_SCOPE(TAG, "Robot::init");
+
+    // Initialize the settings system
+    if (Status err = Settings::Init(); err != Status::Ok)
+    {
+        LOG_ERROR(TAG, "Couldn't initialize settings system");
+        return err;
+    }
 
     // Initialize the LED module to diplay status
     if (Status err = LED::Init(); err != Status::Ok)
@@ -28,15 +36,24 @@ Status Robot::init()
         return err;
     }
 
+    // Start network manager directly
+    // WHY ? Because if something fails next, we want to be able to connect to the web interface to investigate the issue
+    if (Status err = network_manager.start(); err != Status::Ok)
+    {
+        LOG_ERROR(TAG, "Failed to start NetworkManager module");
+        // TODO : Display error on screen
+        return err;
+    }
+
     if (Status err = ui_manager.init(); err != Status::Ok)
     {
         return err;
     }
 
-    if (Status err = audio_manager.init(); err != Status::Ok)
-    {
-        return err;
-    }
+    // if (Status err = audio_manager.init(); err != Status::Ok)
+    // {
+    //     return err;
+    // }
 
     if (Status err = body.init(); err != Status::Ok)
     {
@@ -135,12 +152,17 @@ Status Robot::deinit()
         return err;
     }
 
-    if (Status err = audio_manager.deinit(); err != Status::Ok)
+    // if (Status err = audio_manager.deinit(); err != Status::Ok)
+    // {
+    //     return err;
+    // }
+
+    if (Status err = ui_manager.deinit(); err != Status::Ok)
     {
         return err;
     }
 
-    if (Status err = ui_manager.deinit(); err != Status::Ok)
+    if (Status err = Settings::Deinit(); err != Status::Ok)
     {
         return err;
     }

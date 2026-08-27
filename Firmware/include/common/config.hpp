@@ -124,6 +124,7 @@ constexpr uint32_t IMU_I2C_CLOCK = 400'000; // Hz
 // number of samples to gather for calibration
 constexpr uint16_t IMU_NB_CALIB_SAMPLES = 100;
 // NOTE : Internal robot imu update is driven by the main timer at 200Hz
+constexpr float GRAVITY = 9.81f; // m/s^2
 
 
 /** Motor **/

@@ -9,7 +9,7 @@ namespace Menus
     {
     public:
         constexpr static uint8_t HEADER_HEIGHT = 10;
-        constexpr static uint8_t HEADER_PADDING = 5;
+        constexpr static uint8_t HEADER_PADDING = 2;
         constexpr static uint8_t HEADER_TITLE_ANIMATION_SHIFT = 16;
 
         Menu() = default;

@@ -121,14 +121,6 @@ public:
     Status askLegPosition(Leg::Id leg_id, float x_m, float y_m, float z_m, IPC::OverrideMode mode = IPC::OverrideMode::Absolute);
 
     /**
-     * @brief Request a gait type.
-     * @param gait The gait type to request.
-     * @return Error code indicating success or failure of the operation.
-     * @note The requested gait will be applied or not depending on the Decision Loop's internal logic (safeguard, auto life level, etc.)
-     */
-    Status askGaitType(GaitPlanner::GaitType gait);
-
-    /**
     * @brief Request a specific joint to be moved to a specific angle.
     * @param joint_id The ID of the joint to control.
     * @param angle_rad The target angle for the joint in radians.
@@ -148,7 +140,6 @@ private:
     Vec3f askedBodyVel;
     Vec3f askedBodyRot;
     Vec3f askedBodyPos;
-    GaitPlanner::GaitType askedGait = GaitPlanner::GaitType::Walk;
     IPC::LegOverride askedLegOverrides[(int) Leg::Id::Count];
     IPC::JointOverride askedJointAngles[(int) Joint::Id::Count];
     uint32_t last_ask_timestamp_ms = 0;

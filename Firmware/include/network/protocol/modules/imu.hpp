@@ -1,5 +1,8 @@
 #pragma once
 #include "network/protocol/Protocol.hpp"
+#include "common/RPC.hpp"
+#include "common/config.hpp"
+#include "drivers/IMUDriver.hpp"
 #include "Robot.hpp"
 #include <esp_system.h>
 
@@ -14,12 +17,15 @@ namespace IMU
      * @action getAcceleration 0x00
      * @desc Gets the current acceleration vector from the IMU.
      * @result acceleration Vec3f Acceleration vector in m/s^2 (x, y, z).
-     * @impl partial
+     * @impl done
      */
     static void GetAcceleration(const RequestContext& ctx, const uint8_t* payload)
     {
-        ctx.respond(ResponseStatus::Ok);
-        // TODO : Implement
+        RPC::ExecuteThreadSafe<Vec3f>([](){
+            return Robot::GetInstance().getBody().getIMUController().getAcceleration();
+        }, [ctx](Vec3f vec){
+            ctx.respond(ResponseStatus::Ok, (uint8_t*) &vec, sizeof(vec));
+        });
     }
 
     /** <API_REF>
@@ -27,12 +33,15 @@ namespace IMU
      * @action getAngularVelocity 0x01
      * @desc Gets the current angular velocity vector from the IMU.
      * @result angular_velocity Vec3f Angular velocity vector in rad/s (x, y, z).
-     * @impl partial
+     * @impl done
      */
     static void GetAngularVelocity(const RequestContext& ctx, const uint8_t* payload)
     {
-        ctx.respond(ResponseStatus::Ok);
-        // TODO : Implement
+        RPC::ExecuteThreadSafe<Vec3f>([](){
+            return Robot::GetInstance().getBody().getIMUController().getAngularVelocity();
+        }, [ctx](Vec3f vec){
+            ctx.respond(ResponseStatus::Ok, (uint8_t*) &vec, sizeof(vec));
+        });
     }
 
     /** <API_REF>

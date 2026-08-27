@@ -21,7 +21,7 @@ void app_main()
     {
         // Special boot state detected.
         // The corresponding boot will be handled by the BootManager.
-        // just return to avoid booting as normal (should not happen anyway)
+        // wait forever to avoid booting as normal (should not happen anyway)
         return;
     }
 

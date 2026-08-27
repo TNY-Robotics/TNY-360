@@ -5,20 +5,14 @@
 
 GaitPlanner::GaitPlanner()
 {
-    // set default leg positions (relative to ground)
-    leg_default_pos[0] = Vec3f( WALK_LEG_SPREAD_X_M,  WALK_LEG_SPREAD_Y_M, 0.f); // FL
-    leg_default_pos[1] = Vec3f(-WALK_LEG_SPREAD_X_M,  WALK_LEG_SPREAD_Y_M, 0.f); // BL
-    leg_default_pos[2] = Vec3f(-WALK_LEG_SPREAD_X_M, -WALK_LEG_SPREAD_Y_M, 0.f); // BR
-    leg_default_pos[3] = Vec3f( WALK_LEG_SPREAD_X_M, -WALK_LEG_SPREAD_Y_M, 0.f); // FR
-
-    setGaitConfig(GaitConfig()); // default config
+    setConfig(GaitConfig()); // default config
 }
 
 GaitPlanner::GaitPlanner(GaitConfig config) : gait_config(config)
 {
     // little trick to use the default constructor
     *this = GaitPlanner(); 
-    setGaitConfig(config);
+    setConfig(config);
 }
 
 void GaitPlanner::setVelocityCommand(float x_ms, float y_ms, float z_rads)
@@ -28,9 +22,10 @@ void GaitPlanner::setVelocityCommand(float x_ms, float y_ms, float z_rads)
     cmd_vel_angular = z_rads;
 }
 
-void GaitPlanner::setGaitConfig(const GaitConfig& config)
+void GaitPlanner::setConfig(const GaitConfig& config)
 {
     gait_config = config;
+    apply_leg_spread();
     apply_gait_offsets();
 }
 
@@ -54,7 +49,7 @@ Status GaitPlanner::update(float dt, BodyCartesianState& state)
     }
     if (!is_moving) // just started moving, reset gait phase
     {
-        main_gait_phase = 0.0f;
+        main_gait_phase = 0.5f;
         is_moving = true;
         LOG_DEBUG(TAG, "Started moving.");
     }
@@ -119,6 +114,14 @@ Status GaitPlanner::update(float dt, BodyCartesianState& state)
     }
 
     return Status::Ok;
+}
+
+void GaitPlanner::apply_leg_spread()
+{
+    leg_default_pos[0] = Vec3f( gait_config.leg_spread_m.x,  gait_config.leg_spread_m.y, 0.f); // FL
+    leg_default_pos[1] = Vec3f(-gait_config.leg_spread_m.x,  gait_config.leg_spread_m.y, 0.f); // BL
+    leg_default_pos[2] = Vec3f(-gait_config.leg_spread_m.x, -gait_config.leg_spread_m.y, 0.f); // BR
+    leg_default_pos[3] = Vec3f( gait_config.leg_spread_m.x, -gait_config.leg_spread_m.y, 0.f); // FR
 }
 
 void GaitPlanner::apply_gait_offsets()

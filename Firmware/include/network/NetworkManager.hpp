@@ -25,6 +25,12 @@ public:
     Status deinit();
 
     /**
+     * @brief Start the network manager, enabling Wi-Fi and other network services.
+     * @return Error code indicating success or failure.
+     */
+    Status start();
+
+    /**
      * @brief Get the WiFiManager instance.
      * @return Reference to the WiFiManager instance.
      */

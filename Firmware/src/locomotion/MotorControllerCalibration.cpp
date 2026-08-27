@@ -96,9 +96,9 @@ Status MotorController::run_calibration_sequence()
     // Test deadband size
     LOG_DEBUG(TAG, "Testing deadband size");
     {
-        if  (noise_v > 0.015f) // If noise > 15mV, hardcode deadband because we won't be able to detect it properly
+        if  (noise_v > 0.01f) // If noise > 10mV, hardcode deadband because we won't be able to detect it properly
         {
-            LOG_WARNING(TAG, "Feedback noise is quite high (%.3f V > 15mV). Hardcoding deadband size of around 1 degree", noise_v);
+            LOG_WARNING(TAG, "Feedback noise is quite high (%.3f V > 10mV). Hardcoding deadband size of around 1 degree", noise_v);
             deadband_size = 0.01; // around 1 degree, which is a common value for servomotors.
         }
         else
@@ -113,7 +113,7 @@ Status MotorController::run_calibration_sequence()
                 return Status::Unknown;
             }
         }
-        LOG_DEBUG(TAG, "==> Deadband size : %.1f PWM units (%.2f ms, %.2f deg)", deadband_size, MotorDriver::PWM_TO_DC(deadband_size), MotorDriver::PWM_TO_DC(deadband_size) * 90.f);
+        LOG_DEBUG(TAG, "==> Deadband size : %.1f ms (%.2f deg)", deadband_size, deadband_size * 90.f);
     }
     this->calibration_progress = 0.6f;
 

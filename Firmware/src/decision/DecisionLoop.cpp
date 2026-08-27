@@ -95,13 +95,6 @@ Status DecisionLoop::askLegPosition(Leg::Id leg_id, float x_m, float y_m, float 
     return Status::Ok;
 }
 
-Status DecisionLoop::askGaitType(GaitPlanner::GaitType gait)
-{
-    last_ask_timestamp_ms = esp_log_timestamp();
-    askedGait = gait;
-    return Status::Ok;
-}
-
 Status DecisionLoop::askJointAngle(Joint::Id joint_id, float angle_rad, IPC::OverrideMode mode)
 {
     last_ask_timestamp_ms = esp_log_timestamp();
@@ -136,7 +129,6 @@ void DecisionLoop::decision_loop()
         final_intent.body_vel = askedBodyVel;
         final_intent.body_rot = askedBodyRot;
         final_intent.body_pos = askedBodyPos;
-        final_intent.gait = askedGait;
         for (int i = 0; i < (int) Joint::Id::Count; i++)
         {
             final_intent.joint_overrides[i] = askedJointAngles[i];

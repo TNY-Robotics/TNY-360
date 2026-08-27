@@ -193,7 +193,6 @@ Status ControlLoop::control_task()
     {
         // Brain is overloaded or crashed. Force robot stop.
         intent.body_vel = Vec3f(0.f, 0.f, 0.f);
-        intent.gait = GaitPlanner::GaitType::Walk;
 
         if (!watchdog_active) {
             LOG_WARNING(TAG, "Control intent watchdog triggered. Stop overthinking!");
@@ -246,8 +245,8 @@ Status ControlLoop::control_task()
         joint->getPrediction(state.joints[i].model_angle_rad);
         joint->getPosition(state.joints[i].estimated_angle_rad);
     }
-    state.body_orientation = Robot::GetInstance().getBody().getIMU().getOrientation();
-    state.imu_down_vector = Robot::GetInstance().getBody().getIMU().getDownVector();
+    state.body_orientation = Robot::GetInstance().getBody().getIMUController().getOrientation();
+    state.imu_down_vector = Robot::GetInstance().getBody().getIMUController().getDownVector();
     IPC::setState(state);
 
     /*** 2 - RUN CARTESIAN CONTROL (USING BRAIN CONTROL INTENT) ***/
@@ -266,12 +265,6 @@ Status ControlLoop::control_task()
     if (new_intent)
     {
         gait_planner.setVelocityCommand(intent.body_vel.x, intent.body_vel.y, intent.body_vel.z);
-        GaitPlanner::GaitConfig current_config = gait_planner.getConfig();
-        if (current_config.gait_type != intent.gait)
-        {
-            current_config.gait_type = intent.gait;
-            gait_planner.setGaitConfig(current_config);
-        }
     }
     perf_gait.start();
     gait_planner.update(CONTROL_LOOP_DT_S, cartesian_state);

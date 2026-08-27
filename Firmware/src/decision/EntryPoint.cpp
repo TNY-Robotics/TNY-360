@@ -14,6 +14,10 @@ void DecisionLoop::update(float dt, const IPC::RobotState& state)
     // LOG_INFO(TAG, "Voltage: {%.2f} V, Current: {%.2f} A, Power: {%.2f} W", data.voltage_v, data.current_a, data.power_w);
     // NOTE for future battery estimation :
     // - The BMS on the battery pack cuts power at 9V
+
+    // AnalogDriver::Value voltage;
+    // AnalogDriver::GetVoltage(0, voltage);
+    // printf(">Voltage:%.4f\n", voltage);
 }
 
 void DecisionLoop::fillIntent(IPC::ControlIntent& intent, const IPC::RobotState& state)

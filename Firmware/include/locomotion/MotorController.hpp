@@ -44,7 +44,7 @@ public:
     };
 
     /** <API_REF>
-     * @type CalibrationData
+     * @type MotorController::CalibrationData
      * @desc Calibration data for the motor controller.
      * @field dc_min float32 Minimum Duty Cycle value corresponding to the minimum physical position of the motor.
      * @field dc_max float32 Maximum Duty Cycle value corresponding to the maximum physical position of the motor.

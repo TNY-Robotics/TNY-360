@@ -18,3 +18,5 @@ enum class Status: uint8_t
     Failure,           // Used for general failures (it should have been ok, but something went wrong)
     Unknown,           // Used for unspecified errors
 };
+
+const char* StatusToString(Status status);

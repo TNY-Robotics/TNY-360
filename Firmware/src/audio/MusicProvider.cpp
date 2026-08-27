@@ -29,7 +29,8 @@ Status MusicProvider::loadFromFile(const char* filepath)
         return err;
     }
 
-    if (Status err = LittleFS::LoadFileContent(filepath, &file_content, &content_size); err != Status::Ok)
+    size_t bytes_read;
+    if (Status err = LittleFS::ReadFile(filepath, file_content, sizeof(file_content), bytes_read); err != Status::Ok)
     {
         // LOG_ERROR(TAG, "Failed to load WAV file '%s': %d", filepath, ErrorToString(err));
         return err;

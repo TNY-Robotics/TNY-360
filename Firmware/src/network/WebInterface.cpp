@@ -5,11 +5,33 @@
 #include "locomotion/MotorController.hpp"
 #include "ArduinoJson.hpp"
 #include "Robot.hpp"
+#include <sys/stat.h>
 
 // Code-embeded safemode html page
 extern const uint8_t safemode_html_start[] asm("_binary_safemode_html_start");
 extern const uint8_t safemode_html_end[]   asm("_binary_safemode_html_end");
 
+void sanitize_filepath(char* path) {
+    if (!path) return;
+    
+    int write_idx = 0;
+    for (int read_idx = 0; path[read_idx] != '\0'; ++read_idx) {
+        char c = path[read_idx];
+        
+        if ((c >= 'a' && c <= 'z') || 
+            (c >= 'A' && c <= 'Z') || 
+            (c >= '0' && c <= '9') || 
+            c == '.' || c == '-' || c == '_' || c == '/') {
+            
+            path[write_idx++] = c;
+        } 
+        else if (c == ' ') {
+            path[write_idx++] = '_';
+        }
+    }
+    
+    path[write_idx] = '\0';
+}
 
 WebInterface::WebInterface(WiFiManager* wifi_manager, uint16_t web_port)
     : wifi_manager(wifi_manager), port(web_port)
@@ -29,6 +51,7 @@ Status WebInterface::init()
     config.lru_purge_enable = true;
     config.recv_wait_timeout = 5;
     config.send_wait_timeout = 5;
+    config.stack_size = 8192; // 8KB stack size instead of 4 for the httpd task
 
     LOG_DEBUG(TAG, "Starting web server on port %d", port);
     if (httpd_start(&server, &config) != ESP_OK)
@@ -126,6 +149,65 @@ void WebInterface::registerURIHandlers()
     };
     httpd_register_uri_handler(server, &catch_all_uri);
 
+    // OPTIONS handler for CORS preflight requests
+    httpd_uri_t cors_uri = {
+        .uri       = "/*",
+        .method    = HTTP_OPTIONS,
+        .handler   = [](httpd_req_t *req) -> esp_err_t {
+            httpd_resp_set_status(req, "204 No Content");
+            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+            httpd_resp_set_hdr(req, "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+            httpd_resp_set_hdr(req, "Access-Control-Allow-Headers", "Content-Type");
+            return httpd_resp_send(req, NULL, 0);
+        },
+        .user_ctx  = this,
+        .is_websocket = false,
+        .handle_ws_control_frames = false,
+        .supported_subprotocol = nullptr,
+    };
+    httpd_register_uri_handler(server, &cors_uri); // fucking cors
+    
+    // Other handlers for usrdta API
+    httpd_uri_t usrdta_post_uri = {
+        .uri       = "/usrdta/*",
+        .method    = HTTP_POST,
+        .handler   = [](httpd_req_t *req) -> esp_err_t {
+            auto self = static_cast<WebInterface*>(req->user_ctx);
+            return self->usrdta_request_handler(req);
+        },
+        .user_ctx  = this,
+        .is_websocket = false,
+        .handle_ws_control_frames = false,
+        .supported_subprotocol = nullptr,
+    };
+    httpd_register_uri_handler(server, &usrdta_post_uri);
+    httpd_uri_t usrdta_put_uri = {
+        .uri       = "/usrdta/*",
+        .method    = HTTP_PUT,
+        .handler   = [](httpd_req_t *req) -> esp_err_t {
+            auto self = static_cast<WebInterface*>(req->user_ctx);
+            return self->usrdta_request_handler(req);
+        },
+        .user_ctx  = this,
+        .is_websocket = false,
+        .handle_ws_control_frames = false,
+        .supported_subprotocol = nullptr,
+    };
+    httpd_register_uri_handler(server, &usrdta_put_uri);
+    httpd_uri_t usrdta_delete_uri = {
+        .uri       = "/usrdta/*",
+        .method    = HTTP_DELETE,
+        .handler   = [](httpd_req_t *req) -> esp_err_t {
+            auto self = static_cast<WebInterface*>(req->user_ctx);
+            return self->usrdta_request_handler(req);
+        },
+        .user_ctx  = this,
+        .is_websocket = false,
+        .handle_ws_control_frames = false,
+        .supported_subprotocol = nullptr,
+    };
+    httpd_register_uri_handler(server, &usrdta_delete_uri);
+
     // Note: The 404 handler is less useful here because "/*" catches everything, 
     // except if the method is not GET (e.g., POST/PUT)
     httpd_register_err_handler(server, HTTPD_404_NOT_FOUND, [](httpd_req_t *req, httpd_err_code_t error) -> esp_err_t {
@@ -222,6 +304,12 @@ esp_err_t WebInterface::main_request_handler(httpd_req_t *req)
         }
     }
 
+    // if request starts with /usrdta, use the usrdta handler
+    if (strncmp(req->uri, "/usrdta", 7) == 0)
+    {
+        return usrdta_request_handler(req);
+    }
+
     std::string filepath = MOUNT_POINT;
     filepath += req->uri;
 
@@ -309,11 +397,237 @@ esp_err_t WebInterface::connect_request_handler(httpd_req_t *req)
     }
 
     // Attempt to connect to the new WiFi network
-    Status wifi_err = Robot::GetInstance().getNetworkManager().getWiFiManager().connect(ssid, password);
+    Status wifi_err = Robot::GetInstance().getNetworkManager().getWiFiManager().connectToAP(ssid, password);
     if (wifi_err != Status::Ok)
     {
         return httpd_resp_send(req, "Failed to connect to WiFi", HTTPD_RESP_USE_STRLEN);
     }
 
     return httpd_resp_send(req, "Connecting to WiFi...", HTTPD_RESP_USE_STRLEN);
+}
+
+esp_err_t WebInterface::usrdta_request_handler(httpd_req_t *req)
+{
+    char path[64];
+    snprintf(path, sizeof(path), "%s%s", LittleFS::USERDATA_ROOT_FOLDER, req->uri + 7); // +7 to skip "/usrdta"
+
+    if (strcmp(path, LittleFS::USERDATA_ROOT_FOLDER) == 0)
+    {
+        // Consider as root folder
+        snprintf(path, sizeof(path), "%s/", LittleFS::USERDATA_ROOT_FOLDER);
+    }
+
+    // Remove any query parameters from the path
+    char* query_pos = strchr(path, '?');
+    if (query_pos != nullptr)
+    {
+        *query_pos = '\0'; // Terminate the string at the query position
+    }
+
+    // Sanitize the path to prevent invalid characters
+    sanitize_filepath(path);
+
+    // little security check to prevent directory traversal attacks
+    if (strstr(path, "..") != nullptr)
+    {
+        return httpd_resp_send(req, "Bad boy, path traversal isn't kind >:(", HTTPD_RESP_USE_STRLEN);
+    }
+
+    bool isFolder = path[strlen(path) - 1] == '/';
+
+    // CORS AAAAAHHHHHH
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Headers", "Content-Type");
+
+    switch (req->method)
+    {
+    case HTTP_GET:
+    {
+        if (isFolder)
+        {
+            // If it's a directory, list it
+            httpd_resp_set_type(req, "application/json");
+            httpd_resp_sendstr_chunk(req, "[");
+
+            bool firstItem = true;
+            Status status = LittleFS::ListDir(path, [&](const char* name, bool isDir) {
+                if (!firstItem) httpd_resp_sendstr_chunk(req, ",");
+                firstItem = false;
+
+                char jsonChunk[128];
+                snprintf(jsonChunk, sizeof(jsonChunk), "{\"name\":\"%s\",\"type\":\"%s\"}", name, isDir ? "directory" : "file");
+                
+                httpd_resp_sendstr_chunk(req, jsonChunk);
+                return true;
+            });
+
+            httpd_resp_sendstr_chunk(req, "]");
+            httpd_resp_sendstr_chunk(req, NULL); // Indicate end of response
+            return status == Status::Ok ? ESP_OK : HTTPD_500_INTERNAL_SERVER_ERROR;
+        }
+        else
+        {
+            // If it's a file, serve it
+            struct stat st;
+            if (stat(path, &st) != 0 || S_ISDIR(st.st_mode))
+            {
+                return httpd_resp_send_404(req);
+            }
+
+            const char* mime_type = get_mime_type(path);
+            return send_file_chunked(req, path, mime_type, false);
+        }
+        break;
+    }
+    case HTTP_POST:
+    {
+        if (isFolder)
+        {
+            // get folder name
+            int name_len = req->content_len;
+            if (name_len <= 0 || name_len >= 64)
+            {
+                httpd_resp_set_status(req, "400 Bad Request");
+                return httpd_resp_send(req, "Invalid folder name", HTTPD_RESP_USE_STRLEN);
+            }
+            char folder_name[64];
+            if (httpd_req_recv(req, folder_name, name_len) <= 0)
+            {
+                httpd_resp_set_status(req, "400 Bad Request");
+                return httpd_resp_send(req, "Failed to read folder name", HTTPD_RESP_USE_STRLEN);
+            }
+            sanitize_filepath(folder_name);
+
+            // create the folder
+            char new_folder_path[128];
+            snprintf(new_folder_path, sizeof(new_folder_path), "%s/%s", path, folder_name);
+            if (mkdir(new_folder_path, 0755) != 0)
+            {
+                httpd_resp_set_status(req, "500 Internal Server Error");
+                LOG_ERROR(TAG, "Failed to create folder: %s, error: %d", new_folder_path, errno);
+                return httpd_resp_send(req, "Failed to create folder", HTTPD_RESP_USE_STRLEN);
+            }
+
+            return httpd_resp_send(req, "Folder created", HTTPD_RESP_USE_STRLEN);
+        }
+
+        // open file in write mode
+        FILE* f = fopen(path, "w");
+        if (!f)
+        {
+            httpd_resp_set_status(req, "500 Internal Server Error");
+            LOG_ERROR(TAG, "Failed to create file: %s, error: %d", path, errno);
+            return httpd_resp_send(req, "Failed to create file", HTTPD_RESP_USE_STRLEN);
+        }
+
+        int remaining = req->content_len;
+        char buf[1024]; // Receive buffer (1kB chunks)
+        
+        while (remaining > 0)
+        {
+            // read file chunk
+            int received = httpd_req_recv(req, buf, std::min(remaining, (int)sizeof(buf)));
+            
+            if (received <= 0)
+            {
+                // timeout or error
+                fclose(f);
+                remove(path); // Remove the incomplete file
+                httpd_resp_set_status(req, "500 Internal Server Error");
+                return httpd_resp_send(req, "Upload aborted", HTTPD_RESP_USE_STRLEN);
+            }
+
+            // Write chunk to the disk
+            if (fwrite(buf, 1, received, f) != received)
+            {
+                fclose(f);
+                remove(path);
+                httpd_resp_set_status(req, "500 Internal Server Error");
+                LOG_ERROR(TAG, "Disk write error while uploading file: %s, error: %d", path, errno);
+                return httpd_resp_send(req, "Disk write error", HTTPD_RESP_USE_STRLEN);
+            }
+            
+            remaining -= received;
+        }
+
+        fclose(f);
+        httpd_resp_set_status(req, "201 Created"); // noice
+        return httpd_resp_send(req, "File uploaded successfully", HTTPD_RESP_USE_STRLEN);
+        break;
+    }
+    case HTTP_DELETE:
+    {
+        struct stat st;
+        if (stat(path, &st) != 0) return httpd_resp_send_404(req);
+
+        if (int ret = remove(path); ret == 0)
+        {
+            httpd_resp_set_status(req, "200 OK");
+            return httpd_resp_send(req, "File deleted", HTTPD_RESP_USE_STRLEN);
+        }
+        else
+        {
+            if (errno == EISDIR)
+            {
+                if (Status err = LittleFS::DeleteDir(path); err == Status::Ok)
+                {
+                    httpd_resp_set_status(req, "200 OK");
+                    return httpd_resp_send(req, "Folder deleted", HTTPD_RESP_USE_STRLEN);
+                }
+                else
+                {
+                    httpd_resp_set_status(req, "500 Internal Server Error");
+                    LOG_ERROR(TAG, "Failed to delete folder: %s, error: %d", path, errno);
+                    return httpd_resp_send(req, "Failed to delete folder", HTTPD_RESP_USE_STRLEN);
+                }
+            }
+            else
+            {
+                httpd_resp_set_status(req, "500 Internal Server Error");
+                LOG_ERROR(TAG, "Failed to delete file: %s, error: %d", path, errno);
+                return httpd_resp_send(req, "Failed to delete file", HTTPD_RESP_USE_STRLEN);
+            }
+
+        }
+        break;
+    }
+    case HTTP_PUT:
+    {
+        // URL Query (ex: ?rename=new_name.txt)
+        char new_name[64] = {0};
+        char query[128];
+        
+        if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK)
+        {
+            if (httpd_query_key_value(query, "rename", new_name, sizeof(new_name)) == ESP_OK)
+            {
+                char new_path[128];
+                snprintf(new_path, sizeof(new_path), "%s/%s", LittleFS::USERDATA_ROOT_FOLDER, new_name);
+
+                // Rename the file
+                if (int ret = rename(path, new_path); ret == 0)
+                {
+                    httpd_resp_set_status(req, "200 OK");
+                    return httpd_resp_send(req, "File renamed", HTTPD_RESP_USE_STRLEN);
+                }
+                else
+                {
+                    httpd_resp_set_status(req, "500 Internal Server Error");
+                    LOG_ERROR(TAG, "Failed to rename file from %s to %s. Error code: %d", path, new_path, errno);
+                    return httpd_resp_send(req, "Failed to rename", HTTPD_RESP_USE_STRLEN);
+                }
+            }
+        }
+        
+        // If query parameter is missing or invalid
+        httpd_resp_set_status(req, "400 Bad Request");
+        return httpd_resp_send(req, "Missing 'rename' query parameter", HTTPD_RESP_USE_STRLEN);
+        break;
+    }
+    default:
+        break;
+    }
+
+    return ESP_OK;
 }

@@ -16,14 +16,7 @@ namespace Diagnostic
      * @note This function should be called when the diagnostic system is no longer needed, to free up resources.
      * @returns Status::Ok if the operation was successful, or an appropriate error status otherwise.
      */
-    Status Denit();
-
-    /**
-     * @brief Sets the diagnostic mode state.
-     * @note This function should not be used directly to toggle diagnostic mode. Use the RebootInDiagnosticMode() function to reboot into diagnostic mode instead.
-     * @param enable true to enable diagnostic mode, false to disable.
-     */
-    void SetDiagnosticMode(bool enable);
+    Status Deinit();
 
     /**
      * @brief Reboots the robot into diagnostic mode.
@@ -31,6 +24,13 @@ namespace Diagnostic
      * @returns Status::Ok if the operation was successful, or an appropriate error status otherwise.
      */
     Status RebootInDiagnosticMode();
+
+    /**
+     * @brief Reboots the robot into normal mode.
+     * @note This function will remove the diagnostic mode flags in NVS to ensure that the robot boots normally on the next restart.
+     * @returns Status::Ok if the operation was successful, or an appropriate error status otherwise.
+     */
+    Status RebootInNormalMode();
 
     /**
      * @brief Checks if the robot is currently in diagnostic mode.

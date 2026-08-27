@@ -180,7 +180,7 @@ namespace Menus
         if (xTaskCreatePinnedToCore(update_task, "updateMenu", 8192, nullptr, 1, &xTaskHandle, CORE_BRAIN) != pdPASS)
         {
             // ErrorHandle(ErrorStruct::MenusInitFailed);
-            return Status::Unknown;
+            return Status::Failure;
         }
 
         return Status::Ok;
