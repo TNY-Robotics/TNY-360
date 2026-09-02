@@ -1,3 +1,8 @@
+> [!WARNING]
+> V2 is coming soon ! If you plan on building this robot, maybe wait a couple of days :)
+> 
+> (join the discord [here](https://discord.gg/XGABkx5A4y) to get updates if you want)
+
 ![Banner](./Extras/banner.png)
 
 <div align="center">
