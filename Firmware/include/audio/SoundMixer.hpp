@@ -1,5 +1,5 @@
 #pragma once
-#include "audio/Speaker.hpp"
+#include "audio/ISpeaker.hpp"
 #include "audio/SoundProvider.hpp"
 #include "common/config.hpp"
 #include <mutex>
@@ -9,9 +9,9 @@ class SoundMixer
 public:
     constexpr static const char* TAG = "SoundMixer";
 
-    SoundMixer(Speaker& speaker);
+    SoundMixer();
 
-    Status init();
+    Status init(ISpeaker* speaker);
 
     Status deinit();
 
@@ -38,9 +38,9 @@ private:
     SoundProvider* providers[SPEAKER_NB_AUDIO_PROVIDERS];
     std::mutex mixerMutex;
     float masterVolume; // Master volume (0.0 to 1.0)
-    Speaker& speaker;
+    ISpeaker* speaker;
     bool running;
 
-    Speaker::Sample mixBuffer[MIX_BUFFER_SIZE];
-    Speaker::Sample sourceBuffer[MIX_BUFFER_SIZE];
+    ISpeaker::Sample mixBuffer[MIX_BUFFER_SIZE];
+    ISpeaker::Sample sourceBuffer[MIX_BUFFER_SIZE];
 };

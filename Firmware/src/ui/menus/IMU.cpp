@@ -1,8 +1,9 @@
 #include "ui/menus/IMU.hpp"
 #include "ui/Icons.hpp"
 #include "ui/Draw.hpp"
+#include "ui/Screen.hpp"
 #include "common/config.hpp"
-#include "drivers/IMUDriver.hpp"
+#include "Robot.hpp"
 
 MenuIMU::MenuIMU(Menu* parent)
     : Menu("IMU", parent, Icons::IMUMenu)
@@ -48,7 +49,12 @@ void MenuIMU::onRender()
 {
     renderHeader();
 
-    IMUDriver::IMUData& data = IMUDriver::GetData();
+    IMU* imu = Robot::GetInstance().getBody().getIMU();
+    if (imu == nullptr)
+    {
+        Draw::Text(0, Screen::GetInstance()->getInfo().height / 2 - 4, "No IMU Available");
+        return;
+    }
 
     switch (currentPage)
     {
@@ -57,17 +63,17 @@ void MenuIMU::onRender()
             Draw::Text(0, HEADER_HEIGHT + 4, "Accelerometer");
             {
                 char str[16+1];
-                sprintf(str, "X: %+1.2f G", data.accel_x_g);
+                sprintf(str, "X: %+1.2f m/s2", imu->getAcceleration().x);
                 Draw::Text(0, HEADER_HEIGHT + 4 + 12, str);
             }
             {
                 char str[16+1];
-                sprintf(str, "Y: %+1.2f G", data.accel_y_g);
+                sprintf(str, "Y: %+1.2f m/s2", imu->getAcceleration().y);
                 Draw::Text(0, HEADER_HEIGHT + 4 + 12 * 2, str);
             }
             {
                 char str[16+1];
-                sprintf(str, "Z: %+1.2f G", data.accel_z_g);
+                sprintf(str, "Z: %+1.2f m/s2", imu->getAcceleration().z);
                 Draw::Text(0, HEADER_HEIGHT + 4 + 12 * 3, str);
             }
             break;
@@ -77,17 +83,17 @@ void MenuIMU::onRender()
             Draw::Text(0, HEADER_HEIGHT + 4, "Gyroscope");
             {
                 char str[16+1];
-                sprintf(str, "X: %+1.2f deg/s", data.gyro_x_ds);
+                sprintf(str, "X: %+1.2f rad/s", imu->getAngularVelocity().x);
                 Draw::Text(0, HEADER_HEIGHT + 4 + 12, str);
             }
             {
                 char str[16+1];
-                sprintf(str, "Y: %+1.2f deg/s", data.gyro_y_ds);
+                sprintf(str, "Y: %+1.2f rad/s", imu->getAngularVelocity().y);
                 Draw::Text(0, HEADER_HEIGHT + 4 + 12 * 2, str);
             }
             {
                 char str[16+1];
-                sprintf(str, "Z: %+1.2f deg/s", data.gyro_z_ds);
+                sprintf(str, "Z: %+1.2f rad/s", imu->getAngularVelocity().z);
                 Draw::Text(0, HEADER_HEIGHT + 4 + 12 * 3, str);
             }
             break;

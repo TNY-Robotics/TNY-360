@@ -31,10 +31,10 @@ namespace Body
 
         RPC::ExecuteThreadSafe<Status>([enabledFlag](){
             Status err;
-            for (int i = 0; i < (int) Joint::Id::Count; i++)
+            for (int i = 0; i < (int) ::Joint::Id::Count; i++)
             {
                 bool isEnabled = (enabledFlag & (1 << i)) != 0;
-                Joint* joint = Joint::GetJoint((Joint::Id) i);
+                ::Joint* joint = ::Joint::GetJoint((::Joint::Id) i);
                 if (joint == nullptr) continue;
                 if (isEnabled) err = joint->enable();
                 else err = joint->disable();
@@ -59,9 +59,9 @@ namespace Body
     {
         RPC::ExecuteThreadSafe<uint16_t>([]() {
             uint16_t enabledFlag = 0;
-            for (int i = 0; i < (int) Joint::Id::Count; i++)
+            for (int i = 0; i < (int) ::Joint::Id::Count; i++)
             {
-                Joint* joint = Joint::GetJoint((Joint::Id) i);
+                ::Joint* joint = ::Joint::GetJoint((::Joint::Id) i);
                 if (joint != nullptr && joint->isEnabled())
                 {
                     enabledFlag |= (1 << i);
@@ -101,9 +101,9 @@ namespace Body
 
         if (clearOverrides)
         {
-            for (int i = 0; i < (int) Joint::Id::Count; i++)
+            for (int i = 0; i < (int) ::Joint::Id::Count; i++)
             {
-                Robot::GetInstance().getDecisionLoop().askJointAngle((Joint::Id) i, 0, IPC::OverrideMode::None);
+                Robot::GetInstance().getDecisionLoop().askJointAngle((::Joint::Id) i, 0, IPC::OverrideMode::None);
             }
         }
         Robot::GetInstance().getDecisionLoop().askBodyVelocity(x_ms, y_ms, z_rads);
@@ -129,12 +129,8 @@ namespace Body
      * @module body 0x03
      * @action setPosture 0x04
      * @desc Sets the target posture of the robot's body.
-     * @arg x_pos float32 X position in meters.
-     * @arg y_pos float32 Y position in meters.
-     * @arg z_pos float32 Z position in meters.
-     * @arg x_rot float32 X rotation in radians (Euler XYZ).
-     * @arg y_rot float32 Y rotation in radians (Euler XYZ).
-     * @arg z_rot float32 Z rotation in radians (Euler XYZ).
+     * @arg pos Vec3f position in meters.
+     * @arg rot Vec3f rotation in radians (Euler XYZ).
      * @arg clear_overrides bool Whether to clear joint overrides when setting the posture (default: true).
      * @impl done
      */
@@ -142,14 +138,8 @@ namespace Body
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        float x_pos, y_pos, z_pos;
-        if (reader.read(x_pos) != Status::Ok || reader.read(y_pos) != Status::Ok || reader.read(z_pos) != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
-        float x_rot, y_rot, z_rot;
-        if (reader.read(x_rot) != Status::Ok || reader.read(y_rot) != Status::Ok || reader.read(z_rot) != Status::Ok)
+        Vec3f pos, rot;
+        if (reader.read(pos) != Status::Ok || reader.read(rot) != Status::Ok)
         {
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
@@ -162,13 +152,13 @@ namespace Body
 
         if (clearOverrides)
         {
-            for (int i = 0; i < (int) Joint::Id::Count; i++)
+            for (int i = 0; i < (int) ::Joint::Id::Count; i++)
             {
-                Robot::GetInstance().getDecisionLoop().askJointAngle((Joint::Id) i, 0, IPC::OverrideMode::None);
+                Robot::GetInstance().getDecisionLoop().askJointAngle((::Joint::Id) i, 0, IPC::OverrideMode::None);
             }
         }
-        Robot::GetInstance().getDecisionLoop().askBodyPosition(x_pos, y_pos, z_pos);
-        Robot::GetInstance().getDecisionLoop().askBodyRotation(x_rot, y_rot, z_rot);
+        Robot::GetInstance().getDecisionLoop().askBodyPosition(pos.x, pos.y, pos.z);
+        Robot::GetInstance().getDecisionLoop().askBodyRotation(rot.x, rot.y, rot.z);
         ctx.respond(ResponseStatus::Ok);
     }
 

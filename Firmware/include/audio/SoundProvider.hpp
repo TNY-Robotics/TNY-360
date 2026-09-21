@@ -1,6 +1,6 @@
 #pragma once
 #include "common/utils.hpp"
-#include "audio/Speaker.hpp"
+#include "audio/ISpeaker.hpp"
 
 class SoundProvider
 {
@@ -15,5 +15,5 @@ public:
      * @return true if samples were provided, false if no more samples are available.
      * @note If false is returned, the mixer will delete this provider from its list.
      */
-    virtual bool provideSamples(Speaker::Sample* buffer, size_t sampleCount) = 0;
+    virtual bool provideSamples(ISpeaker::Sample* buffer, size_t sampleCount) = 0;
 };

@@ -3,8 +3,9 @@
 
 namespace Menus
 {
+    constexpr static const char* TAG = "Menus";
+    
     /// MENU CLASS
-
     class Menu
     {
     public:

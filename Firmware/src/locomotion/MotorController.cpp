@@ -247,12 +247,12 @@ Status MotorController::getCurrentPosition(float& result) const
         return Status::Ok;
     }
 
-    AnalogDriver::Value voltage_mV = 0;
-    if (Status err = AnalogDriver::GetVoltage(analog_channel, voltage_mV); err != Status::Ok)
+    AnalogDriver::Value voltage = 0;
+    if (Status err = AnalogDriver::GetVoltage(analog_channel, voltage); err != Status::Ok)
     {
         return err;
     }
-    float position = (static_cast<float>(voltage_mV) - calibration_data.feedback_min) /
+    float position = (static_cast<float>(voltage) - calibration_data.feedback_min) /
                      (calibration_data.feedback_max - calibration_data.feedback_min);
 
     result = position;

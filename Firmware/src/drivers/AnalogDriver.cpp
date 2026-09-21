@@ -4,7 +4,7 @@
 #include <esp_adc/adc_oneshot.h>
 #include "drivers/AnalogDriver.hpp"
 #include "common/Log.hpp"
-#include "common/config.hpp"
+#include "settings/Settings.hpp"
 #include "common/analysis/ArrayStats.hpp"
 #include "drivers/AnalogDriver.Error.hpp"
 #include <vector>
@@ -19,6 +19,13 @@ namespace AnalogDriver
     static adc_cali_handle_t cali_handle = nullptr;
 
     static Value voltages_buffer[static_cast<size_t>(CHANNEL_COUNT)] = { 0 };
+
+    gpio_num_t gpio_select_1 = GPIO_NUM_NC;
+    gpio_num_t gpio_select_2 = GPIO_NUM_NC;
+    gpio_num_t gpio_select_3 = GPIO_NUM_NC;
+    gpio_num_t gpio_select_4 = GPIO_NUM_NC;
+
+    adc_channel_t channel = ADC_CHANNEL_1; // Default channel, will be overridden by settings
 
     static Channel cur_channel = 0;
     
@@ -42,10 +49,10 @@ namespace AnalogDriver
             // REG_WRITE(GPIO_OUT1_W1TC_REG, clear_mask); // Clear (W1TC = Write 1 To Clear)
 
             // Old version using gpio_set_level, much slower due to multiple function calls and checks
-            if (gpio_set_level(SCANNER_SLCT_PIN1, (channel & 0b0001) >> 0) != ESP_OK ||
-                gpio_set_level(SCANNER_SLCT_PIN2, (channel & 0b0010) >> 1) != ESP_OK ||
-                gpio_set_level(SCANNER_SLCT_PIN3, (channel & 0b0100) >> 2) != ESP_OK ||
-                gpio_set_level(SCANNER_SLCT_PIN4, (channel & 0b1000) >> 3) != ESP_OK)
+            if (gpio_set_level(gpio_select_1, (channel & 0b0001) >> 0) != ESP_OK ||
+                gpio_set_level(gpio_select_2, (channel & 0b0010) >> 1) != ESP_OK ||
+                gpio_set_level(gpio_select_3, (channel & 0b0100) >> 2) != ESP_OK ||
+                gpio_set_level(gpio_select_4, (channel & 0b1000) >> 3) != ESP_OK)
             {
                 LOG_ERROR(TAG, "Failed to select index with GPIO");
                 Error::RegisterErrorEvent(ErrorEventGPIOSelectFailed(ESP_FAIL));
@@ -57,7 +64,7 @@ namespace AnalogDriver
         Status read(Value& outVoltage)
         {
             int raw_value;
-            if (esp_err_t err = adc_oneshot_read(adc_handle, ADC_CHANNEL_1, &raw_value); err != ESP_OK)
+            if (esp_err_t err = adc_oneshot_read(adc_handle, channel, &raw_value); err != ESP_OK)
             {
                 LOG_ERROR(TAG, "Failed to read ADC value with error: 0x%0x", err);
                 Error::RegisterErrorEvent(ErrorEventADCReadFailed(err));
@@ -92,11 +99,17 @@ namespace AnalogDriver
 
         if (initialized) return Status::Ok;
 
+        gpio_select_1 = static_cast<gpio_num_t>(Settings::GetConfig().analog.gpio_select_1);
+        gpio_select_2 = static_cast<gpio_num_t>(Settings::GetConfig().analog.gpio_select_2);
+        gpio_select_3 = static_cast<gpio_num_t>(Settings::GetConfig().analog.gpio_select_3);
+        gpio_select_4 = static_cast<gpio_num_t>(Settings::GetConfig().analog.gpio_select_4);
+        channel = static_cast<adc_channel_t>(Settings::GetConfig().analog.channel);
+
         // Setup select pins
         gpio_config_t io_conf;
         io_conf.intr_type = GPIO_INTR_DISABLE;
         io_conf.mode = GPIO_MODE_OUTPUT;
-        io_conf.pin_bit_mask = (1ULL << SCANNER_SLCT_PIN1) | (1ULL << SCANNER_SLCT_PIN2) | (1ULL << SCANNER_SLCT_PIN3) | (1ULL << SCANNER_SLCT_PIN4);
+        io_conf.pin_bit_mask = (1ULL << gpio_select_1) | (1ULL << gpio_select_2) | (1ULL << gpio_select_3) | (1ULL << gpio_select_4);
         io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE; // should have external pull-down
         io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
         if (esp_err_t err = gpio_config(&io_conf); err != ESP_OK)
@@ -124,7 +137,7 @@ namespace AnalogDriver
             .atten = ADC_ATTEN_DB_12,
             .bitwidth = ADC_BITWIDTH_DEFAULT,
         };
-        if (esp_err_t err = adc_oneshot_config_channel(adc_handle, ADC_CHANNEL_1, &config); err != ESP_OK)
+        if (esp_err_t err = adc_oneshot_config_channel(adc_handle, channel, &config); err != ESP_OK)
         {
             LOG_ERROR(TAG, "Failed to configure ADC oneshot channel");
             Error::RegisterErrorEvent(ErrorEventOneshotConfigFailed(err));
@@ -132,9 +145,15 @@ namespace AnalogDriver
         }
 
         // configure calibration handle
+        // adc_cali_curve_fitting_config_t cali_config = {
+        //     .unit_id = ADC_UNIT_1,
+        //     .chan = ADC_CHANNEL_1,
+        //     .atten = ADC_ATTEN_DB_12,
+        //     .bitwidth = ADC_BITWIDTH_DEFAULT,
+        // };
         adc_cali_curve_fitting_config_t cali_config = {
             .unit_id = ADC_UNIT_1,
-            .chan = ADC_CHANNEL_1,
+            .chan = channel,
             .atten = ADC_ATTEN_DB_12,
             .bitwidth = ADC_BITWIDTH_DEFAULT,
         };

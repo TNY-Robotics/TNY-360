@@ -1,45 +1,36 @@
-#include "locomotion/IMUController.hpp"
-#include "drivers/IMUDriver.hpp"
+#include "locomotion/IMU.hpp"
 #include "common/config.hpp"
 #include "common/Log.hpp"
+#include "settings/Settings.hpp"
+#include "locomotion/IMUMPU.hpp"
+#include "locomotion/IMULSM.hpp"
 
-IMUController::IMUController()
-: downVector(0.f, 0.f, -1.f)
+IMU* IMU::Create()
 {
+    // Determine which IMU to use based on settings
+    IMUType imu_type = Settings::GetConfig().imu.type;
     
-}
-
-Status IMUController::init()
-{
-    LOG_SCOPE(TAG, "IMUController::init");
-    
-    if (Status err = IMUDriver::Init(); err != Status::Ok)
+    if (imu_type == IMUType::IMU_MPU6050)
     {
-        return err;
+        return new IMUMPU();
     }
-    return Status::Ok;
-}
-
-Status IMUController::deinit()
-{
-    if (Status err = IMUDriver::Deinit(); err != Status::Ok)
+    else if (imu_type == IMUType::IMU_LSM6DS3)
     {
-        return err;
+        return new IMULSM();
     }
-    return Status::Ok;
+    return nullptr;
 }
 
-Status IMUController::estimateState(float dt)
+Status IMU::estimateState(float dt)
 {
     // Get the data
-    IMUDriver::IMUData& data = IMUDriver::GetData();
+    
+    // Underlying IMU driver call to get the data from the IMU
+    if (Status err = provide_data(acceleration, angularVelocity); err != Status::Ok)
+    {
+        return err;
+    }
     // TODO : When calibration is implemented, apply it here
-    angularVelocity.x = DEG_TO_RAD(data.gyro_x_ds);
-    angularVelocity.y = DEG_TO_RAD(data.gyro_y_ds);
-    angularVelocity.z = DEG_TO_RAD(data.gyro_z_ds);
-    acceleration.x = data.accel_x_g * GRAVITY;
-    acceleration.y = data.accel_y_g * GRAVITY;
-    acceleration.z = data.accel_z_g * GRAVITY;
 
     // Estimate down vector (only using complementary filter for now, might change for madgwicks later)
 
@@ -54,7 +45,7 @@ Status IMUController::estimateState(float dt)
 
     // fuse with accelerometer
     float alpha = 0.95f; // complementary filter coefficient
-    Vec3f accel_vector = Vec3f(data.accel_x_g, data.accel_y_g, data.accel_z_g).normalized();
+    Vec3f accel_vector = Vec3f(acceleration.x, acceleration.y, acceleration.z).normalized();
     downVector = (rotated_downVector * alpha + accel_vector * (1.0f - alpha)).normalized();
 
     // update orientation

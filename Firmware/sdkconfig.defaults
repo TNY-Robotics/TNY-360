@@ -20,6 +20,9 @@ CONFIG_SPIRAM_SPEED_80M=y
 CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
 CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ=240
 
+# Disable secondary console to free gpio 19 and 20
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+
 # Websocket support
 CONFIG_HTTPD_WS_SUPPORT=y
 
@@ -33,6 +36,9 @@ CONFIG_HTTPD_MAX_REQ_HDR_LEN=1024
 
 # Increase FreeRTOS scheduler update rate
 CONFIG_FREERTOS_HZ=1000
+
+# Increase main task stack size
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
 
 # Force default tasks on CORE_BRAIN (Let CORE_REFLEX alone)
 CONFIG_ESP_MAIN_TASK_AFFINITY_CPU0=y

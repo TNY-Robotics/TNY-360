@@ -129,8 +129,8 @@ void MenuSound::onRender()
     }
 
     if (editing)
-        Draw::RectFilled(0, HEADER_HEIGHT + 4 + optIndex * 12, 2, 8, ScreenDriver::COLOR_WHITE);
-    else Draw::RectFilled(0, HEADER_HEIGHT + 4 + optIndex * 12 + 2, 2, 4, ScreenDriver::COLOR_WHITE);
+        Draw::RectFilled(0, HEADER_HEIGHT + 4 + optIndex * 12, 2, 8, Screen::COLOR_WHITE);
+    else Draw::RectFilled(0, HEADER_HEIGHT + 4 + optIndex * 12 + 2, 2, 4, Screen::COLOR_WHITE);
 }
 
 void MenuSound::onUpdate()
@@ -147,7 +147,7 @@ void MenuSound::applySoundSettings()
         if (musicProvider == nullptr)
         {
             musicProvider = new MusicProvider();
-            musicProvider->loadFromFile("test.wav");
+            musicProvider->loadFromFile("/userdata/song.wav");
             man.getMixer().addSoundProvider(musicProvider);
         }
     }

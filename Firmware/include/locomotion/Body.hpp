@@ -2,7 +2,7 @@
 #include "locomotion/Leg.hpp"
 #include "locomotion/Joint.hpp"
 #include "common/geometry.hpp"
-#include "locomotion/IMUController.hpp"
+#include "locomotion/IMU.hpp"
 #include "locomotion/ControlLoop.hpp"
 
 class Body
@@ -108,17 +108,17 @@ public:
     inline Joint& getRightEar() { return ear_r; }
 
     /**
-     * @brief Get the IMU controller.
-     * @return Reference to the IMU controller.
+     * @brief Get the IMU.
+     * @return Pointer to the IMU.
      */
-    inline IMUController& getIMUController() { return imu; }
+    inline IMU* getIMU() { return imu; }
 
 private:
     Leg legs[4]; // Array of 4 legs (FL, BL, BR, FR order)
     Joint ear_l; // Left Ear Joint
     Joint ear_r; // Right Ear Joint
 
-    IMUController imu;
+    IMU* imu;
 
     // Kinematic parameters and state
     Vec3f local_hip_positions_mm[4]; // local to base_link (body center)

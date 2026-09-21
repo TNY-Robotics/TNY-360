@@ -1,46 +1,13 @@
 #include "drivers/CameraDriver.hpp"
 #include "common/Log.hpp"
 #include "common/I2C.hpp"
+#include "settings/Settings.hpp"
 #include "Robot.hpp"
 #include "drivers/CameraDriver.Error.hpp"
 #include "driver/i2c_master.h"
 #include "esp_timer.h"
 
 constexpr const char* TAG = "CameraDriver";
-
-static camera_config_t camera_config = {
-    .pin_pwdn  = -1,
-    .pin_reset = -1,
-    .pin_xclk = GPIO_NUM_8,
-    .pin_sccb_sda = -1, // -1 because i2c port should already be initialized
-    .pin_sccb_scl = -1, // -1 because i2c port should already be initialized
-
-    .pin_d7 = GPIO_NUM_19,
-    .pin_d6 = GPIO_NUM_18,
-    .pin_d5 = GPIO_NUM_17,
-    .pin_d4 = GPIO_NUM_15,
-    .pin_d3 = GPIO_NUM_6,
-    .pin_d2 = GPIO_NUM_4,
-    .pin_d1 = GPIO_NUM_5,
-    .pin_d0 = GPIO_NUM_7,
-    .pin_vsync = GPIO_NUM_3,
-    .pin_href = GPIO_NUM_20,
-    .pin_pclk = GPIO_NUM_16,
-
-    .xclk_freq_hz = 20000000, // 20Mhz
-    .ledc_timer = LEDC_TIMER_0,
-    .ledc_channel = LEDC_CHANNEL_0,
-
-    .pixel_format = PIXFORMAT_JPEG,
-    .frame_size = FRAMESIZE_VGA,
-
-    .jpeg_quality = 20,
-    .fb_count = 1,
-    .fb_location = CAMERA_FB_IN_PSRAM, // We have external PSRAM, use it :)
-    .grab_mode = CAMERA_GRAB_WHEN_EMPTY,
-
-    .sccb_i2c_port = I2C_NUM_1, // using secondary i2c bus (the "slow" one)
-};
 
 typedef struct {
     httpd_req_t *req;
@@ -107,7 +74,7 @@ esp_err_t stream_handler(httpd_req_t *req)
 {
     camera_fb_t *fb = nullptr;
     esp_err_t res = ESP_OK;
-    char *part_buf[128];
+    char part_buf[128];
 
     // Send multipart header
     res = httpd_resp_set_type(req, "multipart/x-mixed-replace;boundary=" "____boundary____");
@@ -174,6 +141,40 @@ Status CameraDriver::init()
         Error::RegisterErrorEvent(ErrorEventI2CInitFailed());
         return err;
     }
+
+    camera_config_t camera_config = {
+        .pin_pwdn  = Settings::GetConfig().camera.gpio.pin_pwdn,
+        .pin_reset = Settings::GetConfig().camera.gpio.pin_reset,
+        .pin_xclk = Settings::GetConfig().camera.gpio.pin_xclk,
+        .pin_sccb_sda = Settings::GetConfig().camera.gpio.pin_sccb_sda,
+        .pin_sccb_scl = Settings::GetConfig().camera.gpio.pin_sccb_scl,
+
+        .pin_d7 = Settings::GetConfig().camera.gpio.pin_d7,
+        .pin_d6 = Settings::GetConfig().camera.gpio.pin_d6,
+        .pin_d5 = Settings::GetConfig().camera.gpio.pin_d5,
+        .pin_d4 = Settings::GetConfig().camera.gpio.pin_d4,
+        .pin_d3 = Settings::GetConfig().camera.gpio.pin_d3,
+        .pin_d2 = Settings::GetConfig().camera.gpio.pin_d2,
+        .pin_d1 = Settings::GetConfig().camera.gpio.pin_d1,
+        .pin_d0 = Settings::GetConfig().camera.gpio.pin_d0,
+        .pin_vsync = Settings::GetConfig().camera.gpio.pin_vsync,
+        .pin_href = Settings::GetConfig().camera.gpio.pin_href,
+        .pin_pclk = Settings::GetConfig().camera.gpio.pin_pclk,
+
+        .xclk_freq_hz = Settings::GetConfig().camera.xclk_freq_hz,
+        .ledc_timer = LEDC_TIMER_0,
+        .ledc_channel = LEDC_CHANNEL_0,
+
+        .pixel_format = PIXFORMAT_JPEG,
+        .frame_size = FRAMESIZE_VGA,
+
+        .jpeg_quality = 20,
+        .fb_count = 1,
+        .fb_location = CAMERA_FB_IN_PSRAM, // We have external PSRAM, use it :)
+        .grab_mode = CAMERA_GRAB_WHEN_EMPTY,
+
+        .sccb_i2c_port = I2C_NUM_1, // using secondary i2c bus (the "slow" one)
+    };
 
     // initialize the camera
     if (esp_err_t err = esp_camera_init(&camera_config); err != ESP_OK)

@@ -1,11 +1,13 @@
 #pragma once
 #include "common/utils.hpp"
-#include "audio/Speaker.hpp"
+#include "audio/ISpeaker.hpp"
 #include "audio/SoundMixer.hpp"
 
 class AudioManager
 {
 public:
+    constexpr static const char* TAG = "AudioManager";
+
     AudioManager();
 
     /**
@@ -24,7 +26,7 @@ public:
      * @brief Get the Speaker instance.
      * @return Reference to the Speaker object.
      */
-    Speaker& getSpeaker() { return speaker; }
+    ISpeaker& getSpeaker() { return *speaker; }
 
     /**
      * @brief Get the SoundMixer instance.
@@ -33,6 +35,6 @@ public:
     SoundMixer& getMixer() { return mixer; }
 
 private:
-    Speaker speaker;
+    ISpeaker* speaker;
     SoundMixer mixer;
 };

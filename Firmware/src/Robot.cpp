@@ -50,10 +50,10 @@ Status Robot::init()
         return err;
     }
 
-    // if (Status err = audio_manager.init(); err != Status::Ok)
-    // {
-    //     return err;
-    // }
+    if (Status err = audio_manager.init(); err != Status::Ok)
+    {
+        return err;
+    }
 
     if (Status err = body.init(); err != Status::Ok)
     {
@@ -152,10 +152,10 @@ Status Robot::deinit()
         return err;
     }
 
-    // if (Status err = audio_manager.deinit(); err != Status::Ok)
-    // {
-    //     return err;
-    // }
+    if (Status err = audio_manager.deinit(); err != Status::Ok)
+    {
+        return err;
+    }
 
     if (Status err = ui_manager.deinit(); err != Status::Ok)
     {

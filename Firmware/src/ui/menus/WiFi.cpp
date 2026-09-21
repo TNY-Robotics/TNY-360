@@ -65,7 +65,7 @@ void MenuWiFi::onRender()
     Draw::Text(24, HEADER_HEIGHT + HEADER_PADDING + 28, man.getIPAddr());
 
     // Draw::Text(86, 54, "Menu");
-    // Draw::Blit(ScreenDriver::info.width - 9, ScreenDriver::info.height - 9, 8, 8, (uint8_t*)Icons::ChevronRight);
+    // Draw::Blit(Screen::GetInstance()->getInfo().width - 9, Screen::GetInstance()->getInfo().height - 9, 8, 8, (uint8_t*)Icons::ChevronRight);
 }
 
 void MenuWiFi::onUpdate()

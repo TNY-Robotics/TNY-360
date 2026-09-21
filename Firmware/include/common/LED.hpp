@@ -15,7 +15,7 @@ namespace LED
     
     using Id = uint8_t; // LED identifier type
 
-    static constexpr Id LED_COUNT = 1; // Number of LEDs in the strip (only one for status, body leds idea has been abandonned)
+    static constexpr Id LED_COUNT = 4; // Number of LEDs in the strip (only one for status, body leds idea has been abandonned)
 
     /**
      * @brief Initializes the LED module.

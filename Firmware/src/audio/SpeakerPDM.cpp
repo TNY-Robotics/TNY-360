@@ -1,20 +1,21 @@
-#include "audio/Speaker.hpp"
+#include "audio/SpeakerPDM.hpp"
 #include "common/config.hpp"
 #include "common/Log.hpp"
 #include "common/Error.hpp"
+#include "settings/Settings.hpp"
 #include "audio/Speaker.Error.hpp"
 #include <freertos/FreeRTOS.h>
 #include <driver/i2s_pdm.h>
 #include <vector>
 
-i2s_chan_handle_t tx_handle = NULL;
-
-Speaker::Speaker()
+SpeakerPDM::SpeakerPDM()
 {
 }
 
-Status Speaker::init()
+Status SpeakerPDM::init()
 {
+    LOG_SCOPE(TAG, "SpeakerPDM::Init");
+
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_AUTO, I2S_ROLE_MASTER);
     chan_cfg.dma_desc_num = 8;    // Number of DMA buffers
     chan_cfg.dma_frame_num = 512; // Size of each buffer
@@ -27,11 +28,11 @@ Status Speaker::init()
 
     // Config PDM TX
     i2s_pdm_tx_config_t pdm_tx_cfg = {
-        .clk_cfg = I2S_PDM_TX_CLK_DEFAULT_CONFIG(20'000),
+        .clk_cfg = I2S_PDM_TX_CLK_DEFAULT_CONFIG(static_cast<uint32_t>(Settings::GetConfig().audio.sampleRate)),
         .slot_cfg = I2S_PDM_TX_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO),
         .gpio_cfg = {
             .clk = GPIO_NUM_NC, // No need
-            .dout = SPEAKER_GPIO_NUM, // Data sound out
+            .dout = static_cast<gpio_num_t>(Settings::GetConfig().audio.pdm.gpio_out), // Data sound out
             .dout2 = GPIO_NUM_NC, // No need
             .invert_flags = {
                 .clk_inv = 0,
@@ -58,10 +59,10 @@ Status Speaker::init()
     return Status::Ok;
 }
 
-Status Speaker::deinit()
+Status SpeakerPDM::deinit()
 {
     // Disable the channel
-    if (tx_handle != NULL)
+    if (tx_handle != nullptr)
     {
         if (esp_err_t err = i2s_channel_disable(tx_handle); err != ESP_OK)
         {
@@ -77,12 +78,12 @@ Status Speaker::deinit()
             Error::RegisterErrorEvent(ErrorEventDeleteI2SFailed(err));
             return Status::Failure;
         }
-        tx_handle = NULL;
+        tx_handle = nullptr;
     }
     return Status::Ok;
 }
 
-void Speaker::writeSamples(const int16_t* samples, size_t sampleCount)
+void SpeakerPDM::writeSamples(const int16_t* samples, size_t sampleCount)
 {
     if (tx_handle == NULL)
     {

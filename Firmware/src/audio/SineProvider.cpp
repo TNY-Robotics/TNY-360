@@ -1,5 +1,5 @@
 #include "audio/SineProvider.hpp"
-#include "audio/Speaker.hpp"
+#include "audio/ISpeaker.hpp"
 #include "common/config.hpp"
 #include <cmath>
 
@@ -27,13 +27,13 @@ void SineProvider::setVolume(float volume)
     this->volume = volume;
 }
 
-bool SineProvider::provideSamples(Speaker::Sample* buffer, size_t sampleCount)
+bool SineProvider::provideSamples(ISpeaker::Sample* buffer, size_t sampleCount)
 {
-    const float amplitude = 20000.0f * volume;
+    const float amplitude = (INT16_MAX-2) * volume;
 
     for (size_t i = 0; i < sampleCount; i++)
     {
-        buffer[i] = static_cast<Speaker::Sample>(amplitude * std::sin(phase));
+        buffer[i] = static_cast<ISpeaker::Sample>(amplitude * std::sin(phase));
         
         phase += phaseIncrement;
         

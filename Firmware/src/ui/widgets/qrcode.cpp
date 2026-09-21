@@ -83,7 +83,7 @@ namespace UIWidgets
             {
                 if (qrcodegen_getModule(qrcode, i, j)) 
                 {
-                    Draw::RectFilled(corner_x + (i * scale), corner_y + (j * scale), scale, scale, ScreenDriver::COLOR_BLACK);
+                    Draw::RectFilled(corner_x + (i * scale), corner_y + (j * scale), scale, scale, Screen::COLOR_BLACK);
                 }
             }
         }

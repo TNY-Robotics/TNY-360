@@ -29,8 +29,22 @@ Status MusicProvider::loadFromFile(const char* filepath)
         return err;
     }
 
+    content_size = 0;
+    if (Status err = LittleFS::GetFileSize(filepath, content_size); err != Status::Ok)
+    {
+        // LOG_ERROR(TAG, "Failed to get size of file '%s': %d", filepath, ErrorToString(err));
+        return err;
+    }
+
+    file_content = (char*)malloc(content_size);
+    if (file_content == nullptr)
+    {
+        // LOG_ERROR(TAG, "Failed to allocate memory for file '%s' of size %u", filepath, content_size);
+        return Status::NoMemory;
+    }
+
     size_t bytes_read;
-    if (Status err = LittleFS::ReadFile(filepath, file_content, sizeof(file_content), bytes_read); err != Status::Ok)
+    if (Status err = LittleFS::ReadFile(filepath, file_content, content_size, bytes_read); err != Status::Ok)
     {
         // LOG_ERROR(TAG, "Failed to load WAV file '%s': %d", filepath, ErrorToString(err));
         return err;
@@ -69,7 +83,7 @@ void MusicProvider::stop()
     read_position = content_size; // force end, will be cleaned up by mixer
 }
 
-bool MusicProvider::provideSamples(Speaker::Sample* buffer, size_t sampleCount)
+bool MusicProvider::provideSamples(ISpeaker::Sample* buffer, size_t sampleCount)
 {
     if (file_content == nullptr || read_position >= content_size)
     {
@@ -81,9 +95,9 @@ bool MusicProvider::provideSamples(Speaker::Sample* buffer, size_t sampleCount)
     size_t bytesLeft = content_size - read_position;
     
     // Combien d'octets on veut lire (1 sample = sizeof(int16_t) = 2 octets)
-    size_t bytesToRead = sampleCount * sizeof(Speaker::Sample);
+    size_t bytesToRead = sampleCount * sizeof(ISpeaker::Sample);
 
-    // Si on a moins d'octets restants que ce qui est demandé, on lit juste ce qu'il reste
+    // Si on a moins d'octets restants que ce qui est demandé, on lit juste ce qu'il reste, et on rempli le reste de silence
     if (bytesToRead > bytesLeft)
     {
         bytesToRead = bytesLeft;
@@ -97,10 +111,10 @@ bool MusicProvider::provideSamples(Speaker::Sample* buffer, size_t sampleCount)
 
     // Si on a atteint la fin du fichier avant d'avoir rempli tout le buffer,
     // on remplit le reste du buffer avec du silence (des 0) pour éviter les glitchs sonores.
-    size_t samplesRead = bytesToRead / sizeof(Speaker::Sample);
+    size_t samplesRead = bytesToRead / sizeof(ISpeaker::Sample);
     if (samplesRead < sampleCount)
     {
-        memset(buffer + samplesRead, 0, (sampleCount - samplesRead) * sizeof(Speaker::Sample));
+        memset(buffer + samplesRead, 0, (sampleCount - samplesRead) * sizeof(ISpeaker::Sample));
     }
 
     return true; // On a fourni des samples, continuez la lecture

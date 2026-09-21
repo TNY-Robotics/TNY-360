@@ -1,11 +1,17 @@
 #include "settings/Settings.hpp"
 #include "common/LittleFS.hpp"
+#include "common/Log.hpp"
 #include "esp_system.h"
+#include "settings/V1.hpp"
+#include "settings/V2.hpp"
 #include <fstream>
 
 namespace Settings
 {
+    constexpr static const char* TAG = "Settings";
+
     RobotConfig config;
+    bool initialized = false;
 
     /// INTERNAL
     Status __save();
@@ -13,6 +19,18 @@ namespace Settings
 
     Status Init()
     {
+        if (initialized)
+        {
+            LOG_DEBUG(TAG, "Settings already initialized");
+            return Status::Ok;
+        }
+
+        // Here we should first initialize the NVS and check for a saved robot version (to load the right config)
+        // if not found, we should run the detection and save it.
+        // But for now, we will just load the V1 config.
+        // FIXME
+        config = CONFIG_V1;
+
         if (Status err = LittleFS::Init(); err != Status::Ok)
         {
             return err;
@@ -26,11 +44,13 @@ namespace Settings
 
         // Save it directly
         // WHY ? Because in case of new setting fields, we want to make sure the settings.json file is updated with the new fields :)
+        // FIXME : There's a problem in this workflow here, we should check if the file changed before saving it (+ other things i don't remember, good luck future me)
         if (Status err = __save(); err != Status::Ok)
         {
             return err;
         }
 
+        initialized = true;
         return Status::Ok;
     }
     

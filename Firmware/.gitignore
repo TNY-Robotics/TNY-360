@@ -11,3 +11,5 @@ data/web/
 
 sdkconfig.*
 !sdkconfig.defaults
+.clangd/
+.clangd

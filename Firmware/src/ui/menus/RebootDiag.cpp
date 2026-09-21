@@ -46,8 +46,8 @@ void MenuRebootDiag::onRender()
     {
         const char* text = "Rebooting ...";
         uint16_t width = Draw::GetTextWidth(text);
-        Draw::Text(ScreenDriver::info.width / 2 - width / 2, HEADER_HEIGHT + 4, text);
-        ScreenDriver::Upload(); // send data now
+        Draw::Text(Screen::GetInstance()->getInfo().width / 2 - width / 2, HEADER_HEIGHT + 4, text);
+        Screen::GetInstance()->upload(); // send data now
 
         Diagnostic::RebootInDiagnosticMode(); // Maybe we should read the return value and handle errors, but for now, fuck it.
     }
@@ -60,15 +60,15 @@ void MenuRebootDiag::onRender()
         }
         {
             const char* text = "Back";
-            Draw::Text(12, ScreenDriver::info.height - 9, text);
+            Draw::Text(12, Screen::GetInstance()->getInfo().height - 9, text);
         }
         {
             const char* text = "Reboot";
             uint16_t width = Draw::GetTextWidth(text);
-            Draw::Text(ScreenDriver::info.width - width - 12, ScreenDriver::info.height - 9, text);
+            Draw::Text(Screen::GetInstance()->getInfo().width - width - 12, Screen::GetInstance()->getInfo().height - 9, text);
         }
-        Draw::Blit(0, ScreenDriver::info.height - 9, 8, 8, (uint8_t*)Icons::ChevronLeft);
-        Draw::Blit(ScreenDriver::info.width - 9, ScreenDriver::info.height - 9, 8, 8, (uint8_t*)Icons::ChevronRight);
+        Draw::Blit(0, Screen::GetInstance()->getInfo().height - 9, 8, 8, (uint8_t*)Icons::ChevronLeft);
+        Draw::Blit(Screen::GetInstance()->getInfo().width - 9, Screen::GetInstance()->getInfo().height - 9, 8, 8, (uint8_t*)Icons::ChevronRight);
     }
 }
 

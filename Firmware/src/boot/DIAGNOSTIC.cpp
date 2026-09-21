@@ -4,6 +4,7 @@
 #include "common/LED.hpp"
 #include "common/I2C.hpp"
 #include "common/NVS.hpp"
+#include "ui/ScreenSSD.hpp"
 #include "ui/Menus.hpp"
 #include "ui/Draw.hpp"
 #include "ui/Icons.hpp"
@@ -20,7 +21,8 @@ namespace BootManager
             LOG_ERROR(TAG, "Failed to initialize Diagnostic module");
             return true; // block robot from booting as normal
         }
-        return Diagnostic::IsDiagnosticModeEnabled(); // boot in diag mode if flag enabled
+        // return Diagnostic::IsDiagnosticModeEnabled(); // boot in diag mode if flag enabled
+        return false;
     }
 
     void boot_DIAGNOSTIC()
@@ -57,9 +59,10 @@ namespace BootManager
         }
 
         // Initialize Screen module
-        if (Status err = ScreenDriver::Init(); err != Status::Ok)
+        ScreenSSD* s = new ScreenSSD();
+        if (Status stat = s->init(); stat != Status::Ok)
         {
-            LOG_ERROR(TAG, "Failed to initialize ScreenDriver module");
+            LOG_ERROR(TAG, "Failed to initialize ScreenSSD module");
             // TODO : Display error on LED
             return;
         }

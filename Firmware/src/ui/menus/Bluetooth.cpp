@@ -42,7 +42,7 @@ void MenuBluetooth::onRender()
 
     const char* text = "Not implemented";
     uint16_t width = Draw::GetTextWidth(text);
-    Draw::Text(ScreenDriver::info.width / 2 - width / 2, ScreenDriver::info.height / 2 - 4, text);
+    Draw::Text(Screen::GetInstance()->getInfo().width / 2 - width / 2, Screen::GetInstance()->getInfo().height / 2 - 4, text);
 }
 
 void MenuBluetooth::onUpdate()

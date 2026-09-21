@@ -80,9 +80,15 @@ Status Body::init()
     }
 
     // Initialize the IMU
-    if (Status err = imu.init(); err != Status::Ok)
+    imu = IMU::Create();
+    if (imu != nullptr)
     {
-        return err;
+        if (Status err = imu->init(); err != Status::Ok)
+        {
+            delete imu;
+            imu = nullptr;
+            return err;
+        }
     }
 
     // Initialize the PowerDriver
@@ -146,9 +152,14 @@ Status Body::deinit()
     }
 
     // Deinitialize the IMU
-    if (Status err = imu.deinit(); err != Status::Ok)
+    if (imu != nullptr)
     {
-        return err;
+        if (Status err = imu->deinit(); err != Status::Ok)
+        {
+            return err;
+        }
+        delete imu;
+        imu = nullptr;
     }
 
     return Status::Ok;
@@ -157,9 +168,12 @@ Status Body::deinit()
 Status Body::estimateState(float dt)
 {
     // update IMU
-    if (Status err = imu.estimateState(dt); err != Status::Ok)
+    if (imu != nullptr)
     {
-        return err;
+        if (Status err = imu->estimateState(dt); err != Status::Ok)
+        {
+            return err;
+        }
     }
 
     // update legs

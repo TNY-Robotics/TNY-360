@@ -95,9 +95,9 @@ namespace Menus
 
         if (m_need_render)
         {
-            ScreenDriver::Clear();
+            Screen::GetInstance()->clear();
             onRender();
-            ScreenDriver::Upload();
+            Screen::GetInstance()->upload();
             m_need_render = false;
         }
     }
@@ -125,9 +125,9 @@ namespace Menus
     void Menu::renderHeader()
     {
         uint8_t text_width = Draw::GetTextWidth(m_title);
-        Draw::RectFilled<false>(0, 0, ScreenDriver::info.width, Menu::HEADER_HEIGHT, ScreenDriver::COLOR_BLACK);
-        Draw::Text<true>(m_title_shift - text_width / 2 + ScreenDriver::info.width / 2, 0, m_title);
-        // Draw::Hline<false>(0, Menu::HEADER_HEIGHT, ScreenDriver::info.width);
+        Draw::RectFilled<false>(0, 0, Screen::GetInstance()->getInfo().width, Menu::HEADER_HEIGHT, Screen::COLOR_BLACK);
+        Draw::Text<true>(m_title_shift - text_width / 2 + Screen::GetInstance()->getInfo().width / 2, 0, m_title);
+        // Draw::Hline<false>(0, Menu::HEADER_HEIGHT, Screen::GetInstance()->getInfo().width);
         Draw::Blit<false>(0, 0, 8, 8, (uint8_t*)m_icon);
     }
 
@@ -154,6 +154,8 @@ namespace Menus
 
     Status Init()
     {
+        LOG_SCOPE(TAG, "Menus::Init");
+
         // setup button callbacks
         if (Status err = Button::Init(); err != Status::Ok)
         {
@@ -182,6 +184,8 @@ namespace Menus
             // ErrorHandle(ErrorStruct::MenusInitFailed);
             return Status::Failure;
         }
+
+        LOG_DEBUG(TAG, "Menus initialized successfully");
 
         return Status::Ok;
     }

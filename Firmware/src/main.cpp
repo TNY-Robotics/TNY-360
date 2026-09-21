@@ -4,12 +4,16 @@
 #include "common/config.hpp"
 #include "common/RPC.hpp"
 #include "boot/BootManager.hpp"
+#include "soc/usb_serial_jtag_reg.h"
+#include "common/LED.hpp"
+#include "ui/Button.hpp"
+#include "audio/MusicProvider.hpp"
+#include "audio/SineProvider.hpp"
+#include "common/I2C.hpp"
 
 static const char* TAG = "Main";
 
 static Robot robot;
-CameraDriver cam;
-WiFiManager wifi;
 
 #ifdef __cplusplus
 extern "C" {

@@ -3,10 +3,12 @@
 #include "common/I2C.hpp"
 #include "common/Log.hpp"
 #include "common/NVS.hpp"
-#include "audio/Speaker.hpp"
+#include "settings/settings.hpp"
+#include "audio/ISpeaker.hpp"
+#include "audio/SpeakerPDM.hpp"
+#include "audio/SpeakerI2S.hpp"
 #include "audio/SoundMixer.hpp"
 #include "drivers/CameraDriver.hpp"
-#include "drivers/IMUDriver.hpp"
 #include "drivers/PowerDriver.hpp"
 #include "drivers/MotorDriver.hpp"
 #include "drivers/AnalogDriver.hpp"
@@ -148,12 +150,19 @@ namespace Diagnostic
         uint8_t Speaker()
         {
             check_begin();
-            ::Speaker s;
-            ::SoundMixer mixer(s);
-            if (Status err = s.init(); err != Status::Ok) return check_end();
-            if (Status err = mixer.init(); err != Status::Ok) return check_end();
+            ::ISpeaker* s = nullptr;
+            ::SoundMixer mixer;
+            if (Settings::GetConfig().audio.speakerType == AudioSpeakerType::SPEAKER_PDM) s = new ::SpeakerPDM();
+            else if (Settings::GetConfig().audio.speakerType == AudioSpeakerType::SPEAKER_I2S) s = new ::SpeakerI2S();
+            else
+            {
+                LOG_ERROR(TAG, "Unknown speaker type in settings. Disabling audio.");
+                return check_end();
+            }
+            if (Status err = s->init(); err != Status::Ok) return check_end();
+            if (Status err = mixer.init(s); err != Status::Ok) return check_end();
             if (Status err = mixer.deinit(); err != Status::Ok) return check_end();
-            if (Status err = s.deinit(); err != Status::Ok) return check_end();
+            if (Status err = s->deinit(); err != Status::Ok) return check_end();
             return check_end();
         }
 
@@ -183,8 +192,8 @@ namespace Diagnostic
         uint8_t IMU()
         {
             check_begin();
-            if (Status err = ::IMUDriver::Init(); err != Status::Ok) return check_end();
-            if (Status err = ::IMUDriver::Deinit(); err != Status::Ok) return check_end();
+            // if (Status err = ::IMUDriver::Init(); err != Status::Ok) return check_end();
+            // if (Status err = ::IMUDriver::Deinit(); err != Status::Ok) return check_end();
             return check_end();
         }
 

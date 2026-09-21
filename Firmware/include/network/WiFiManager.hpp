@@ -14,8 +14,26 @@
 #include "lwip/sys.h"
 
 /** <API_REF>
- * @type APAuthMode
+ * @type WiFi::APAuthMode
  * @desc The authentication mode used by a Wi-Fi access point.
+ * @value OPEN No authentication.
+ * @value WEP WEP authentication.
+ * @value WPA_PSK WPA-PSK authentication.
+ * @value WPA2_PSK WPA2-PSK authentication.
+ * @value WPA_WPA2_PSK WPA/WPA2-PSK authentication.
+ * @value ENTERPRISE Enterprise authentication (WPA/WPA2-Enterprise).
+ * @value WPA2_ENTERPRISE WPA2-Enterprise authentication.
+ * @value WPA3_PSK WPA3-PSK authentication.
+ * @value WPA2_WPA3_PSK WPA2/WPA3-PSK authentication.
+ * @value WAPI_PSK WAPI-PSK authentication.
+ * @value OWE OWE authentication.
+ * @value WPA3_ENT_192 WPA3-Enterprise 192-bit authentication.
+ * @value WPA3_EXT_PSK WPA3-PSK with external authentication.
+ * @value WPA3_EXT_PSK_MIXED_MODE WPA3-PSK with external authentication in mixed mode.
+ * @value DPP DPP authentication.
+ * @value WPA3_ENTERPRISE WPA3-Enterprise authentication.
+ * @value WPA2_WPA3_ENTERPRISE WPA2/WPA3-Enterprise authentication.
+ * @impl done
  */
 enum class APAuthMode : uint8_t
 {
@@ -40,11 +58,11 @@ enum class APAuthMode : uint8_t
 };
 
 /** <API_REF>
- * @type APDescription
+ * @type WiFi::APDescription
  * @desc A description of a Wi-Fi access point.
  * @field ssid char[32] The SSID of the access point.
- * @field rssi int8_t The signal strength of the access point.
- * @field authmode APAuthMode The authentication mode used by the access point.
+ * @field rssi int8 The signal strength of the access point.
+ * @field authmode WiFi::APAuthMode The authentication mode used by the access point.
  */
 struct APDescription
 {
@@ -60,6 +78,22 @@ public:
 
     using OnAPScanResultCallback = void (*)(const APDescription* ap_list, size_t ap_count, void* user_data);
 
+    /** <API_REF>
+     * @type WiFi::State
+     * @desc The current state of the WiFiManager.
+     * @value Initializing The WiFiManager is initializing. Will transition to Initialized or Error state after initialization.
+     * @value Initialized The WiFiManager is ready to be used, no STA or AP configured.
+     * @value Error The WiFiManager is in an error state.
+     * @value Connecting The WiFiManager is attempting to connect to an AP. Will transition to Connected or ConnectFailed state after attempting to connect.
+     * @value Connected The WiFiManager is connected to an AP.
+     * @value ConnectFailed The WiFiManager failed to connect to an AP.
+     * @value Disconnecting The WiFiManager is disconnecting from an AP. Will transition to Initialized state after disconnecting.
+     * @value Starting The WiFiManager is starting an AP. Will transition to Started or StartFailed state after attempting to start.
+     * @value Started The WiFiManager has started an AP.
+     * @value StartFailed The WiFiManager failed to start an AP.
+     * @value Stopping The WiFiManager is stopping an AP. Will transition to Initialized state after stopping.
+     * @impl done
+     */
     /// @brief Current state of the WiFiManager.
     enum State
     {
@@ -87,6 +121,14 @@ public:
         Stopping,
     };
 
+    /** <API_REF>
+     * @type WiFi::Mode
+     * @desc The current mode of the WiFiManager, deduced from the current state.
+     * @value STA The WiFiManager is in Station mode. connecting, connected, or disconnecting from an AP (or in failure state).
+     * @value AP The WiFiManager is in Access Point mode. Starting, started, or stopping his AP (or in failure state).
+     * @value None The WiFiManager is in an unknown mode, in case of error or uninitialized state.
+     * @impl done
+     */
     /// @brief Current mode of the WiFiManager, deduced from the current state.
     enum Mode
     {

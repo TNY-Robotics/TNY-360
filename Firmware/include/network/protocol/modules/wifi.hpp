@@ -138,7 +138,7 @@ namespace WiFi
      * @module wifi 0x10
      * @action GetState 0x06
      * @desc Returns the current state of the WiFiManager, see WiFiManager::State for more details.
-     * @result state uint8 Current state of the WiFiManager.
+     * @result state WiFi::State Current state of the WiFiManager.
      * @impl done
      */
     static void GetState(const RequestContext& ctx, const uint8_t* payload)
@@ -152,7 +152,7 @@ namespace WiFi
      * @module wifi 0x10
      * @action GetMode 0x07
      * @desc Returns the current mode of the WiFiManager, see WiFiManager::Mode for more details.
-     * @result mode uint8 Current mode of the WiFiManager, deduced from the current state.
+     * @result mode WiFi::Mode Current mode of the WiFiManager, deduced from the current state.
      * @impl done
      */
     static void GetMode(const RequestContext& ctx, const uint8_t* payload)
@@ -231,7 +231,7 @@ namespace WiFi
      * @action ScanAP 0x0B
      * @desc Scans for available Wi-Fi access points and returns them as a list.
      * @result nb_aps uint16 The number of access points found.
-     * @result aps APDescription[] An array of APDescription structures, each containing the SSID, RSSI, and encryption type of an access point.
+     * @result aps WiFi::APDescription[] An array of WiFi::APDescription structures, each containing the SSID, RSSI, and encryption type of an access point.
      * @impl done
      */
     static void ScanAP(const RequestContext& ctx, const uint8_t* payload)

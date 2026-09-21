@@ -9,7 +9,6 @@
 #include "locomotion/IPC.hpp"
 #include "drivers/AnalogDriver.hpp"
 #include "drivers/MotorDriver.hpp"
-#include "drivers/IMUDriver.hpp"
 #include "common/analysis/PerfMonitor.hpp"
 
 // Perf monitoring : Remove this when control loop is optimized and stable
@@ -217,12 +216,12 @@ Status ControlLoop::control_task()
     }
     perf_reader.stop();
 
-    perf_imu.start();
-    if (Status err = IMUDriver::ReadData(); err != Status::Ok)
-    {
-        LOG_ERROR(TAG, "Error reading data from IMU");
-    }
-    perf_imu.stop();
+    // perf_imu.start();
+    // if (Status err = IMUDriver::ReadData(); err != Status::Ok)
+    // {
+    //     LOG_ERROR(TAG, "Error reading data from IMU");
+    // }
+    // perf_imu.stop();
 
     // Estimate body state from new IMU and Analog data (calls Legs, Joint, IMU estimateState functions)
     perf_estimation.start();
@@ -245,8 +244,18 @@ Status ControlLoop::control_task()
         joint->getPrediction(state.joints[i].model_angle_rad);
         joint->getPosition(state.joints[i].estimated_angle_rad);
     }
-    state.body_orientation = Robot::GetInstance().getBody().getIMUController().getOrientation();
-    state.imu_down_vector = Robot::GetInstance().getBody().getIMUController().getDownVector();
+    IMU* imu = Robot::GetInstance().getBody().getIMU();
+    if (imu != nullptr)
+    {
+        state.body_orientation = imu->getOrientation();
+        state.imu_down_vector = imu->getDownVector();
+    }
+    else
+    {
+        // If no IMU is present, set default values.
+        state.body_orientation = Vec3f(0.f, 0.f, 0.f);
+        state.imu_down_vector = Vec3f(0.f, 0.f, -IMU::GRAVITY);
+    }
     IPC::setState(state);
 
     /*** 2 - RUN CARTESIAN CONTROL (USING BRAIN CONTROL INTENT) ***/

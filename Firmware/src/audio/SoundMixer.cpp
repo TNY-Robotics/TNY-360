@@ -6,19 +6,23 @@
 #include "common/Error.hpp"
 #include "audio/Speaker.Error.hpp"
 
-SoundMixer::SoundMixer(Speaker& speaker) : speaker(speaker)
+SoundMixer::SoundMixer()
 {
+    speaker = nullptr;
 }
 
-Status SoundMixer::init()
+Status SoundMixer::init(ISpeaker* speaker)
 {
+    LOG_SCOPE(TAG, "SoundMixer::Init");
+    
     std::lock_guard<std::mutex> lock(mixerMutex);
     for (size_t i = 0; i < SPEAKER_NB_AUDIO_PROVIDERS; i++)
     {
         providers[i] = nullptr;
     }
+    this->speaker = speaker;
     
-    masterVolume = 0.05f; // default volume
+    masterVolume = 0.5f; // default volume
     running = true; // start running
 
     BaseType_t ret = xTaskCreatePinnedToCore([](void* pvParams) {
@@ -127,9 +131,20 @@ void SoundMixer::__internal_task(void* pvParams)
         }
 
         // send to speaker
-        speaker.writeSamples(mixBuffer, MIX_BUFFER_SIZE); // blocking to sync to audio rate (DMA magic uwu)
+        if (speaker != nullptr)
+        {
+            speaker->writeSamples(mixBuffer, MIX_BUFFER_SIZE); // blocking to sync to audio rate (DMA magic uwu)
+        }
     }
 
     // cleanup on exit
+    for (size_t i = 0; i < SPEAKER_NB_AUDIO_PROVIDERS; i++)
+    {
+        if (providers[i] != nullptr)
+        {
+            delete providers[i];
+        }
+    }
+    delete speaker;
     vTaskDelete(nullptr);
 }

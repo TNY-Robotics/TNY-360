@@ -2,7 +2,7 @@
 #include "network/protocol/Protocol.hpp"
 #include "common/RPC.hpp"
 #include "common/config.hpp"
-#include "drivers/IMUDriver.hpp"
+#include "locomotion/IMU.hpp"
 #include "Robot.hpp"
 #include <esp_system.h>
 
@@ -22,7 +22,9 @@ namespace IMU
     static void GetAcceleration(const RequestContext& ctx, const uint8_t* payload)
     {
         RPC::ExecuteThreadSafe<Vec3f>([](){
-            return Robot::GetInstance().getBody().getIMUController().getAcceleration();
+            ::IMU* imu = Robot::GetInstance().getBody().getIMU();
+            if (!imu) return Vec3f(0, 0, 0);
+            return imu->getAcceleration();
         }, [ctx](Vec3f vec){
             ctx.respond(ResponseStatus::Ok, (uint8_t*) &vec, sizeof(vec));
         });
@@ -38,7 +40,9 @@ namespace IMU
     static void GetAngularVelocity(const RequestContext& ctx, const uint8_t* payload)
     {
         RPC::ExecuteThreadSafe<Vec3f>([](){
-            return Robot::GetInstance().getBody().getIMUController().getAngularVelocity();
+            ::IMU* imu = Robot::GetInstance().getBody().getIMU();
+            if (!imu) return Vec3f(0, 0, 0);
+            return imu->getAngularVelocity();
         }, [ctx](Vec3f vec){
             ctx.respond(ResponseStatus::Ok, (uint8_t*) &vec, sizeof(vec));
         });

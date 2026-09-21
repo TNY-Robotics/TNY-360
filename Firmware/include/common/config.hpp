@@ -144,8 +144,8 @@ constexpr uint8_t JOINT_COUNT = 16; // 12 legs joints + 2 ears, but PCA9685 has 
 constexpr int SCREEN_REFRESH_RATE = 30;
 
 /** Buttons **/
-constexpr gpio_num_t BTN_LEFT_PIN = GPIO_NUM_11;
-constexpr gpio_num_t BTN_RIGHT_PIN = GPIO_NUM_10;
+constexpr gpio_num_t BTN_LEFT_PIN = GPIO_NUM_40;
+constexpr gpio_num_t BTN_RIGHT_PIN = GPIO_NUM_41;
 constexpr uint16_t BTN_LONG_PRESS_MS = 300; // ms
 // Buttons polling interval in milliseconds
 constexpr uint16_t BTN_POLL_INT_MS = 50; // ms
@@ -159,5 +159,8 @@ constexpr uint8_t MENU_LIST_ITEM_SELECTED_SHIFT = 8;
 
 /** Speaker **/
 constexpr gpio_num_t SPEAKER_GPIO_NUM = GPIO_NUM_1;
-constexpr int SPEAKER_SAMPLE_RATE_HZ = 22'500; // in Hz
+constexpr gpio_num_t SPEAKER_I2S_WS = GPIO_NUM_1;
+constexpr gpio_num_t SPEAKER_I2S_SCK = GPIO_NUM_2;
+constexpr gpio_num_t SPEAKER_I2S_SD = GPIO_NUM_42;
+constexpr int SPEAKER_SAMPLE_RATE_HZ = 22'050; // in Hz
 constexpr size_t SPEAKER_NB_AUDIO_PROVIDERS = 4; // number of stacked audio providers

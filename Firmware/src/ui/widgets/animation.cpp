@@ -25,7 +25,7 @@ namespace UIWidgets
         }
 
         uint8_t* frameData = buffer + (index * (width * height) / 8); // 1 bit per pixel, so divide by 8
-        Draw::Blit(x, y, width, height, frameData, ScreenDriver::COLOR_WHITE, transparent);
+        Draw::Blit(x, y, width, height, frameData, Screen::COLOR_WHITE, transparent);
     }
 
     bool Animation::isLooping() const

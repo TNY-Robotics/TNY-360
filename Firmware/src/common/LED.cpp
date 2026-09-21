@@ -8,7 +8,7 @@
 
 namespace LED
 {
-    static constexpr gpio_num_t LED_GPIO = GPIO_NUM_46; // GPIO pin for LED data
+    static constexpr gpio_num_t LED_GPIO = GPIO_NUM_19; // GPIO pin for LED data
     static constexpr int RMT_RESOLUTION_HZ = 10'000'000; // RMT resolution in Hz
 
     static const char* TAG = "LED";
@@ -112,6 +112,9 @@ namespace LED
             Error::RegisterErrorEvent(ErrorEventTaskInit(err));
             return Status::Failure;
         }
+
+        SetColor(0, {0, 10, 0});
+        LOG_DEBUG(TAG, "LED module initialized successfully");
 
         is_initialized = true;
         return Status::Ok;

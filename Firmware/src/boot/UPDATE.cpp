@@ -7,7 +7,7 @@
 #include "ui/Menus.hpp"
 #include "ui/Draw.hpp"
 #include "ui/Icons.hpp"
-#include "drivers/ScreenDriver.hpp"
+#include "ui/Screen.hpp"
 #include "network/UpdateManager.hpp"
 #include "Robot.hpp"
 #include <freertos/FreeRTOS.h>
@@ -22,38 +22,39 @@ namespace BootManager
 
     void boot_UPDATE()
     {
+        // FIXME : Use the new Screen system
         // Initialize LED module for error display
-        LOG_DEBUG(TAG, "Initializing LED");
-        if (Status err = LED::Init(); err != Status::Ok)
-        {
-            LOG_ERROR(TAG, "Failed to initialize LED module");
-            esp_ota_mark_app_invalid_rollback_and_reboot();
-            return;
-        }
+        // LOG_DEBUG(TAG, "Initializing LED");
+        // if (Status err = LED::Init(); err != Status::Ok)
+        // {
+        //     LOG_ERROR(TAG, "Failed to initialize LED module");
+        //     esp_ota_mark_app_invalid_rollback_and_reboot();
+        //     return;
+        // }
 
         // Initialize I2C for screen
-        if (Status err = I2C::Init(); err != Status::Ok)
-        {
-            LOG_ERROR(TAG, "Failed to initialize I2C module");
-            esp_ota_mark_app_invalid_rollback_and_reboot();
-            return;
-        }
+        // if (Status err = I2C::Init(); err != Status::Ok)
+        // {
+        //     LOG_ERROR(TAG, "Failed to initialize I2C module");
+        //     esp_ota_mark_app_invalid_rollback_and_reboot();
+        //     return;
+        // }
 
         // Initialize Screen and Menu system for user interface
-        LOG_DEBUG(TAG, "Initializing ScreenDriver");
-        if (Status err = ScreenDriver::Init(); err != Status::Ok)
-        {
-            LOG_ERROR(TAG, "Failed to initialize ScreenDriver module");
-            esp_ota_mark_app_invalid_rollback_and_reboot();
-            return;
-        }
+        // LOG_DEBUG(TAG, "Initializing ScreenDriver");
+        // if (Status err = ScreenDriver::Init(); err != Status::Ok)
+        // {
+        //     LOG_ERROR(TAG, "Failed to initialize ScreenDriver module");
+        //     esp_ota_mark_app_invalid_rollback_and_reboot();
+        //     return;
+        // }
 
         // Display a "Verifying firmware" message
-        ScreenDriver::Clear();
-        Draw::Text(32, 0, "Updating");
-        Draw::Text(0, 16, "Verifying       firmware...");
-        Draw::Text(0, 45, "Don't turn off  the robot.");
-        ScreenDriver::Upload();
+        // Screen::GetInstance()->clear();
+        // Draw::Text(32, 0, "Updating");
+        // Draw::Text(0, 16, "Verifying       firmware...");
+        // Draw::Text(0, 45, "Don't turn off  the robot.");
+        // Screen::GetInstance()->upload();
 
         UpdateManager& update_manager = Robot::GetInstance().getNetworkManager().getUpdateManager();
 
@@ -65,11 +66,11 @@ namespace BootManager
         }
 
         // If we reach this point, the update process is complete and successful
-        ScreenDriver::Clear();
-        Draw::Text(32, 0, "Updating");
-        Draw::Text(0, 16, "Update complete!");
-        Draw::Text(0, 55, "Rebooting...");
-        ScreenDriver::Upload();
+        // Screen::GetInstance()->clear();
+        // Draw::Text(32, 0, "Updating");
+        // Draw::Text(0, 16, "Update complete!");
+        // Draw::Text(0, 55, "Rebooting...");
+        // Screen::GetInstance()->upload();
         LOG_INFO(TAG, "Update process completed successfully, rebooting...");
         // Small delay to ensure message is displayed before reboot
         vTaskDelay(pdMS_TO_TICKS(2000));

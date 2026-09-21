@@ -1,10 +1,16 @@
 #include "ui/Button.hpp"
 #include "common/Log.hpp"
+#include "settings/Settings.hpp"
 #include <freertos/FreeRTOS.h>
 #include <driver/gpio.h>
 
 namespace Button
 {
+    gpio_num_t gpio_pin_left = GPIO_NUM_NC;
+    gpio_num_t gpio_pin_right = GPIO_NUM_NC;
+    int long_press_duration_ms = -1;
+    int polling_interval_ms = -1;
+
     bool btn_states[2] = {false, false};
     bool long_pressed[2] = {0, 0};
     TickType_t last_press[2] = {0, 0};
@@ -18,8 +24,8 @@ namespace Button
         while (true)
         {
             bool btn_states_now[2] = {
-                (bool) gpio_get_level(BTN_LEFT_PIN),
-                (bool) gpio_get_level(BTN_RIGHT_PIN),
+                (bool) gpio_get_level(gpio_pin_left),
+                (bool) gpio_get_level(gpio_pin_right),
             };
             
             for (int i = 0; i < 2; i++)
@@ -37,7 +43,7 @@ namespace Button
                 else
                 {
                     int32_t press_duration = xTaskGetTickCount() - (int32_t)last_press[i]; // casting to int32_t to avoid overflow
-                    if (btn_states[i] && press_duration > pdMS_TO_TICKS(BTN_LONG_PRESS_MS) && !long_pressed[i])
+                    if (btn_states[i] && press_duration > pdMS_TO_TICKS(long_press_duration_ms) && !long_pressed[i])
                     {
                         if (callbacks.onLongPressed[i]) callbacks.onLongPressed[i]();
                         long_pressed[i] = true;
@@ -51,18 +57,28 @@ namespace Button
                 long_pressed[i] &= btn_states[i];
             }
 
-            vTaskDelay(pdMS_TO_TICKS(BTN_POLL_INT_MS));
+            vTaskDelay(pdMS_TO_TICKS(polling_interval_ms));
         }
     }
 
     Status Init()
     {
-        if (initialized) return Status::Ok;
+        LOG_SCOPE(TAG, "Button::Init");
+        if (initialized)
+        {
+            LOG_DEBUG(TAG, "Already initialized");
+            return Status::Ok;
+        }
+
+        gpio_pin_left = static_cast<gpio_num_t>(Settings::GetConfig().buttons.gpio_left);
+        gpio_pin_right = static_cast<gpio_num_t>(Settings::GetConfig().buttons.gpio_right);
+        long_press_duration_ms = Settings::GetConfig().buttons.long_press_duration_ms;
+        polling_interval_ms = Settings::GetConfig().buttons.polling_interval_ms;
 
         gpio_config_t io_conf;
         io_conf.intr_type = GPIO_INTR_DISABLE;
         io_conf.mode = GPIO_MODE_INPUT;
-        io_conf.pin_bit_mask = (1ULL << BTN_LEFT_PIN) | (1ULL << BTN_RIGHT_PIN);
+        io_conf.pin_bit_mask = (1ULL << gpio_pin_left) | (1ULL << gpio_pin_right);
         io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE; // should have external pull-down
         io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
         
@@ -80,8 +96,9 @@ namespace Button
             return Status::Unknown;
         }
 
-        initialized = true;
+        LOG_DEBUG(TAG, "Buttons initialized successfully");
 
+        initialized = true;
         return Status::Ok;
     }
 

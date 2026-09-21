@@ -108,25 +108,25 @@ void MenuMotorCalib::onRender()
     {
         float progress = joint ? joint->getMotorController().getCalibrationProgress() : 0.f;
         Draw::Text(8, HEADER_HEIGHT + 8, "Calibrating...");
-        Draw::RectRounded(8, HEADER_HEIGHT + 30, ScreenDriver::info.width - 16, 16, 4);
-        Draw::RectRounded(9, HEADER_HEIGHT + 31, ScreenDriver::info.width - 18, 14, 3, ScreenDriver::COLOR_BLACK);
-        Draw::RectRounded(9, HEADER_HEIGHT + 31, (ScreenDriver::info.width - 18) * progress, 14, 3);
+        Draw::RectRounded(8, HEADER_HEIGHT + 30, Screen::GetInstance()->getInfo().width - 16, 16, 4);
+        Draw::RectRounded(9, HEADER_HEIGHT + 31, Screen::GetInstance()->getInfo().width - 18, 14, 3, Screen::COLOR_BLACK);
+        Draw::RectRounded(9, HEADER_HEIGHT + 31, (Screen::GetInstance()->getInfo().width - 18) * progress, 14, 3);
     }
     else
     {
         const char* jointName = jointId2Str((Joint::Id) jointId);
         int width = Draw::GetTextWidth(jointName);
-        Draw::Text((ScreenDriver::info.width - width) / 2, (ScreenDriver::info.height - 8) / 2, jointName);
+        Draw::Text((Screen::GetInstance()->getInfo().width - width) / 2, (Screen::GetInstance()->getInfo().height - 8) / 2, jointName);
 
         if (joint)
         {
             if (joint->getMotorController().getCalibrationState() == MotorController::CalibrationState::CALIBRATED)
             {
-                Draw::Text(3*8, ScreenDriver::info.height - 8, "Calibrated");
+                Draw::Text(3*8, Screen::GetInstance()->getInfo().height - 8, "Calibrated");
             }
             else
             {
-                Draw::Text(8, ScreenDriver::info.height - 8, "Not calibrated");
+                Draw::Text(8, Screen::GetInstance()->getInfo().height - 8, "Not calibrated");
             }
         }
     }

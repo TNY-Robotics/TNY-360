@@ -1,6 +1,7 @@
 #pragma once
 #include "common/utils.hpp"
 #include "drivers/CameraDriver.hpp"
+#include "ui/Screen.hpp"
 #include "ui/menus/Splash.hpp"
 
 class UIManager
@@ -22,8 +23,11 @@ public:
      */
     Status deinit();
 
+    Screen& getScreen() { return *screen; }
+
     CameraDriver& getCamera() { return camera; }
 
 private:
+    Screen* screen = nullptr;
     CameraDriver camera;
 };

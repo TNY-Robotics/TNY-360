@@ -12,7 +12,7 @@ public:
     void setFrequency(float frequencyHz);
     void setVolume(float volume);
 
-    bool provideSamples(Speaker::Sample* buffer, size_t sampleCount) override;
+    bool provideSamples(ISpeaker::Sample* buffer, size_t sampleCount) override;
 
 private:
     float volume = 1.0f;
