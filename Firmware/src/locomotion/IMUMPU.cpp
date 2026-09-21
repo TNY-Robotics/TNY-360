@@ -81,9 +81,11 @@ Status IMUMPU::provide_data(Vec3f &accel, Vec3f &angular_vel)
         return Status::Failure;
     }
 
-    accel.x = value_accel.accel_x * IMU::GRAVITY;
-    accel.y = value_accel.accel_y * IMU::GRAVITY;
-    accel.z = value_accel.accel_z * IMU::GRAVITY;
+    // NOTE : MPU6050 accel values are inverted compared to the body frame, thus the negation here
+    //        (it returns the force applied to the sensor, not the acceleration of the sensor itself)
+    accel.x = -value_accel.accel_x * IMU::GRAVITY;
+    accel.y = -value_accel.accel_y * IMU::GRAVITY;
+    accel.z = -value_accel.accel_z * IMU::GRAVITY;
 
     angular_vel.x = DEG_TO_RAD(value_gyro.gyro_x);
     angular_vel.y = DEG_TO_RAD(value_gyro.gyro_y);

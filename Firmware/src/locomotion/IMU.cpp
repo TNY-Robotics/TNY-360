@@ -49,9 +49,9 @@ Status IMU::estimateState(float dt)
     downVector = (rotated_downVector * alpha + accel_vector * (1.0f - alpha)).normalized();
 
     // update orientation
-    orientation.x = atan2f(downVector.y, downVector.z);
-    orientation.y = atan2f(-downVector.x, sqrtf(downVector.y * downVector.y + downVector.z * downVector.z));
-    orientation.z = 0.0f;
+    orientation.x = atan2f(-downVector.y, -downVector.z); // roll
+    orientation.y = atan2f(downVector.x, std::sqrtf(downVector.y * downVector.y + downVector.z * downVector.z)); // pitch
+    orientation.z = 0.0f; // always zeroed
 
     return Status::Ok;
 }
