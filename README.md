@@ -1,37 +1,36 @@
-> [!WARNING]
-> V2 is coming soon ! If you plan on building this robot, maybe wait a couple of days :)
+> 🚀 TNY-360 V2 launches October 1, 2026.
 > 
-> (join the discord [here](https://discord.gg/XGABkx5A4y) to get updates if you want)
+> The repository will be updated with the V2 release files and documentation at launch.
 
 ![Banner](./Extras/banner.png)
 
 <div align="center">
 
-# TNY-360 Quadruped Robot
+# TNY-360 - Open-Source Robot Dog
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Platform](https://img.shields.io/badge/Platform-ESP32--S3-blue)](https://espressif.com)
 [![Framework](https://img.shields.io/badge/Framework-ESP--IDF-orange)](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/TNY-Robotics/TNY-360)
 
-**A compact, open-source robot dog designed to *Understand*, *Interact*, and *Learn*.**
+**The open-source quadruped you can actually *build*, *repair* and *modify* yourself.**
 
-[🌐 Website](https://tny-robotics.com/tny-360) • [📸 Instagram](https://instagram.com/furwaz_) • [💬 Discord](https://discord.gg/XGABkx5A4y) • [📖 Documentation](https://tny-robotics.com/docs/tny-360/) • [☕ Support Us](https://ko-fi.com/tnyrobotics)
+[🌐 Website](https://tny-robotics.com/tny-360) • [📖 Documentation](https://tny-robotics.com/docs/tny-360/) • [💬 Discord](https://discord.gg/XGABkx5A4y) • [☕ Support Us](https://ko-fi.com/tnyrobotics)
 
 </div>
 
----
+<br />
 
-## 🚀 How to Build Your Own TNY-360
-
-Everything you need to build this robot is 100% free and open-source. Instead of getting lost in the folders, we highly recommend following our official, step-by-step wiki:
+# 🛠️ Want to build one?
 
 <div align="center">
 
 > ### **[👉 START HERE: The Official Step-by-Step Guide 👈](https://tny-robotics.com/docs/tny-360/practical-guide/sourcing)**
-> *From ordering the first screw to the assembling the last part, this guide covers it all.*
+> *From ordering the first screw to assembling the last part, this guide covers it all.*
 
 </div>
+
+<br />
 
 ### 🗂️ Quick Links (For Advanced Makers)
 If you know what you are doing and just want the raw files, here is your toolkit:
