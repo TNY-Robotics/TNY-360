@@ -29,7 +29,7 @@ Everything you need to build this robot is 100% free and open-source. Instead of
 <div align="center">
 
 > ### **[👉 START HERE: The Official Step-by-Step Guide 👈](https://tny-robotics.com/docs/tny-360/practical-guide/sourcing)**
-> *From ordering the first screw to the assembing the last part, this guide covers it all.*
+> *From ordering the first screw to the assembling the last part, this guide covers it all.*
 
 </div>
 
