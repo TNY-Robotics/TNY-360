@@ -601,7 +601,7 @@ BT
 9.82 TL
 0.000 g
 733.24 113.33 Td
-(2026-08-13) Tj
+(2026-09-16) Tj
 ET
 1 J
 1 j
@@ -1868,8 +1868,8 @@ BT
 /F2 6.545454545454544 Tf
 7.20 TL
 0.000 0.000 0.502 rg
-200.81 400.19 Td
-(GND) Tj
+200.62 400.19 Td
+(BAT-) Tj
 ET
 1 J
 1 j
@@ -1920,8 +1920,8 @@ BT
 /F2 6.545454545454544 Tf
 7.20 TL
 0.000 0.000 0.502 rg
-247.61 295.79 Td
-(GND) Tj
+247.42 295.79 Td
+(BAT-) Tj
 ET
 1 J
 1 j
@@ -2758,8 +2758,8 @@ BT
 /F2 6.545454545454544 Tf
 7.20 TL
 0.000 0.000 0.502 rg
-653.68 310.19 Td
-(OUT-) Tj
+654.22 310.19 Td
+(BAT-) Tj
 ET
 1 J
 1 j
@@ -3100,8 +3100,8 @@ BT
 /F2 6.545454545454544 Tf
 7.20 TL
 0.000 0.000 0.502 rg
-368.46 392.99 Td
-(OUT+) Tj
+370.55 392.99 Td
+(RES) Tj
 ET
 1 J
 1 j
@@ -3152,8 +3152,8 @@ BT
 /F2 6.545454545454544 Tf
 7.20 TL
 0.000 0.000 0.502 rg
-247.42 256.19 Td
-(BAT-) Tj
+249.66 256.19 Td
+(OUT+) Tj
 ET
 1 J
 1 j
@@ -3204,8 +3204,8 @@ BT
 /F2 6.545454545454544 Tf
 7.20 TL
 0.000 0.000 0.502 rg
-156.88 256.19 Td
-(OUT-) Tj
+158.15 256.19 Td
+(RES) Tj
 ET
 1 J
 1 j
@@ -3574,8 +3574,8 @@ BT
 /F2 6.545454545454544 Tf
 7.20 TL
 0.000 0.000 0.502 rg
-350.46 310.19 Td
-(OUT+) Tj
+352.55 310.19 Td
+(RES) Tj
 ET
 1 J
 1 j
@@ -3644,8 +3644,8 @@ BT
 /F2 6.545454545454544 Tf
 7.20 TL
 0.000 0.000 0.502 rg
-298.01 263.39 Td
-(GND) Tj
+297.82 263.39 Td
+(BAT-) Tj
 ET
 1 J
 1 j
@@ -4397,89 +4397,89 @@ endobj
 >>
 >>
 endobj
+49 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 50 0 R>> endobj
 50 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 51 0 R>> endobj
-51 0 obj
 <</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/42.48/5;this.zoom*=scale;var scrollX=246.6-(box[2]-box[0])/2/scale;var scrollY=313.2-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[225.35999999999999,318.24,267.84,308.16]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
+51 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 52 0 R>> endobj
 52 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 53 0 R>> endobj
-53 0 obj
 <</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/74.88/5;this.zoom*=scale;var scrollX=504-(box[2]-box[0])/2/scale;var scrollY=230.39999999999998-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[466.56,239.04,541.44,221.76]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
+53 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 54 0 R>> endobj
 54 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 55 0 R>> endobj
-55 0 obj
 <</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/10.08/5;this.zoom*=scale;var scrollX=468-(box[2]-box[0])/2/scale;var scrollY=190.8-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[466.56,195.84,469.44,185.76]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
+55 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 56 0 R>> endobj
 56 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 57 0 R>> endobj
-57 0 obj
 <</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/46.08/5;this.zoom*=scale;var scrollX=504-(box[2]-box[0])/2/scale;var scrollY=266.4-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[480.96,275.03999999999996,527.04,257.76]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
+57 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 58 0 R>> endobj
 58 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 59 0 R>> endobj
-59 0 obj
-<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/64.08/5;this.zoom*=scale;var scrollX=221.39999999999998-(box[2]-box[0])/2/scale;var scrollY=286.2-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[210.95999999999998,318.24,231.83999999999997,254.16000000000003]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
-60 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 61 0 R>> endobj
-61 0 obj
-<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/10.08/5;this.zoom*=scale;var scrollX=453.59999999999997-(box[2]-box[0])/2/scale;var scrollY=190.8-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[452.15999999999997,195.84,455.03999999999996,185.76]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
-62 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 63 0 R>> endobj
-63 0 obj
-<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/10.08/5;this.zoom*=scale;var scrollX=604.8-(box[2]-box[0])/2/scale;var scrollY=360-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[599.76,361.44,609.84,358.56]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
-64 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 65 0 R>> endobj
-65 0 obj
-<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/10.08/5;this.zoom*=scale;var scrollX=640.8-(box[2]-box[0])/2/scale;var scrollY=360-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[635.76,361.44,645.84,358.56]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
-66 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 67 0 R>> endobj
-67 0 obj
-<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/17.28/5;this.zoom*=scale;var scrollX=561.6-(box[2]-box[0])/2/scale;var scrollY=259.2-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[552.96,260.64,570.24,257.76]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
-68 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 69 0 R>> endobj
-69 0 obj
-<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/17.28/5;this.zoom*=scale;var scrollX=446.4-(box[2]-box[0])/2/scale;var scrollY=259.2-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[437.76,260.64,455.03999999999996,257.76]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
-70 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 71 0 R>> endobj
-71 0 obj
-<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/17.28/5;this.zoom*=scale;var scrollX=435.59999999999997-(box[2]-box[0])/2/scale;var scrollY=392.4-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[434.15999999999997,401.03999999999996,437.03999999999996,383.76]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
-72 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 73 0 R>> endobj
-73 0 obj
 <</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/17.28/5;this.zoom*=scale;var scrollX=208.79999999999998-(box[2]-box[0])/2/scale;var scrollY=374.4-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[203.76,383.03999999999996,213.84,365.76]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
-74 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 75 0 R>> endobj
-75 0 obj
+59 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 60 0 R>> endobj
+60 0 obj
 <</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/24.48/5;this.zoom*=scale;var scrollX=225-(box[2]-box[0])/2/scale;var scrollY=306-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[218.16,318.24,231.84,293.76]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
-76 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 77 0 R>> endobj
-77 0 obj
-<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/2.88/5;this.zoom*=scale;var scrollX=302.4-(box[2]-box[0])/2/scale;var scrollY=280.8-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[300.96,282.24,303.84,279.36]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
-78 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 79 0 R>> endobj
-79 0 obj
-<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/64.08/5;this.zoom*=scale;var scrollX=196.2-(box[2]-box[0])/2/scale;var scrollY=286.2-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[185.76,318.24,206.64,254.16000000000003]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
-80 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 81 0 R>> endobj
-81 0 obj
+61 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 62 0 R>> endobj
+62 0 obj
 <</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/10.08/5;this.zoom*=scale;var scrollX=629.9999999999999-(box[2]-box[0])/2/scale;var scrollY=305.99999999999994-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[624.9599999999999,311.03999999999996,635.04,300.96]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
-82 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 83 0 R>> endobj
-83 0 obj
+63 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 64 0 R>> endobj
+64 0 obj
+<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/10.08/5;this.zoom*=scale;var scrollX=453.59999999999997-(box[2]-box[0])/2/scale;var scrollY=190.8-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[452.15999999999997,195.84,455.03999999999996,185.76]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
+65 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 66 0 R>> endobj
+66 0 obj
+<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/2.88/5;this.zoom*=scale;var scrollX=302.4-(box[2]-box[0])/2/scale;var scrollY=280.8-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[300.96,282.24,303.84,279.36]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
+67 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 68 0 R>> endobj
+68 0 obj
+<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/10.08/5;this.zoom*=scale;var scrollX=604.8-(box[2]-box[0])/2/scale;var scrollY=360-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[599.76,361.44,609.84,358.56]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
+69 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 70 0 R>> endobj
+70 0 obj
+<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/10.08/5;this.zoom*=scale;var scrollX=640.8-(box[2]-box[0])/2/scale;var scrollY=360-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[635.76,361.44,645.84,358.56]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
+71 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 72 0 R>> endobj
+72 0 obj
+<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/17.28/5;this.zoom*=scale;var scrollX=561.6-(box[2]-box[0])/2/scale;var scrollY=259.2-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[552.96,260.64,570.24,257.76]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
+73 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 74 0 R>> endobj
+74 0 obj
+<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/17.28/5;this.zoom*=scale;var scrollX=446.4-(box[2]-box[0])/2/scale;var scrollY=259.2-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[437.76,260.64,455.03999999999996,257.76]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
+75 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 76 0 R>> endobj
+76 0 obj
+<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/17.28/5;this.zoom*=scale;var scrollX=435.59999999999997-(box[2]-box[0])/2/scale;var scrollY=392.4-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[434.15999999999997,401.03999999999996,437.03999999999996,383.76]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
+77 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 78 0 R>> endobj
+78 0 obj
+<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/64.08/5;this.zoom*=scale;var scrollX=221.39999999999998-(box[2]-box[0])/2/scale;var scrollY=286.2-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[210.95999999999998,318.24,231.83999999999997,254.16000000000003]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
+79 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 80 0 R>> endobj
+80 0 obj
 <</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/10.08/5;this.zoom*=scale;var scrollX=615.5999999999999-(box[2]-box[0])/2/scale;var scrollY=305.99999999999994-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[610.56,311.03999999999996,620.64,300.96]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
+81 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 82 0 R>> endobj
+82 0 obj
+<</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/64.08/5;this.zoom*=scale;var scrollX=196.2-(box[2]-box[0])/2/scale;var scrollY=286.2-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[185.76,318.24,206.64,254.16000000000003]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
+83 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 84 0 R>> endobj
 84 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 85 0 R>> endobj
-85 0 obj
 <</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/2.88/5;this.zoom*=scale;var scrollX=338.4-(box[2]-box[0])/2/scale;var scrollY=309.59999999999997-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[336.96,311.03999999999996,339.84,308.15999999999997]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
+85 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 86 0 R>> endobj
 86 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 87 0 R>> endobj
-87 0 obj
 <</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/17.28/5;this.zoom*=scale;var scrollX=392.4-(box[2]-box[0])/2/scale;var scrollY=392.4-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[390.96,401.03999999999996,393.84,383.76]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
+87 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 88 0 R>> endobj
 88 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 89 0 R>> endobj
-89 0 obj
 <</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/53.28/5;this.zoom*=scale;var scrollX=226.79999999999998-(box[2]-box[0])/2/scale;var scrollY=392.4-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[225.35999999999999,419.03999999999996,228.23999999999998,365.76]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
+89 0 obj
+<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 90 0 R>> endobj
 90 0 obj
-<</D[0 /XYZ 0 599.76 0]/S/GoTo/Next 91 0 R>> endobj
-91 0 obj
 <</JS(this.zoomType=zoomtype.fitV;var box=this.getPageBox('Media',0);var scale=(box[2]-box[0])/53.28/5;this.zoom*=scale;var scrollX=219.6-(box[2]-box[0])/2/scale;var scrollY=392.4-(box[3]-box[1])/2/scale;this.scroll(scrollX,scrollY);this.removeField('arrow');var a = this.addField('arrow','text',0,[218.16,419.03999999999996,221.04,365.76]);a.textColor=color.blue;a.value="")/S/JavaScript>> endobj
 
 13 0 obj
@@ -4487,7 +4487,7 @@ endobj
 /Type /Outlines
 /First 14 0 R
 /Last 16 0 R
-/Count 36
+/Count 35
 >> 
 endobj
 
@@ -4508,8 +4508,8 @@ endobj
 /Parent 13 0 R
 /Prev 14 0 R
 /First 17 0 R
-/Last 48 0 R
-/Count 33
+/Last 47 0 R
+/Count 32
 >> 
 endobj
 
@@ -4573,30 +4573,18 @@ endobj
 /Title (BAT-)
 /Parent 16 0 R
 /Prev 23 0 R
-/Next 29 0 R
-/First 26 0 R
-/Last 28 0 R
-/Count 3
->> 
-endobj
-
-29 0 obj
-<<
-/Title (BAT+)
-/Parent 16 0 R
-/Prev 25 0 R
 /Next 32 0 R
-/First 30 0 R
+/First 26 0 R
 /Last 31 0 R
-/Count 2
+/Count 6
 >> 
 endobj
 
 32 0 obj
 <<
-/Title (FUSE)
+/Title (BAT+)
 /Parent 16 0 R
-/Prev 29 0 R
+/Prev 25 0 R
 /Next 35 0 R
 /First 33 0 R
 /Last 34 0 R
@@ -4606,59 +4594,59 @@ endobj
 
 35 0 obj
 <<
-/Title (GND)
+/Title (FUSE)
 /Parent 16 0 R
 /Prev 32 0 R
-/Next 39 0 R
+/Next 38 0 R
 /First 36 0 R
-/Last 38 0 R
-/Count 3
->> 
-endobj
-
-39 0 obj
-<<
-/Title (OUT-)
-/Parent 16 0 R
-/Prev 35 0 R
-/Next 42 0 R
-/First 40 0 R
-/Last 41 0 R
+/Last 37 0 R
 /Count 2
 >> 
 endobj
 
-42 0 obj
+38 0 obj
 <<
 /Title (OUT+)
 /Parent 16 0 R
-/Prev 39 0 R
-/Next 46 0 R
-/First 43 0 R
-/Last 45 0 R
+/Prev 35 0 R
+/Next 41 0 R
+/First 39 0 R
+/Last 40 0 R
+/Count 2
+>> 
+endobj
+
+41 0 obj
+<<
+/Title (RES)
+/Parent 16 0 R
+/Prev 38 0 R
+/Next 45 0 R
+/First 42 0 R
+/Last 44 0 R
 /Count 3
 >> 
 endobj
 
-46 0 obj
+45 0 obj
 <<
 /Title (SCL)
 /Parent 16 0 R
-/Prev 42 0 R
-/Next 48 0 R
-/First 47 0 R
-/Last 47 0 R
+/Prev 41 0 R
+/Next 47 0 R
+/First 46 0 R
+/Last 46 0 R
 /Count 1
 >> 
 endobj
 
-48 0 obj
+47 0 obj
 <<
 /Title (SDA)
 /Parent 16 0 R
-/Prev 46 0 R
-/First 49 0 R
-/Last 49 0 R
+/Prev 45 0 R
+/First 48 0 R
+/Last 48 0 R
 /Count 1
 >> 
 endobj
@@ -4667,7 +4655,7 @@ endobj
 <<
 /Title ($1N296)
 /Parent 17 0 R
-/A 50 0 R
+/A 49 0 R
 >> 
 endobj
 
@@ -4675,7 +4663,7 @@ endobj
 <<
 /Title ($1N923)
 /Parent 19 0 R
-/A 52 0 R
+/A 51 0 R
 >> 
 endobj
 
@@ -4683,7 +4671,7 @@ endobj
 <<
 /Title ($1N1667)
 /Parent 21 0 R
-/A 54 0 R
+/A 53 0 R
 >> 
 endobj
 
@@ -4691,171 +4679,173 @@ endobj
 <<
 /Title ($1N4605)
 /Parent 23 0 R
-/A 56 0 R
+/A 55 0 R
 >> 
 endobj
 
 26 0 obj
 <<
-/Title ($1N917)
+/Title ($1N299)
 /Parent 25 0 R
 /Next 27 0 R
-/A 58 0 R
+/A 57 0 R
 >> 
 endobj
 
 27 0 obj
 <<
-/Title ($1N1475)
+/Title ($1N302)
 /Parent 25 0 R
 /Prev 26 0 R
 /Next 28 0 R
-/A 60 0 R
+/A 59 0 R
 >> 
 endobj
 
 28 0 obj
 <<
-/Title ($1N4592)
+/Title ($1N955)
 /Parent 25 0 R
 /Prev 27 0 R
-/A 62 0 R
+/Next 29 0 R
+/A 61 0 R
+>> 
+endobj
+
+29 0 obj
+<<
+/Title ($1N1475)
+/Parent 25 0 R
+/Prev 28 0 R
+/Next 30 0 R
+/A 63 0 R
 >> 
 endobj
 
 30 0 obj
 <<
-/Title ($1N681)
-/Parent 29 0 R
+/Title ($1N2326)
+/Parent 25 0 R
+/Prev 29 0 R
 /Next 31 0 R
-/A 64 0 R
+/A 65 0 R
 >> 
 endobj
 
 31 0 obj
 <<
-/Title ($1N4596)
-/Parent 29 0 R
+/Title ($1N4592)
+/Parent 25 0 R
 /Prev 30 0 R
-/A 66 0 R
+/A 67 0 R
 >> 
 endobj
 
 33 0 obj
 <<
-/Title ($1N969)
+/Title ($1N681)
 /Parent 32 0 R
 /Next 34 0 R
-/A 68 0 R
+/A 69 0 R
 >> 
 endobj
 
 34 0 obj
 <<
-/Title ($1N4055)
+/Title ($1N4596)
 /Parent 32 0 R
 /Prev 33 0 R
-/A 70 0 R
+/A 71 0 R
 >> 
 endobj
 
 36 0 obj
 <<
-/Title ($1N299)
+/Title ($1N969)
 /Parent 35 0 R
 /Next 37 0 R
-/A 72 0 R
+/A 73 0 R
 >> 
 endobj
 
 37 0 obj
 <<
-/Title ($1N302)
+/Title ($1N4055)
 /Parent 35 0 R
 /Prev 36 0 R
-/Next 38 0 R
-/A 74 0 R
+/A 75 0 R
 >> 
 endobj
 
-38 0 obj
+39 0 obj
 <<
-/Title ($1N2326)
-/Parent 35 0 R
-/Prev 37 0 R
-/A 76 0 R
+/Title ($1N917)
+/Parent 38 0 R
+/Next 40 0 R
+/A 77 0 R
 >> 
 endobj
 
 40 0 obj
 <<
-/Title ($1N911)
-/Parent 39 0 R
-/Next 41 0 R
-/A 78 0 R
+/Title ($1N941)
+/Parent 38 0 R
+/Prev 39 0 R
+/A 79 0 R
 >> 
 endobj
 
-41 0 obj
+42 0 obj
 <<
-/Title ($1N955)
-/Parent 39 0 R
-/Prev 40 0 R
-/A 80 0 R
+/Title ($1N911)
+/Parent 41 0 R
+/Next 43 0 R
+/A 81 0 R
 >> 
 endobj
 
 43 0 obj
 <<
-/Title ($1N941)
-/Parent 42 0 R
+/Title ($1N2304)
+/Parent 41 0 R
+/Prev 42 0 R
 /Next 44 0 R
-/A 82 0 R
+/A 83 0 R
 >> 
 endobj
 
 44 0 obj
 <<
-/Title ($1N2304)
-/Parent 42 0 R
-/Prev 43 0 R
-/Next 45 0 R
-/A 84 0 R
->> 
-endobj
-
-45 0 obj
-<<
 /Title ($1N4061)
-/Parent 42 0 R
-/Prev 44 0 R
-/A 86 0 R
+/Parent 41 0 R
+/Prev 43 0 R
+/A 85 0 R
 >> 
 endobj
 
-47 0 obj
+46 0 obj
 <<
 /Title ($1N293)
-/Parent 46 0 R
-/A 88 0 R
+/Parent 45 0 R
+/A 87 0 R
 >> 
 endobj
 
-49 0 obj
+48 0 obj
 <<
 /Title ($1N305)
-/Parent 48 0 R
-/A 90 0 R
+/Parent 47 0 R
+/A 89 0 R
 >> 
 endobj
 
-92 0 obj
+91 0 obj
 <<
 /Producer (jsPDF 0.0.0)
-/CreationDate (D:20260819185453+02'00')
+/CreationDate (D:20261018133748+02'00')
 >>
 endobj
-93 0 obj
+92 0 obj
 <<
 /Type /Catalog
 /Pages 1 0 R
@@ -4865,7 +4855,7 @@ endobj
 >>
 endobj
 xref
-0 94
+0 93
 0000000000 65535 f 
 0000052193 00000 n 
 0000054401 00000 n 
@@ -4884,38 +4874,37 @@ xref
 0000064785 00000 n 
 0000064683 00000 n 
 0000064897 00000 n 
-0000066258 00000 n 
+0000066143 00000 n 
 0000065001 00000 n 
-0000066323 00000 n 
+0000066208 00000 n 
 0000065118 00000 n 
-0000066388 00000 n 
+0000066273 00000 n 
 0000065236 00000 n 
-0000066454 00000 n 
+0000066339 00000 n 
 0000065354 00000 n 
-0000066520 00000 n 
-0000066598 00000 n 
-0000066690 00000 n 
+0000066405 00000 n 
+0000066483 00000 n 
+0000066574 00000 n 
+0000066665 00000 n 
+0000066757 00000 n 
+0000066849 00000 n 
 0000065469 00000 n 
-0000066769 00000 n 
-0000066847 00000 n 
+0000066928 00000 n 
+0000067006 00000 n 
 0000065584 00000 n 
-0000066926 00000 n 
-0000067004 00000 n 
+0000067085 00000 n 
+0000067163 00000 n 
 0000065699 00000 n 
-0000067083 00000 n 
-0000067161 00000 n 
-0000067252 00000 n 
-0000065813 00000 n 
-0000067331 00000 n 
-0000067409 00000 n 
+0000067242 00000 n 
+0000067320 00000 n 
+0000065814 00000 n 
+0000067398 00000 n 
+0000067476 00000 n 
+0000067568 00000 n 
 0000065928 00000 n 
-0000067487 00000 n 
-0000067565 00000 n 
-0000067657 00000 n 
-0000066043 00000 n 
-0000067736 00000 n 
-0000066157 00000 n 
-0000067801 00000 n 
+0000067647 00000 n 
+0000066042 00000 n 
+0000067712 00000 n 
 0000054526 00000 n 
 0000054587 00000 n 
 0000054994 00000 n 
@@ -4926,30 +4915,30 @@ xref
 0000055976 00000 n 
 0000056381 00000 n 
 0000056442 00000 n 
-0000056886 00000 n 
-0000056947 00000 n 
-0000057379 00000 n 
-0000057440 00000 n 
-0000057833 00000 n 
-0000057894 00000 n 
-0000058287 00000 n 
-0000058348 00000 n 
-0000058743 00000 n 
-0000058804 00000 n 
-0000059211 00000 n 
-0000059272 00000 n 
-0000059716 00000 n 
-0000059777 00000 n 
-0000060197 00000 n 
-0000060258 00000 n 
-0000060649 00000 n 
-0000060710 00000 n 
-0000061104 00000 n 
-0000061165 00000 n 
-0000061572 00000 n 
-0000061633 00000 n 
-0000062076 00000 n 
-0000062137 00000 n 
+0000056862 00000 n 
+0000056923 00000 n 
+0000057314 00000 n 
+0000057375 00000 n 
+0000057818 00000 n 
+0000057879 00000 n 
+0000058311 00000 n 
+0000058372 00000 n 
+0000058766 00000 n 
+0000058827 00000 n 
+0000059220 00000 n 
+0000059281 00000 n 
+0000059674 00000 n 
+0000059735 00000 n 
+0000060130 00000 n 
+0000060191 00000 n 
+0000060598 00000 n 
+0000060659 00000 n 
+0000061103 00000 n 
+0000061164 00000 n 
+0000061608 00000 n 
+0000061669 00000 n 
+0000062101 00000 n 
+0000062162 00000 n 
 0000062569 00000 n 
 0000062630 00000 n 
 0000063061 00000 n 
@@ -4958,15 +4947,15 @@ xref
 0000063590 00000 n 
 0000064034 00000 n 
 0000064095 00000 n 
-0000067866 00000 n 
-0000067952 00000 n 
+0000067777 00000 n 
+0000067863 00000 n 
 trailer
 <<
-/Size 94
-/Root 93 0 R
-/Info 92 0 R
-/ID [ <62A97190540DED721543C3D74D02317E> <62A97190540DED721543C3D74D02317E> ]
+/Size 93
+/Root 92 0 R
+/Info 91 0 R
+/ID [ <2A6549D3ED70A0063A65848B9F65A7A1> <2A6549D3ED70A0063A65848B9F65A7A1> ]
 >>
 startxref
-68073
+67984
 %%EOF
