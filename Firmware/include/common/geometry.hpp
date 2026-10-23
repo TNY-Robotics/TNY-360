@@ -164,6 +164,8 @@ template<typename T>
 class Quat
 {
 public:
+    constexpr static Quat<T> Identity() { return Quat<T>(0, 0, 0, 1); }
+
     static Quat<T> FromEulerAngles(Vec3<T> angles) {
         float cy = cosf(angles.z * 0.5f);
         float sy = sinf(angles.z * 0.5f);

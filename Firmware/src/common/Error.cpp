@@ -1,7 +1,9 @@
+#include "common/Error.hpp"
 #include "common/utils.hpp"
 #include "common/config.hpp"
 #include "common/LED.hpp"
 #include "ui/Menus.hpp"
+#include "ui/menus/Error.hpp"
 #include <esp_timer.h>
 #include <mutex>
 
@@ -85,6 +87,15 @@ namespace Error
         ringBuffer[head] = finalEvent;
         head = (head + 1) % ERROR_MAX_EVENTS;
         if (count < ERROR_MAX_EVENTS) count++;
+
+
+        // Display the error on the screen (threshold is Trace to display all errors, including debug ones)
+        if (finalEvent.severity >= ErrorSeverity::Trace)
+        {
+            MenuError* errorMenu = static_cast<MenuError*>(Menus::GetMenuError());
+            errorMenu->setErrorEvent(finalEvent);
+            Menus::SetCurrentMenu(errorMenu);
+        }
 
         return finalEvent.eventId;
     }

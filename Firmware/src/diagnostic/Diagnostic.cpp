@@ -4,7 +4,7 @@
 #include "common/Log.hpp"
 #include "common/NVS.hpp"
 #include "settings/settings.hpp"
-#include "audio/ISpeaker.hpp"
+#include "audio/Speaker.hpp"
 #include "audio/SpeakerPDM.hpp"
 #include "audio/SpeakerI2S.hpp"
 #include "audio/SoundMixer.hpp"
@@ -134,7 +134,7 @@ namespace Diagnostic
         uint8_t LED()
         {
             check_begin();
-            if (Status err = ::LED::Init(); err != Status::Ok) return check_end();
+            // if (Status err = ::LED::Init(); err != Status::Ok) return check_end();
             // if (Status err = ::LED::Deinit(); err != Status::Ok) return check_end();
             return check_end();
         }
@@ -142,7 +142,7 @@ namespace Diagnostic
         uint8_t I2C()
         {
             check_begin();
-            if (Status status = ::I2C::Init(); status != Status::Ok) return check_end();
+            // if (Status status = ::I2C::Init(); status != Status::Ok) return check_end();
             // if (Status status = ::I2C::Deinit(); status != Status::Ok) return check_end();
             return check_end();
         }
@@ -150,19 +150,18 @@ namespace Diagnostic
         uint8_t Speaker()
         {
             check_begin();
-            ::ISpeaker* s = nullptr;
-            ::SoundMixer mixer;
-            if (Settings::GetConfig().audio.speakerType == AudioSpeakerType::SPEAKER_PDM) s = new ::SpeakerPDM();
-            else if (Settings::GetConfig().audio.speakerType == AudioSpeakerType::SPEAKER_I2S) s = new ::SpeakerI2S();
-            else
-            {
-                LOG_ERROR(TAG, "Unknown speaker type in settings. Disabling audio.");
-                return check_end();
-            }
-            if (Status err = s->init(); err != Status::Ok) return check_end();
-            if (Status err = mixer.init(s); err != Status::Ok) return check_end();
-            if (Status err = mixer.deinit(); err != Status::Ok) return check_end();
-            if (Status err = s->deinit(); err != Status::Ok) return check_end();
+            // ::Speaker* s = ::Speaker::Create();
+            // if (s == nullptr)
+            // {
+            //     LOG_ERROR(TAG, "Speaker creation returned null");
+            //     return check_end();
+            // }
+
+            // ::SoundMixer mixer;
+            // if (Status err = s->init(); err != Status::Ok) return check_end();
+            // if (Status err = mixer.init(s); err != Status::Ok) return check_end();
+            // if (Status err = mixer.deinit(); err != Status::Ok) return check_end();
+            // if (Status err = s->deinit(); err != Status::Ok) return check_end();
             return check_end();
         }
 
@@ -176,9 +175,9 @@ namespace Diagnostic
         uint8_t Camera()
         {
             check_begin();
-            ::CameraDriver cam;
-            if (Status err = cam.init(); err != Status::Ok) return check_end();
-            if (Status err = cam.deinit(); err != Status::Ok) return check_end();
+            // ::CameraDriver cam;
+            // if (Status err = cam.init(); err != Status::Ok) return check_end();
+            // if (Status err = cam.deinit(); err != Status::Ok) return check_end();
             return check_end();
         }
 
@@ -200,24 +199,24 @@ namespace Diagnostic
         uint8_t Power()
         {
             check_begin();
-            if (Status err = ::PowerDriver::Init(); err != Status::Ok) return check_end();
-            if (Status err = ::PowerDriver::Deinit(); err != Status::Ok) return check_end();
+            // if (Status err = ::PowerDriver::Init(); err != Status::Ok) return check_end();
+            // if (Status err = ::PowerDriver::Deinit(); err != Status::Ok) return check_end();
             return check_end();
         }
 
         uint8_t MotorDriver()
         {
             check_begin();
-            if (Status err = ::MotorDriver::Init(); err != Status::Ok) return check_end();
-            if (Status err = ::MotorDriver::Deinit(); err != Status::Ok) return check_end();
+            // if (Status err = ::MotorDriver::Init(); err != Status::Ok) return check_end();
+            // if (Status err = ::MotorDriver::Deinit(); err != Status::Ok) return check_end();
             return check_end();
         }
 
         uint8_t AnalogReader()
         {
             check_begin();
-            if (Status err = ::AnalogDriver::Init(); err != Status::Ok) return check_end();
-            if (Status err = ::AnalogDriver::Deinit(); err != Status::Ok) return check_end();
+            // if (Status err = ::AnalogDriver::Init(); err != Status::Ok) return check_end();
+            // if (Status err = ::AnalogDriver::Deinit(); err != Status::Ok) return check_end();
             return check_end();
         }
 

@@ -12,15 +12,21 @@ namespace I2C
 
     /**
      * @brief Initializes the I2C module.
-     * @return Error code indicating success or failure.
+     * @return Status code indicating success or failure.
      */
     Status Init();
 
     /**
      * @brief Deinitializes the I2C module.
-     * @return Error code indicating success or failure.
+     * @return Status code indicating success or failure.
      */
     Status Deinit();
+
+    /**
+     * @brief Checks if the I2C module is initialized.
+     * @return True if initialized, false otherwise.
+     */
+    bool IsInitialized();
 
     Status ProbeAddress(i2c_master_bus_handle_t handle, uint8_t address);
 

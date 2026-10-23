@@ -7,10 +7,6 @@
 #include <driver/i2s_std.h>
 #include <freertos/FreeRTOS.h>
 
-SpeakerI2S::SpeakerI2S()
-{
-}
-
 Status SpeakerI2S::init()
 {
     LOG_SCOPE(TAG, "SpeakerI2S::Init");
@@ -30,13 +26,13 @@ Status SpeakerI2S::init()
     }
 
     i2s_std_config_t stdConfig = {
-        .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(static_cast<uint32_t>(Settings::GetConfig().audio.sampleRate)),
+        .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(static_cast<uint32_t>(Settings::GetConfig().audio.speaker.sampleRate)),
         .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO),
         .gpio_cfg = {
             .mclk = I2S_GPIO_UNUSED,
-            .bclk = static_cast<gpio_num_t>(Settings::GetConfig().audio.i2s.gpio_clk),
-            .ws = static_cast<gpio_num_t>(Settings::GetConfig().audio.i2s.gpio_ws),
-            .dout = static_cast<gpio_num_t>(Settings::GetConfig().audio.i2s.gpio_data),
+            .bclk = static_cast<gpio_num_t>(Settings::GetConfig().audio.speaker.i2s.gpio_clk),
+            .ws = static_cast<gpio_num_t>(Settings::GetConfig().audio.speaker.i2s.gpio_ws),
+            .dout = static_cast<gpio_num_t>(Settings::GetConfig().audio.speaker.i2s.gpio_data),
             .din = I2S_GPIO_UNUSED,
             .invert_flags = {
                 .mclk_inv = false,

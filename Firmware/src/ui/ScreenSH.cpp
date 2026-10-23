@@ -74,6 +74,12 @@ Status ScreenSH::init()
         return Status::Failure;
     }
 
+    info = {
+        .data = screen_data,
+        .width = SH1106_WIDTH,
+        .height = SH1106_HEIGHT,
+    };
+
     if (Status err = clear(); err != Status::Ok) return err;
     if (Status err = upload(); err != Status::Ok) return err;
 
@@ -83,12 +89,6 @@ Status ScreenSH::init()
         Error::RegisterErrorEvent(ErrorEventPanelDisplayOnFailed(err));
         return Status::Failure;
     }
-    
-    info = {
-        .data = screen_data,
-        .width = SH1106_WIDTH,
-        .height = SH1106_HEIGHT,
-    };
 
     return Status::Ok;
 }

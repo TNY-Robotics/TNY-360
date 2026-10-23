@@ -1,7 +1,6 @@
 #include "audio/AudioManager.hpp"
 #include "settings/Settings.hpp"
-#include "audio/SpeakerPDM.hpp"
-#include "audio/SpeakerI2S.hpp"
+#include "audio/Speaker.hpp"
 #include "common/Log.hpp"
 
 AudioManager::AudioManager()
@@ -11,33 +10,36 @@ AudioManager::AudioManager()
 Status AudioManager::init()
 {
     LOG_SCOPE(TAG, "AudioManager::Init");
-    // Find what type of speaker module is in settings
-    AudioSpeakerType speakerType = Settings::GetConfig().audio.speakerType;
-    if (speakerType == AudioSpeakerType::SPEAKER_PDM)
-    {
-        speaker = new SpeakerPDM();
-    }
-    else if (speakerType == AudioSpeakerType::SPEAKER_I2S)
-    {
-        speaker = new SpeakerI2S();
-    }
-    else
-    {
-        LOG_ERROR(TAG, "Unknown speaker type in settings. Disabling audio.");
-        speaker = nullptr;
-    }
 
+    speaker = Speaker::Create();
     if (speaker)
     {
         if (Status err = speaker->init(); err != Status::Ok)
         {
             return err;
         }
+    }
+    else
+    {
+        LOG_INFO(TAG, "Speaker creation returned null. Disabling audio output.");
+    }
+    
+    if (Status err = mixer.init(speaker); err != Status::Ok)
+    {
+        return err;
+    }
 
-        if (Status err = mixer.init(speaker); err != Status::Ok)
+    microphone = Microphone::Create();
+    if (microphone)
+    {
+        if (Status err = microphone->init(); err != Status::Ok)
         {
             return err;
         }
+    }
+    else
+    {
+        LOG_INFO(TAG, "Microphone creation returned null. Disabling audio input.");
     }
 
     return Status::Ok;
@@ -56,6 +58,20 @@ Status AudioManager::deinit()
         {
             return err;
         }
+
+        delete speaker;
+        speaker = nullptr;
+    }
+
+    if (microphone)
+    {
+        if (Status err = microphone->deinit(); err != Status::Ok)
+        {
+            return err;
+        }
+
+        delete microphone;
+        microphone = nullptr;
     }
 
     return Status::Ok;

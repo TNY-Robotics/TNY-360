@@ -1,5 +1,6 @@
 #pragma once
 #include "ui/Menus.hpp"
+#include "common/Error.hpp"
 
 class MenuError : public Menus::Menu
 {
@@ -7,7 +8,7 @@ public:
     MenuError();
     virtual ~MenuError() = default;
 
-    // void setError(ErrorStruct::ErrorStruct err);
+    void setErrorEvent(const Error::ErrorEvent& err);
 
 protected:
     virtual bool onBack() override;
@@ -21,5 +22,5 @@ protected:
     virtual void onUpdate() override;
 
 private:
-    // ErrorStruct::ErrorStruct error;
+    Error::ErrorEvent error;
 };

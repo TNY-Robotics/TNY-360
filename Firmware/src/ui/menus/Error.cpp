@@ -2,6 +2,7 @@
 #include "ui/Draw.hpp"
 #include "common/LED.hpp"
 #include "ui/Icons.hpp"
+#include <stdio.h>
 
 MenuError::MenuError()
     : Menu("Error", nullptr, Icons::ErrorMenu)
@@ -40,16 +41,27 @@ void MenuError::onHide()
 
 void MenuError::onRender()
 {
-    renderHeader();
-
-    // constexpr uint8_t NB_LINE_CHARS = 120/8;
-
-    // char errCodeText[NB_LINE_CHARS];
-    // sprintf(errCodeText, "Code: 0x%02X", error.code);
-    // Draw::Text(2, HEADER_HEIGHT + 4, errCodeText);
-
-    // Draw::Text<true>(2, HEADER_HEIGHT + 4 + 12, "Message:");
-    // Draw::Text<true>(2, HEADER_HEIGHT + 4 + 12 + 12, error.msg);
+    Draw::Text(0, 0, "Woops! Error.");
+    {
+        char buffer[34];
+        sprintf(buffer, "Module: 0x%02X", error.module);
+        Draw::Text(0, 20, buffer);
+    }
+    {
+        char buffer[34];
+        sprintf(buffer, "Subsystem: 0x%02X", error.subsystem);
+        Draw::Text(0, 30, buffer);
+    }
+    {
+        char buffer[34];
+        sprintf(buffer, "Code: 0x%02X", error.code);
+        Draw::Text(0, 40, buffer);
+    }
+    {
+        char buffer[34];
+        sprintf(buffer, "Severity: 0x%02X", static_cast<uint8_t>(error.severity));
+        Draw::Text(0, 50, buffer);
+    }
 }
 
 void MenuError::onUpdate()
@@ -57,7 +69,7 @@ void MenuError::onUpdate()
     
 }
 
-// void MenuError::setError(ErrorStruct::ErrorStruct err)
-// {
-//     error = err;
-// }
+void MenuError::setErrorEvent(const Error::ErrorEvent& err)
+{
+    error = err;
+}

@@ -2,14 +2,13 @@
 #include "common/LittleFS.hpp"
 #include "common/Log.hpp"
 #include "esp_system.h"
+#include "settings/versionDetection.hpp"
 #include "settings/V1.hpp"
 #include "settings/V2.hpp"
 #include <fstream>
 
 namespace Settings
 {
-    constexpr static const char* TAG = "Settings";
-
     RobotConfig config;
     bool initialized = false;
 
@@ -25,11 +24,28 @@ namespace Settings
             return Status::Ok;
         }
 
-        // Here we should first initialize the NVS and check for a saved robot version (to load the right config)
-        // if not found, we should run the detection and save it.
-        // But for now, we will just load the V1 config.
-        // FIXME
-        config = CONFIG_V1;
+        RobotVersion detectedVersion;
+        if (Status err = detectRobotVersion(detectedVersion); err != Status::Ok)
+        {
+            LOG_ERROR(TAG, "Failed to detect robot version, Error : %s", StatusToString(err));
+            return err;
+        }
+
+        if (detectedVersion == RobotVersion::V1)
+        {
+            LOG_DEBUG(TAG, "Settings config: V1");
+            config = CONFIG_V1;
+        }
+        else if (detectedVersion == RobotVersion::V2)
+        {
+            LOG_DEBUG(TAG, "Settings config: V2");
+            config = CONFIG_V2;
+        }
+        else
+        {
+            LOG_ERROR(TAG, "Failed to detect robot version, unknown version");
+            return Status::NotFound;
+        }
 
         if (Status err = LittleFS::Init(); err != Status::Ok)
         {
@@ -57,6 +73,11 @@ namespace Settings
     Status Deinit()
     {
         return Status::Ok;
+    }
+
+    bool IsInitialized()
+    {
+        return initialized;
     }
     
     RobotConfig GetConfig()

@@ -84,8 +84,6 @@ namespace LittleFS
 
     Status GetFileSize(const char* path, size_t& size)
     {
-        LOG_SCOPE(TAG, "LittleFS::GetFileSize");
-
         if (!initialized) return Status::InvalidState;
         if (path == nullptr) return Status::InvalidParameters;
 

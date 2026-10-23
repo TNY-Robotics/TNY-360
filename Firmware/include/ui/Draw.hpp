@@ -129,6 +129,15 @@ namespace Draw
     }
 
     template <bool SafeMode = false>
+    void Rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, Screen::Color c = Screen::COLOR_WHITE)
+    {
+        Hline<SafeMode>(x, y, w, c);
+        Hline<SafeMode>(x, y + h - 1, w, c);
+        Vline<SafeMode>(x, y, h, c);
+        Vline<SafeMode>(x + w - 1, y, h, c);
+    }
+
+    template <bool SafeMode = false>
     void RectFilled(uint16_t x, uint16_t y, uint16_t w, uint16_t h, Screen::Color c = Screen::COLOR_WHITE)
     {
         if constexpr (SafeMode)

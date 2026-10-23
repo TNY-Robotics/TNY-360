@@ -8,6 +8,10 @@ public:
     static constexpr const char* TAG = "IMU";
     static constexpr float GRAVITY = 9.80665f; // m/s^2
 
+    /**
+     * @brief Factory method to create an IMU instance based on the settings.
+     * @return Pointer to the created IMU instance, or nullptr if disabled or creation failed.
+     */
     static IMU* Create();
 
     enum class CalibrationState : uint8_t
@@ -60,9 +64,9 @@ public:
     /**
      * @brief Get the current orientation estimate
      * @return Reference to the orientation quaternion.
-     * @note Yaw is always zeroed, only pitch (y) and roll (x) are represented.
+     * @note The orientation is represented as a quaternion (x, y, z, w) where w is the scalar part.
      */
-    const Vec3f& getOrientation() const { return orientation; }
+    const Quatf& getOrientation() const { return orientation; }
 
     /**
      * @brief Get the current angular velocity in body frame
@@ -87,15 +91,20 @@ protected:
     virtual Status provide_data(Vec3f &accel, Vec3f &angular_vel) = 0;
 
 private:
+    /// @brief Madgwick filter quaternion state
+    Quatf q;
+    /// @brief Madgwick filter gain
+    float beta = 0.1f;
+
+    /// @brief Gyroscope bias for calibration
+    Vec3f gyro_bias;
+
     /// @brief Gravity down vector in body frame
     Vec3f downVector = Vec3f(0.f, 0.f, -1.f);
-
-    /// @brief Current orientation estimate (yaw is always zeroed, only pitch and roll used)
-    Vec3f orientation = Vec3f(0.f, 0.f, 0.f);
-
+    /// @brief Current orientation estimate
+    Quatf orientation = Quatf(0.f, 0.f, 0.f, 1.f);
     /// @brief Current angular velocity in body frame (rad/s)
     Vec3f angularVelocity = Vec3f(0.f, 0.f, 0.f);
-
     /// @brief Current acceleration in body frame (m/s^2)
     Vec3f acceleration = Vec3f(0.f, 0.f, -GRAVITY);
 };

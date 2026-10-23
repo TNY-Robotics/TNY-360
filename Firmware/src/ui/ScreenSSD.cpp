@@ -94,6 +94,12 @@ Status ScreenSSD::init()
         return Status::Failure;
     }
 
+    info = {
+        .data = screen_data,
+        .width = SSD1306_WIDTH,
+        .height = SSD1306_HEIGHT,
+    };
+
     if (Status err = clear(); err != Status::Ok) return err;
     if (Status err = upload(); err != Status::Ok) return err;
 
@@ -103,12 +109,6 @@ Status ScreenSSD::init()
         Error::RegisterErrorEvent(ErrorEventPanelDisplayOnFailed(err));
         return Status::Failure;
     }
-    
-    info = {
-        .data = screen_data,
-        .width = SSD1306_WIDTH,
-        .height = SSD1306_HEIGHT,
-    };
 
     return Status::Ok;
 }

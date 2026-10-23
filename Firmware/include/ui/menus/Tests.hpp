@@ -4,7 +4,8 @@
 #include "ui/menus/I2C.hpp"
 #include "ui/menus/IMU.hpp"
 #include "ui/menus/Power.hpp"
-#include "ui/menus/Sound.hpp"
+#include "ui/menus/Speaker.hpp"
+#include "ui/menus/Microphone.hpp"
 
 class MenuTests : public MenuList
 {
@@ -17,5 +18,6 @@ private:
     MenuI2C menuI2C;
     MenuIMU menuIMU;
     MenuPower menuPower;
-    MenuSound menuSound;
+    MenuSpeaker menuSpeaker;
+    MenuMicrophone menuMicrophone;
 };

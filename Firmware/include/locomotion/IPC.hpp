@@ -59,8 +59,7 @@ namespace IPC
             float estimated_angle_rad = 0.0f;
         } joints[NB_JOINTS];
 
-        Vec3f body_orientation = Vec3f::Zero();
-        Vec3f imu_down_vector = Vec3f::Zero();
+        Quatf body_orientation = Quatf::Identity();
     };
 
     Status Init();

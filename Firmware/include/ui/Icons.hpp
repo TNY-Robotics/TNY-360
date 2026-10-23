@@ -124,7 +124,7 @@ namespace Icons
         0b00111100,
     };
 
-    constexpr uint8_t SoundMenu[8] = {
+    constexpr uint8_t SpeakerMenu[8] = {
         0b00000100,
         0b00010010,
         0b11001010,
@@ -133,6 +133,17 @@ namespace Icons
         0b11001010,
         0b00010010,
         0b00000100,
+    };
+
+    constexpr uint8_t MicrophoneMenu[8] = {
+        0b00011000,
+        0b00100100,
+        0b00100100,
+        0b00100100,
+        0b01100110,
+        0b01011010,
+        0b00111100,
+        0b00011000,
     };
 
     constexpr uint8_t WiFiMenu[8] = {

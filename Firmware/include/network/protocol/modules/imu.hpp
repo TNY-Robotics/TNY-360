@@ -50,33 +50,20 @@ namespace IMU
 
     /** <API_REF>
      * @module imu 0x07
-     * @action getDownVector 0x02
-     * @desc Gets the current down vector from the IMU (i.e. the direction of gravity).
-     * @result down_vector Vec3f Down vector (unit vector pointing in the direction of gravity).
-      * @impl done
-     */
-    static void GetDownVector(const RequestContext& ctx, const uint8_t* payload)
-    {
-        const Vec3f& vec = Robot::GetInstance().getDecisionLoop().getRobotState().imu_down_vector;
-        ctx.respond(ResponseStatus::Ok, (uint8_t*) &vec, sizeof(vec));
-    }
-
-    /** <API_REF>
-     * @module imu 0x07
-     * @action getOrientation 0x03
+     * @action getOrientation 0x02
      * @desc Gets the current orientation of the robot as a rotation vector (axis-angle representation).
-     * @result orientation Vec3f Rotation vector representing the robot's orientation (Euler rotation in radians, XYZ order)
-     * @impl done
+     * @result orientation Quatf Rotation quaternion representing the robot's orientation.
+      * @impl done
      */
     static void GetOrientation(const RequestContext& ctx, const uint8_t* payload)
     {
-        const Vec3f& orient = Robot::GetInstance().getDecisionLoop().getRobotState().body_orientation;
+        const Quatf& orient = Robot::GetInstance().getDecisionLoop().getRobotState().body_orientation;
         ctx.respond(ResponseStatus::Ok, (uint8_t*) &orient, sizeof(orient));
     }
 
     /** <API_REF>
      * @module imu 0x07
-     * @action getCalibrationState 0x04
+     * @action getCalibrationState 0x03
      * @desc Gets the current calibration state of the IMU.
      * @result state uint8 Calibration state (0 = not calibrated, 1 = calibrating, 2 = calibrated).
       * @impl nope
@@ -89,7 +76,7 @@ namespace IMU
 
     /** <API_REF>
      * @module imu 0x07
-     * @action getCalibrationData 0x05
+     * @action getCalibrationData 0x04
      * @desc Gets the current calibration data of the IMU.
      * @result data byte[] Calibration data blob (format TBD).
       * @impl nope
@@ -102,7 +89,7 @@ namespace IMU
 
     /** <API_REF>
     * @module imu 0x07
-    * @action setCalibrationData 0x06
+    * @action setCalibrationData 0x05
     * @desc Sets the calibration data of the IMU.
     * @arg data byte[] Calibration data blob (format TBD).
     * @impl nope
@@ -115,7 +102,7 @@ namespace IMU
 
     /** <API_REF>
      * @module imu 0x07
-     * @action startCalibration 0x07
+     * @action startCalibration 0x06
      * @desc Starts the calibration process for the IMU.
      * @impl nope
      */
@@ -127,7 +114,7 @@ namespace IMU
 
     /** <API_REF>
      * @module imu 0x07
-     * @action stopCalibration 0x08
+     * @action stopCalibration 0x07
      * @desc Stops the calibration process for the IMU.
      * @impl nope
      */
@@ -139,7 +126,7 @@ namespace IMU
 
     /** <API_REF>
      * @module imu 0x07
-     * @action getCalibrationProgress 0x09
+     * @action getCalibrationProgress 0x08
      * @desc Gets the current progress of the IMU calibration process.
      * @result progress uint8 Calibration progress percentage (0-100).
      * @impl nope
@@ -152,16 +139,15 @@ namespace IMU
 
 
     static ActionCallback actions[] = {
-        GetAcceleration,           // 0x00
-        GetAngularVelocity,        // 0x01
-        GetDownVector,             // 0x02
-        GetOrientation,            // 0x03
-        GetCalibrationState,       // 0x04
-        GetCalibrationData,        // 0x05
-        SetCalibrationData,        // 0x06
-        StartCalibration,          // 0x07
-        StopCalibration,           // 0x08
-        GetCalibrationProgress,    // 0x09
+        GetAcceleration,        // 0x00
+        GetAngularVelocity,     // 0x01
+        GetOrientation,         // 0x02
+        GetCalibrationState,    // 0x03
+        GetCalibrationData,     // 0x04
+        SetCalibrationData,     // 0x05
+        StartCalibration,       // 0x06
+        StopCalibration,        // 0x07
+        GetCalibrationProgress, // 0x08
     };
 
     static void Register(Dispatcher& dispatcher)

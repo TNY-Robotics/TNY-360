@@ -1,6 +1,6 @@
 #pragma once
 #include "audio/SoundProvider.hpp"
-#include "audio/ISpeaker.hpp"
+#include "audio/Speaker.hpp"
 #include "common/utils.hpp"
 
 class MusicProvider : public SoundProvider
@@ -15,7 +15,7 @@ public:
 
     void stop();
 
-    bool provideSamples(ISpeaker::Sample* buffer, size_t sampleCount) override;
+    bool provideSamples(Speaker::Sample* buffer, size_t sampleCount) override;
 
 private:
     char* file_content = nullptr;

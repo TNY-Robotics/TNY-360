@@ -8,10 +8,6 @@
 #include <driver/i2s_pdm.h>
 #include <vector>
 
-SpeakerPDM::SpeakerPDM()
-{
-}
-
 Status SpeakerPDM::init()
 {
     LOG_SCOPE(TAG, "SpeakerPDM::Init");
@@ -28,11 +24,11 @@ Status SpeakerPDM::init()
 
     // Config PDM TX
     i2s_pdm_tx_config_t pdm_tx_cfg = {
-        .clk_cfg = I2S_PDM_TX_CLK_DEFAULT_CONFIG(static_cast<uint32_t>(Settings::GetConfig().audio.sampleRate)),
+        .clk_cfg = I2S_PDM_TX_CLK_DEFAULT_CONFIG(static_cast<uint32_t>(Settings::GetConfig().audio.speaker.sampleRate)),
         .slot_cfg = I2S_PDM_TX_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO),
         .gpio_cfg = {
             .clk = GPIO_NUM_NC, // No need
-            .dout = static_cast<gpio_num_t>(Settings::GetConfig().audio.pdm.gpio_out), // Data sound out
+            .dout = static_cast<gpio_num_t>(Settings::GetConfig().audio.speaker.pdm.gpio_out), // Data sound out
             .dout2 = GPIO_NUM_NC, // No need
             .invert_flags = {
                 .clk_inv = 0,

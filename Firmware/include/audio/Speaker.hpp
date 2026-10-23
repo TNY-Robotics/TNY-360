@@ -1,21 +1,26 @@
 #pragma once
 #include "common/utils.hpp"
-#include "driver/i2s_std.h"
 
 /**
- * @brief Interface for speaker modules.
+ * @brief Base class for speaker modules.
  * A speaker module takes audio samples and outputs them through a speaker (real audio).
  */
-class ISpeaker
+class Speaker
 {
 public:
     constexpr static const char* TAG = "Speaker";
 
+    /**
+     * @brief Factory method to create a Speaker instance based on the settings.
+     * @return Pointer to the created Speaker instance, or nullptr if disabled or creation failed.
+     */
+    static Speaker* Create();
+
     using Sample = int16_t;
 
-    ISpeaker() = default;
+    Speaker() = default;
 
-    virtual ~ISpeaker() = default;
+    virtual ~Speaker() = default;
 
     /**
      * @brief Initialize the speaker module.

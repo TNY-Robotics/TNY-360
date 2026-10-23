@@ -13,13 +13,25 @@ constexpr RobotConfig CONFIG_V1 = {
         },
     },
     .audio = {
-        .speakerType = AudioSpeakerType::SPEAKER_NONE,
-        .pdm = {
-            .gpio_out = 1,
+        .speaker = {
+            .type = SpeakerType::SPEAKER_NONE,
+            .pdm = {
+                .gpio_out = 1,
+            },
+            .volume = 0.5f,
+            .sampleRate = 22500,
+            .nb_providers = 4,
         },
-        .volume = 0.5f,
-        .sampleRate = 22500,
-        .nb_providers = 4,
+        .microphone = {
+            .type = MicrophoneType::MICROPHONE_I2S,
+            .i2s = {
+                .gpio_clk = 14,
+                .gpio_ws = 12,
+                .gpio_data = 13,
+            },
+            .gain = 10,
+            .sampleRate = 16000,
+        },
     },
     .camera = {
         .gpio = {

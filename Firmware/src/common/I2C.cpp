@@ -106,6 +106,11 @@ namespace I2C
         return Status::Ok;
     }
 
+    bool IsInitialized()
+    {
+        return initialized;
+    }
+
     Status ProbeAddress(i2c_master_bus_handle_t handle, uint8_t address)
     {
         esp_err_t err = i2c_master_probe(handle, address, 100);

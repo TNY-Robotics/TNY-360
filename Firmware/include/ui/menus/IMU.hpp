@@ -11,8 +11,9 @@ public:
     enum class Page: uint8_t
     {
         Accel = 0,
-        Gyro = 1,
-        Count = 2
+        Gyro,
+        Visual,
+        Count,
     };
 
 protected:

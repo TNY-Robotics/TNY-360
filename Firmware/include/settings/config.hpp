@@ -12,6 +12,12 @@ struct I2CConfig {
     I2CBusConfig secondary;
 };
 
+enum class SpeakerType {
+    SPEAKER_PDM,
+    SPEAKER_I2S,
+    SPEAKER_NONE
+};
+
 struct SpeakerPDMConfig {
     int gpio_out;
 };
@@ -22,14 +28,8 @@ struct SpeakerI2SConfig {
     int gpio_data;
 };
 
-enum class AudioSpeakerType {
-    SPEAKER_PDM,
-    SPEAKER_I2S,
-    SPEAKER_NONE
-};
-
-struct AudioConfig {
-    AudioSpeakerType speakerType;
+struct SpeakerConfig {
+    SpeakerType type;
     union {
         SpeakerPDMConfig pdm;
         SpeakerI2SConfig i2s;
@@ -37,6 +37,38 @@ struct AudioConfig {
     float volume;
     int sampleRate;
     int nb_providers;
+};
+
+enum class MicrophoneType {
+    MICROPHONE_I2S,
+    MICROPHONE_PDM,
+    MICROPHONE_NONE
+};
+
+struct MicrophonePDMConfig {
+    int gpio_clk;
+    int gpio_data;
+};
+
+struct MicrophoneI2SConfig {
+    int gpio_clk;
+    int gpio_ws;
+    int gpio_data;
+};
+
+struct MicrophoneConfig {
+    MicrophoneType type;
+    union {
+        MicrophonePDMConfig pdm;
+        MicrophoneI2SConfig i2s;
+    };
+    int32_t gain;
+    uint32_t sampleRate;
+};
+
+struct AudioConfig {
+    SpeakerConfig speaker;
+    MicrophoneConfig microphone;
 };
 
 struct CameraGpioConfig {

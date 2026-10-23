@@ -20,10 +20,10 @@ namespace AnalogDriver
 
     static Value voltages_buffer[static_cast<size_t>(CHANNEL_COUNT)] = { 0 };
 
-    gpio_num_t gpio_select_1 = GPIO_NUM_NC;
-    gpio_num_t gpio_select_2 = GPIO_NUM_NC;
-    gpio_num_t gpio_select_3 = GPIO_NUM_NC;
-    gpio_num_t gpio_select_4 = GPIO_NUM_NC;
+    static gpio_num_t gpio_select_1 = GPIO_NUM_NC;
+    static gpio_num_t gpio_select_2 = GPIO_NUM_NC;
+    static gpio_num_t gpio_select_3 = GPIO_NUM_NC;
+    static gpio_num_t gpio_select_4 = GPIO_NUM_NC;
 
     adc_channel_t channel = ADC_CHANNEL_1; // Default channel, will be overridden by settings
 
@@ -33,22 +33,6 @@ namespace AnalogDriver
     {
         Status select(Channel channel)
         {
-            // NOTE : Really optimised version, we cannot modify select pins anymore
-            // // Mask to keep only the 4 LSB (0-15) of the channel, as we have only 4 select lines for the multiplexer
-            // uint32_t channel_bits = (channel & 0x0F); 
-
-            // // Shift to align with GPIO pins
-            // uint32_t set_mask = channel_bits << 7; 
-            
-            // // Inverse bits to find the ones to set to LOW
-            // // and also shift to align with GPIO pins
-            // uint32_t clear_mask = (~channel_bits & 0x0F) << 7; 
-
-            // // Directly write to ESP32-S3 GPIO memory (Bank 1 = GPIO 32 to 53)
-            // REG_WRITE(GPIO_OUT1_W1TS_REG, set_mask);  // Set (W1TS = Write 1 To Set)
-            // REG_WRITE(GPIO_OUT1_W1TC_REG, clear_mask); // Clear (W1TC = Write 1 To Clear)
-
-            // Old version using gpio_set_level, much slower due to multiple function calls and checks
             if (gpio_set_level(gpio_select_1, (channel & 0b0001) >> 0) != ESP_OK ||
                 gpio_set_level(gpio_select_2, (channel & 0b0010) >> 1) != ESP_OK ||
                 gpio_set_level(gpio_select_3, (channel & 0b0100) >> 2) != ESP_OK ||

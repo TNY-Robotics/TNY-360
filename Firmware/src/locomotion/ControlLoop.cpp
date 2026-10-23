@@ -3,6 +3,7 @@
 #include <freertos/task.h>
 #include "esp_log_timestamp.h"
 #include "Robot.hpp"
+#include "common/PID.hpp"
 #include "common/Log.hpp"
 #include "common/config.hpp"
 #include "common/RPC.hpp"
@@ -208,20 +209,13 @@ Status ControlLoop::control_task()
 
     /*** 1 - STATE ESTIMATION - READ ALL SENSORS ***/
 
-    // Read the ADC channels and IMU Data
+    // Read the ADC channels
     perf_reader.start();
     if (Status err = AnalogDriver::ReadAllChannels(); err != Status::Ok)
     {
         LOG_ERROR(TAG, "Error reading all ADC channels");
     }
     perf_reader.stop();
-
-    // perf_imu.start();
-    // if (Status err = IMUDriver::ReadData(); err != Status::Ok)
-    // {
-    //     LOG_ERROR(TAG, "Error reading data from IMU");
-    // }
-    // perf_imu.stop();
 
     // Estimate body state from new IMU and Analog data (calls Legs, Joint, IMU estimateState functions)
     perf_estimation.start();
@@ -247,14 +241,12 @@ Status ControlLoop::control_task()
     IMU* imu = Robot::GetInstance().getBody().getIMU();
     if (imu != nullptr)
     {
-        state.body_orientation = imu->getOrientation();
-        state.imu_down_vector = imu->getDownVector();
+        state.body_orientation = Quatf(imu->getOrientation());
     }
     else
     {
         // If no IMU is present, set default values.
-        state.body_orientation = Vec3f(0.f, 0.f, 0.f);
-        state.imu_down_vector = Vec3f(0.f, 0.f, -IMU::GRAVITY);
+        state.body_orientation = Quatf::Identity();
     }
     IPC::setState(state);
 
@@ -305,6 +297,33 @@ Status ControlLoop::control_task()
         cartesian_state.body_rot += body_override.value_rot;
     }
 
+    ////////////////////////////////////////////////// FIXME : TEMPORARY : Stabilisation
+
+    // static Vec3f rotation = Vec3f(0.f, 0.f, 0.f);
+    // static PID pid_roll(2.0f, 2.5f, 0.0f);
+    // static PID pid_pitch(2.0f, 2.5f, 0.0f);
+
+    // const Vec3f& orient = imu->getOrientation().toEulerAngles();
+
+    // rotation.x -= pid_roll.compute(0.f, orient.x, CONTROL_LOOP_DT_S) * 0.01f;
+    // rotation.y -= pid_pitch.compute(0.f, orient.y, CONTROL_LOOP_DT_S) * 0.01f;
+
+    // if (std::fabs(rotation.x) > 0.7f || std::fabs(rotation.y) > 0.7f)
+    // {
+    //     rotation.x = 0.f;
+    //     rotation.y = 0.f;
+    //     pid_roll.reset();
+    //     pid_pitch.reset();
+    // }
+
+    // Vec3f position = Quatf::FromEulerAngles(Vec3f(-rotation.x, -rotation.y, 0.f)).rotate(Vec3f(0.02f, 0.f, 0.14f));
+
+    // cartesian_state.body_pos = position;
+    // cartesian_state.body_rot = Vec3f(-rotation.x, -rotation.y, rotation.z);
+
+    ////////////////////////////////////////////////// FIXME : TEMPORARY : Stabilisation
+
+
     /*** 3 - CONVERT CARTESIAN CONTROL TO JOINT CONTROL ***/
 
     BodyJointState joint_state;
@@ -333,6 +352,10 @@ Status ControlLoop::control_task()
             else if (joint_override.mode == IPC::OverrideMode::Absolute)
             {
                 joint_state.leg_joints[leg_id].joint_angles_rad[leg_joint_id] = joint_override.value_rad;
+                // rotation.x = 0.f;
+                // rotation.y = 0.f;
+                // pid_roll.reset();
+                // pid_pitch.reset();
             }
             else if (joint_override.mode == IPC::OverrideMode::Relative)
             {

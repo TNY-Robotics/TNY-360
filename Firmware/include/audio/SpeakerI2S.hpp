@@ -1,14 +1,16 @@
 #pragma once
-#include "audio/ISpeaker.hpp"
+#include "audio/Speaker.hpp"
+#include "driver/i2s_std.h"
 
 /**
- * @brief Implementation of the ISpeaker interface using only I2S (Inter-IC Sound) protocol.
+ * @brief Implementation of the Speaker class using only I2S (Inter-IC Sound) protocol.
  * This type of speaker module is used in version 2.0 of the TNY-360 robot to play audio through the NS4168 amplifier.
  */
-class SpeakerI2S : public ISpeaker
+class SpeakerI2S : public Speaker
 {
 public:
-    SpeakerI2S();
+    SpeakerI2S() = default;
+    virtual ~SpeakerI2S() = default;
 
     Status init() override;
 

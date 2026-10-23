@@ -1,6 +1,7 @@
 #pragma once
 #include "common/utils.hpp"
-#include "audio/ISpeaker.hpp"
+#include "audio/Speaker.hpp"
+#include "audio/Microphone.hpp"
 #include "audio/SoundMixer.hpp"
 
 class AudioManager
@@ -24,9 +25,15 @@ public:
 
     /**
      * @brief Get the Speaker instance.
-     * @return Reference to the Speaker object.
+     * @return Pointer to the Speaker object (null if disabled).
      */
-    ISpeaker& getSpeaker() { return *speaker; }
+    Speaker* getSpeaker() { return speaker; }
+
+    /**
+     * @brief Get the Microphone instance.
+     * @return Pointer to the Microphone object (null if disabled).
+     */
+    Microphone* getMicrophone() { return microphone; }
 
     /**
      * @brief Get the SoundMixer instance.
@@ -35,6 +42,7 @@ public:
     SoundMixer& getMixer() { return mixer; }
 
 private:
-    ISpeaker* speaker;
+    Speaker* speaker;
+    Microphone* microphone;
     SoundMixer mixer;
 };

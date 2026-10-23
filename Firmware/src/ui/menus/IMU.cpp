@@ -98,6 +98,16 @@ void MenuIMU::onRender()
             }
             break;
         }
+        case Page::Visual:
+        {
+            Vec2f screenCenter(Screen::GetInstance()->getInfo().width / 2.0f, Screen::GetInstance()->getInfo().height / 2.0f);
+            float vectorLength = 20.0f;
+            Vec2f endPosition = Vec2f(
+                screenCenter.x + std::sinf(imu->getOrientation().toEulerAngles().x) * vectorLength,
+                screenCenter.y + std::sinf(imu->getOrientation().toEulerAngles().y) * vectorLength
+            );
+            Draw::Line(screenCenter.x, screenCenter.y, endPosition.x, endPosition.y);
+        }
         default:
             break;
     }

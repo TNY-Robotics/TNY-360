@@ -57,37 +57,102 @@ inline void convertFromJson(JsonVariantConst src, SpeakerI2SConfig& dst) {
 }
 inline bool canConvertFromJson(JsonVariantConst src, SpeakerI2SConfig& dst) { return src.is<JsonObject>(); }
 
-/// AudioConfig
-inline void convertToJson(const AudioConfig& src, JsonVariant& dst)
+// SpeakerConfig
+inline void convertToJson(const SpeakerConfig& src, JsonVariant& dst)
 {
-    if (src.speakerType == AudioSpeakerType::SPEAKER_PDM) {
-        dst["speakerType"] = "PDM";
-        dst["pdm"] = src.pdm;
-    } else if (src.speakerType == AudioSpeakerType::SPEAKER_I2S) {
-        dst["speakerType"] = "I2S";
-        dst["i2s"] = src.i2s;
-    } else {
-        dst["speakerType"] = "NONE";
-    }
+    if (src.type == SpeakerType::SPEAKER_PDM) { dst["type"] = "PDM"; }
+    else if (src.type == SpeakerType::SPEAKER_I2S) { dst["type"] = "I2S"; }
+    else { dst["type"] = "NONE"; }
+
+    if (src.type == SpeakerType::SPEAKER_PDM) { dst["pdm"] = src.pdm; }
+    else if (src.type == SpeakerType::SPEAKER_I2S) { dst["i2s"] = src.i2s; }
+
     dst["volume"] = src.volume;
     dst["sampleRate"] = src.sampleRate;
     dst["nb_providers"] = src.nb_providers;
 }
-inline void convertFromJson(JsonVariantConst src, AudioConfig& dst)
+inline void convertFromJson(JsonVariantConst src, SpeakerConfig& dst)
 {
-    std::string speakerTypeStr = src["speakerType"] | "NONE";
+    std::string speakerTypeStr = src["type"] | "NONE";
     if (speakerTypeStr == "PDM") {
-        dst.speakerType = AudioSpeakerType::SPEAKER_PDM;
+        dst.type = SpeakerType::SPEAKER_PDM;
         dst.pdm = src["pdm"] | dst.pdm;
     } else if (speakerTypeStr == "I2S") {
-        dst.speakerType = AudioSpeakerType::SPEAKER_I2S;
+        dst.type = SpeakerType::SPEAKER_I2S;
         dst.i2s = src["i2s"] | dst.i2s;
     } else {
-        dst.speakerType = AudioSpeakerType::SPEAKER_NONE;
+        dst.type = SpeakerType::SPEAKER_NONE;
     }
-    dst.volume = src["volume"] | dst.volume;
-    dst.sampleRate = src["sampleRate"] | dst.sampleRate;
     dst.nb_providers = src["nb_providers"] | dst.nb_providers;
+}
+inline bool canConvertFromJson(JsonVariantConst src, SpeakerConfig& dst) { return src.is<JsonObject>(); }
+
+/// MicrophonePDMConfig
+inline void convertToJson(const MicrophonePDMConfig& src, JsonVariant& dst)
+{
+    dst["gpio_clk"] = src.gpio_clk;
+    dst["gpio_data"] = src.gpio_data;
+}
+inline void convertFromJson(JsonVariantConst src, MicrophonePDMConfig& dst) {
+    dst.gpio_clk = src["gpio_clk"] | dst.gpio_clk;
+    dst.gpio_data = src["gpio_data"] | dst.gpio_data;
+}
+inline bool canConvertFromJson(JsonVariantConst src, MicrophonePDMConfig& dst) { return src.is<JsonObject>(); }
+
+/// MicrophoneI2SConfig
+inline void convertToJson(const MicrophoneI2SConfig& src, JsonVariant& dst)
+{
+    dst["gpio_clk"] = src.gpio_clk;
+    dst["gpio_ws"] = src.gpio_ws;
+    dst["gpio_data"] = src.gpio_data;
+}
+inline void convertFromJson(JsonVariantConst src, MicrophoneI2SConfig& dst) {
+    dst.gpio_clk = src["gpio_clk"] | dst.gpio_clk;
+    dst.gpio_ws = src["gpio_ws"] | dst.gpio_ws;
+    dst.gpio_data = src["gpio_data"] | dst.gpio_data;
+}
+inline bool canConvertFromJson(JsonVariantConst src, MicrophoneI2SConfig& dst) { return src.is<JsonObject>(); }
+
+// MicrophoneConfig
+inline void convertToJson(const MicrophoneConfig& src, JsonVariant& dst)
+{
+    if (src.type == MicrophoneType::MICROPHONE_PDM) { dst["type"] = "PDM"; }
+    else if (src.type == MicrophoneType::MICROPHONE_I2S) { dst["type"] = "I2S"; }
+    else { dst["type"] = "NONE"; }
+
+    if (src.type == MicrophoneType::MICROPHONE_PDM) { dst["pdm"] = src.pdm; }
+    else if (src.type == MicrophoneType::MICROPHONE_I2S) { dst["i2s"] = src.i2s; }
+
+    dst["gain"] = src.gain;
+    dst["sampleRate"] = src.sampleRate;
+}
+inline void convertFromJson(JsonVariantConst src, MicrophoneConfig& dst)
+{
+    std::string microphoneTypeStr = src["type"] | "NONE";
+    if (microphoneTypeStr == "PDM") {
+        dst.type = MicrophoneType::MICROPHONE_PDM;
+        dst.pdm = src["pdm"] | dst.pdm;
+    } else if (microphoneTypeStr == "I2S") {
+        dst.type = MicrophoneType::MICROPHONE_I2S;
+        dst.i2s = src["i2s"] | dst.i2s;
+    } else {
+        dst.type = MicrophoneType::MICROPHONE_NONE;
+    }
+    dst.gain = src["gain"] | dst.gain;
+    dst.sampleRate = src["sampleRate"] | dst.sampleRate;
+}
+inline bool canConvertFromJson(JsonVariantConst src, MicrophoneConfig& dst) { return src.is<JsonObject>(); }
+
+/// AudioConfig
+inline void convertToJson(const AudioConfig& src, JsonVariant& dst)
+{
+    dst["speaker"] = src.speaker;
+    dst["microphone"] = src.microphone;
+}
+inline void convertFromJson(JsonVariantConst src, AudioConfig& dst)
+{
+    dst.speaker = src["speaker"] | dst.speaker;
+    dst.microphone = src["microphone"] | dst.microphone;
 }
 inline bool canConvertFromJson(JsonVariantConst src, AudioConfig& dst) { return src.is<JsonObject>(); }
 

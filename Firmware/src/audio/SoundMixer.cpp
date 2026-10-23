@@ -11,7 +11,7 @@ SoundMixer::SoundMixer()
     speaker = nullptr;
 }
 
-Status SoundMixer::init(ISpeaker* speaker)
+Status SoundMixer::init(Speaker* speaker)
 {
     LOG_SCOPE(TAG, "SoundMixer::Init");
     
@@ -25,16 +25,19 @@ Status SoundMixer::init(ISpeaker* speaker)
     masterVolume = 0.5f; // default volume
     running = true; // start running
 
-    BaseType_t ret = xTaskCreatePinnedToCore([](void* pvParams) {
-        SoundMixer* mixer = static_cast<SoundMixer*>(pvParams);
-        mixer->__internal_task(nullptr);
-    }, "SoundMixerTask", 4096, this, tskIDLE_PRIORITY + 20, nullptr, CORE_BRAIN); // High priority for audio task
-
-    if (ret != pdPASS)
+    if (this->speaker)
     {
-        LOG_ERROR(TAG, "Failed to create SoundMixer task");
-        Error::RegisterErrorEvent(ErrorEventCreateTaskFailed(ret));
-        return Status::Failure;
+        BaseType_t ret = xTaskCreatePinnedToCore([](void* pvParams) {
+            SoundMixer* mixer = static_cast<SoundMixer*>(pvParams);
+            mixer->__internal_task(nullptr);
+        }, "SoundMixerTask", 4096, this, tskIDLE_PRIORITY + 20, nullptr, CORE_BRAIN); // High priority for audio task
+
+        if (ret != pdPASS)
+        {
+            LOG_ERROR(TAG, "Failed to create SoundMixer task");
+            Error::RegisterErrorEvent(ErrorEventCreateTaskFailed(ret));
+            return Status::Failure;
+        }
     }
 
     return Status::Ok;
@@ -130,7 +133,7 @@ void SoundMixer::__internal_task(void* pvParams)
             );
         }
 
-        // send to speaker
+        // send to speaker (if null, no audio output)
         if (speaker != nullptr)
         {
             speaker->writeSamples(mixBuffer, MIX_BUFFER_SIZE); // blocking to sync to audio rate (DMA magic uwu)

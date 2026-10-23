@@ -1,14 +1,14 @@
-#include "ui/menus/Sound.hpp"
+#include "ui/menus/Speaker.hpp"
 #include "ui/Icons.hpp"
 #include "ui/Draw.hpp"
 #include "Robot.hpp"
 
-MenuSound::MenuSound(Menu* parent)
-    : Menu("Sound", parent, Icons::SoundMenu)
+MenuSpeaker::MenuSpeaker(Menu* parent)
+    : Menu("Speaker", parent, Icons::SpeakerMenu)
 {
 }
 
-bool MenuSound::onBack()
+bool MenuSpeaker::onBack()
 {
     if (editing)
     {
@@ -20,14 +20,14 @@ bool MenuSound::onBack()
     return false; // not handled, trigger default behavior
 }
 
-bool MenuSound::onSelect()
+bool MenuSpeaker::onSelect()
 {
     editing = true;
     triggerRender();
     return true; // handled
 }
 
-bool MenuSound::onNext()
+bool MenuSpeaker::onNext()
 {
     if (editing)
     {
@@ -58,7 +58,7 @@ bool MenuSound::onNext()
     return true; // handled
 }
 
-bool MenuSound::onPrev()
+bool MenuSpeaker::onPrev()
 {
     if (editing)
     {
@@ -89,7 +89,7 @@ bool MenuSound::onPrev()
 }
 
 
-void MenuSound::onShow()
+void MenuSpeaker::onShow()
 {
     if (!isProviderAdded)
     {
@@ -99,11 +99,11 @@ void MenuSound::onShow()
     }
 }
 
-void MenuSound::onHide()
+void MenuSpeaker::onHide()
 { 
 }
 
-void MenuSound::onRender()
+void MenuSpeaker::onRender()
 {
     renderHeader();
 
@@ -133,11 +133,11 @@ void MenuSound::onRender()
     else Draw::RectFilled(0, HEADER_HEIGHT + 4 + optIndex * 12 + 2, 2, 4, Screen::COLOR_WHITE);
 }
 
-void MenuSound::onUpdate()
+void MenuSpeaker::onUpdate()
 {
 }
 
-void MenuSound::applySoundSettings()
+void MenuSpeaker::applySoundSettings()
 {
     AudioManager& man = Robot::GetInstance().getAudioManager();
     man.getMixer().setVolume((enabled || sound) ? volume : 0.0f);

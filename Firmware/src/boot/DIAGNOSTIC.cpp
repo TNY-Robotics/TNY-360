@@ -4,7 +4,8 @@
 #include "common/LED.hpp"
 #include "common/I2C.hpp"
 #include "common/NVS.hpp"
-#include "ui/ScreenSSD.hpp"
+#include "Robot.hpp"
+#include "ui/ScreenSH.hpp"
 #include "ui/Menus.hpp"
 #include "ui/Draw.hpp"
 #include "ui/Icons.hpp"
@@ -21,8 +22,8 @@ namespace BootManager
             LOG_ERROR(TAG, "Failed to initialize Diagnostic module");
             return true; // block robot from booting as normal
         }
-        // return Diagnostic::IsDiagnosticModeEnabled(); // boot in diag mode if flag enabled
-        return false;
+        return Diagnostic::IsDiagnosticModeEnabled(); // boot in diag mode if flag enabled
+        // return false;
     }
 
     void boot_DIAGNOSTIC()
@@ -49,34 +50,14 @@ namespace BootManager
             // TODO : Save error to display on screen if possible later
             return;
         }
-
-        // Initialize I2C for screen
-        if (Status err = I2C::Init(); err != Status::Ok)
+        
+        UIManager& ui = Robot::GetInstance().getUIManager();
+        if (Status err = ui.init(); err != Status::Ok)
         {
-            LOG_ERROR(TAG, "Failed to initialize I2C module");
+            LOG_ERROR(TAG, "Failed to initialize UI module");
             // TODO : Save error to display on screen if possible later
             return;
         }
-
-        // Initialize Screen module
-        ScreenSSD* s = new ScreenSSD();
-        if (Status stat = s->init(); stat != Status::Ok)
-        {
-            LOG_ERROR(TAG, "Failed to initialize ScreenSSD module");
-            // TODO : Display error on LED
-            return;
-        }
-
-        // Initialize Menu system
-        if (Status err = Menus::Init(); err != Status::Ok)
-        {
-            LOG_ERROR(TAG, "Failed to initialize Menus module");
-            // TODO : Display error on LED
-            return;
-        }
-
-        // Display splash screen while booting
-        Menus::SetCurrentMenu(Menus::GetMenuSplash());
 
         // All done, display the diagnostic menu
         MenuBootDiagnostic menu(&man);

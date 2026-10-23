@@ -1,5 +1,5 @@
 #pragma once
-#include "audio/ISpeaker.hpp"
+#include "audio/Speaker.hpp"
 #include "audio/SoundProvider.hpp"
 #include "common/config.hpp"
 #include <mutex>
@@ -11,8 +11,17 @@ public:
 
     SoundMixer();
 
-    Status init(ISpeaker* speaker);
+    /**
+     * @brief Initialize the sound mixer.
+     * @param speaker Pointer to the speaker to use for audio output (null if disabled).
+     * @return Error code indicating success or failure.
+     */
+    Status init(Speaker* speaker);
 
+    /**
+     * @brief Deinitialize the sound mixer.
+     * @return Error code indicating success or failure.
+     */
     Status deinit();
 
     void setVolume(float volume);
@@ -38,9 +47,9 @@ private:
     SoundProvider* providers[SPEAKER_NB_AUDIO_PROVIDERS];
     std::mutex mixerMutex;
     float masterVolume; // Master volume (0.0 to 1.0)
-    ISpeaker* speaker;
+    Speaker* speaker;
     bool running;
 
-    ISpeaker::Sample mixBuffer[MIX_BUFFER_SIZE];
-    ISpeaker::Sample sourceBuffer[MIX_BUFFER_SIZE];
+    Speaker::Sample mixBuffer[MIX_BUFFER_SIZE];
+    Speaker::Sample sourceBuffer[MIX_BUFFER_SIZE];
 };

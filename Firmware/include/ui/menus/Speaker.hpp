@@ -3,12 +3,12 @@
 #include "audio/SineProvider.hpp"
 #include "audio/MusicProvider.hpp"
 
-class MenuSound : public Menus::Menu
+class MenuSpeaker : public Menus::Menu
 {
 public:
-    MenuSound() = default;
-    MenuSound(Menu* parent);
-    virtual ~MenuSound() = default;
+    MenuSpeaker() = default;
+    MenuSpeaker(Menu* parent);
+    virtual ~MenuSpeaker() = default;
 
 protected:
     virtual bool onBack() override;

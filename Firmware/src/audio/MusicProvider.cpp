@@ -83,7 +83,7 @@ void MusicProvider::stop()
     read_position = content_size; // force end, will be cleaned up by mixer
 }
 
-bool MusicProvider::provideSamples(ISpeaker::Sample* buffer, size_t sampleCount)
+bool MusicProvider::provideSamples(Speaker::Sample* buffer, size_t sampleCount)
 {
     if (file_content == nullptr || read_position >= content_size)
     {
@@ -95,7 +95,7 @@ bool MusicProvider::provideSamples(ISpeaker::Sample* buffer, size_t sampleCount)
     size_t bytesLeft = content_size - read_position;
     
     // Combien d'octets on veut lire (1 sample = sizeof(int16_t) = 2 octets)
-    size_t bytesToRead = sampleCount * sizeof(ISpeaker::Sample);
+    size_t bytesToRead = sampleCount * sizeof(Speaker::Sample);
 
     // Si on a moins d'octets restants que ce qui est demandé, on lit juste ce qu'il reste, et on rempli le reste de silence
     if (bytesToRead > bytesLeft)
@@ -111,10 +111,10 @@ bool MusicProvider::provideSamples(ISpeaker::Sample* buffer, size_t sampleCount)
 
     // Si on a atteint la fin du fichier avant d'avoir rempli tout le buffer,
     // on remplit le reste du buffer avec du silence (des 0) pour éviter les glitchs sonores.
-    size_t samplesRead = bytesToRead / sizeof(ISpeaker::Sample);
+    size_t samplesRead = bytesToRead / sizeof(Speaker::Sample);
     if (samplesRead < sampleCount)
     {
-        memset(buffer + samplesRead, 0, (sampleCount - samplesRead) * sizeof(ISpeaker::Sample));
+        memset(buffer + samplesRead, 0, (sampleCount - samplesRead) * sizeof(Speaker::Sample));
     }
 
     return true; // On a fourni des samples, continuez la lecture
