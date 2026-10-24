@@ -3,6 +3,9 @@
 #include "common/geometry.hpp"
 #include "locomotion/IMU.Error.hpp"
 #include "locomotion/IMUMPU.hpp"
+#include "mpu6050.h"
+
+static mpu6050_handle_t mpu_handle;
 
 Status IMUMPU::init()
 {

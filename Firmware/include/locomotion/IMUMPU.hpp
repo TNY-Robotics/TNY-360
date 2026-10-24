@@ -1,7 +1,6 @@
 #pragma once
 #include "common/utils.hpp"
 #include "locomotion/IMU.hpp"
-#include "mpu6050.h"
 
 class IMUMPU : public IMU
 {
@@ -14,5 +13,4 @@ public:
 
 private:
     bool initialized = false;
-    mpu6050_handle_t mpu_handle;
 };

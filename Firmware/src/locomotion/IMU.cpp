@@ -1,7 +1,5 @@
 #include "locomotion/IMU.hpp"
-#include "common/config.hpp"
 #include "common/geometry.hpp"
-#include "common/Log.hpp"
 #include "settings/Settings.hpp"
 #include "locomotion/IMUMPU.hpp"
 #include "locomotion/IMULSM.hpp"
