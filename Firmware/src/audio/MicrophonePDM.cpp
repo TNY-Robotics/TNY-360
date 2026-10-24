@@ -76,8 +76,6 @@ Status MicrophonePDM::deinit()
 
 size_t MicrophonePDM::readSamples(Sample* buffer, size_t sampleCount)
 {
-    LOG_SCOPE(TAG, "MicrophonePDM::ReadSamples");
-
     if (!i2s_handle)
     {
         LOG_ERROR(TAG, "I2S channel is not initialized");

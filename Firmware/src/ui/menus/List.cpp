@@ -69,9 +69,9 @@ bool MenuList::onPrev()
 
 void MenuList::onShow()
 {
-    m_selected_index_current = 0;
-    m_selected_index = 0;
-    m_view_shift_current = 0;
+    // m_selected_index_current = 0;
+    // m_selected_index = 0;
+    // m_view_shift_current = 0;
 }
 
 void MenuList::onHide()
