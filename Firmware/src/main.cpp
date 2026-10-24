@@ -52,8 +52,6 @@ void app_main()
     // Nothing to do here
 
     LOG_INFO(TAG, ">>> Robot is operational.");
-
-    robot.getBody().enableSmooth();
 }
 #ifdef __cplusplus
 }

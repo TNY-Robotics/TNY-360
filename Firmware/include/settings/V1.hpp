@@ -14,7 +14,7 @@ constexpr RobotConfig CONFIG_V1 = {
     },
     .audio = {
         .speaker = {
-            .type = SpeakerType::SPEAKER_NONE,
+            .type = SpeakerType::SPEAKER_PDM,
             .pdm = {
                 .gpio_out = 1,
             },
