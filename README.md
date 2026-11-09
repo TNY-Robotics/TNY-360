@@ -1,20 +1,15 @@
-> [!WARNING]
-> V2 is coming soon ! If you plan on building this robot, maybe wait a couple of days :)
-> 
-> (join the discord [here](https://discord.gg/XGABkx5A4y) to get updates if you want)
-
 ![Banner](./Extras/banner.png)
 
 <div align="center">
 
-# TNY-360 Quadruped Robot
+# [TNY-360 Quadruped Robot](https://tny-robotics.com/tny-360)
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Platform](https://img.shields.io/badge/Platform-ESP32--S3-blue)](https://espressif.com)
 [![Framework](https://img.shields.io/badge/Framework-ESP--IDF-orange)](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/TNY-Robotics/TNY-360)
 
-**A compact, open-source robot dog designed to *Understand*, *Interact*, and *Learn*.**
+**The Fully Open-Source Quadruped you can actually *Build*, *Repair*, and *Modify* yourself!**
 
 [🌐 Website](https://tny-robotics.com/tny-360) • [📸 Instagram](https://instagram.com/furwaz_) • [💬 Discord](https://discord.gg/XGABkx5A4y) • [📖 Documentation](https://tny-robotics.com/docs/tny-360/) • [☕ Support Us](https://ko-fi.com/tnyrobotics)
 
@@ -28,57 +23,47 @@ Everything you need to build this robot is 100% free and open-source. Instead of
 
 <div align="center">
 
-> ### **[👉 START HERE: The Official Step-by-Step Guide 👈](https://tny-robotics.com/docs/tny-360/practical-guide/sourcing)**
+> ### **[👉 START HERE: The Official Step-by-Step Guide 👈](https://tny-robotics.com/docs/tny-360/build-it/)**
 > *From ordering the first screw to the assembing the last part, this guide covers it all.*
 
 </div>
 
-### 🗂️ Quick Links (For Advanced Makers)
+### 🗂️ Quick Links
 If you know what you are doing and just want the raw files, here is your toolkit:
 
-* 🛒 **[Bill of Materials (BOM)](https://tny-robotics.com/docs/tny-360/practical-guide/1.sourcing/)** - What to buy, tools needed, and where to find them.
 * 📐 **[CAD & 3D Files](./CAD)** - Grab the `.STL` and `.3MF` files for your 3D printer.
-* ⚡ **[PCB Designs (Gerbers)](./Electronics/PCBs)** - Files to order the custom PCBs used in the robot.
-* 🧠 **[ESP32 Firmware](./Firmware)** - The ESP-IDF C++ firmware & drivers powering the robot.
-* 🛠️ **[Servo Modding Tutorial](https://tny-robotics.com/docs/tny-360/anatomy/electronics/mg996r-mod)** - Learn the Op-Amp trick to get position-feedback on MG996R servos.
+* ⚡ **[PCB Designs](./PCBs)** - Files to order the custom PCBs used in the robot.
+* 🧠 **[ESP32-S3 Firmware](./Firmware)** - The ESP-IDF C++ firmware & drivers powering the robot.
+* 🛠️ **[Servo Modding Tutorial](https://tny-robotics.com/docs/tny-360/build-it/sourcing/motors)** - Use the Op-Amp trick to add position-feedback on your MG996R servos.
 
 ## ✨ Features
 
-* 🧬 **Dual-Core Architecture:**<br> A segregated system using the ESP32-S3. Core 0 ("Reflex") runs a strict 200Hz kinematics/control loop, while Core 1 ("Brain") handles WebSockets, UI, and orchestration.
-* 🔄 **Closed-Loop at 200Hz:**<br> We ditched blind PWM. The TNY-360 uses digital MG996R servos modified with a custom **Op-Amp buffer PCB** for noise-free, high-speed position feedback.
-* ⚡ **Zero Cable Spaghetti:**<br> A fully modular hardware ecosystem. Dedicated PCBs (Control, Sensor, Brain, Power, etc.) communicate cleanly via standardized JST-PH cables.
-* 🛠️ **Smart Auto-Calibration:**<br> Features mechanical endstops for assembly validation and runtime algorithms that compensate for backlash and actuator latency.
-* 🧩 **STEM & Expansion Ready:**<br> Program the robot using [TNY-Coder](https://github.com/TNY-Robotics/TNY-Coder) (our block-based web app) or build custom hardware modules using the dorsal I2C/Power expansion port.
-* 🔋 **Industrial Power:**<br> A custom 3S 18650 battery pack capable of 15A continuous discharge, featuring an integrated BMS and Fuse, for 1h+ of runtime.
+* 🧬 **Dual-Core Architecture:**<br> A [segregated system](https://tny-robotics.com/docs/tny-360/understand-it/firmware/) using the ESP32-S3. Core 0 ("Reflex") runs a strict 200Hz kinematics/control loop, while Core 1 ("Brain") handles WebSockets, UI, and orchestration.
+* 🔄 **Closed-Loop at 200Hz:**<br> We ditched blind PWM. The TNY-360 uses digital MG996R servos modified with a [custom **Op-Amp buffer PCB**](https://tny-robotics.com/docs/tny-360/build-it/sourcing/motors) for noise-free, high-speed position feedback.
+* ⚡ **Zero Cable Spaghetti:**<br> A fully [modular hardware ecosystem](https://tny-robotics.com/docs/tny-360/understand-it/hardware/electrical/pcb-ecosystem/). Dedicated PCBs (Backbone, Motor Driver, Analog Reader, etc.) that plug into each other.
+* 🛠️ **Smart Auto-Calibration:**<br> Integrated Mechanical Endstops used for automatic joint calibration (servo centering, assembly validation, etc.)
+* 🛠️ **Auto-Diagnostic & Error Handling:**<br> Advanced error handling with detailed error messages and instructions to fix them on the web interface.
+* 🧩 **STEM & Expansion Ready:**<br> Use the integrated block programing interface or the [Python](https://github.com/TNY-Robotics/SDK-Python/) or [JS/TS](https://github.com/TNY-Robotics/SDK-TS/) SDKs to program the robot, or [build custom modules](https://tny-robotics.com/docs/tny-360/build-on-it/) using its dorsal expansion port.
+* 🔋 **Industrial Power:**<br> Custom High-Power [Buck Converter](https://tny-robotics.com/docs/tny-360/understand-it/hardware/electrical/pcb-ecosystem/buck-converter/), Electrical Safety features (fuses, inversion protections, overcurrent protections, etc.) and [clean power / noise management](https://tny-robotics.com/docs/tny-360/understand-it/hardware/electrical/architecture/).
 
 ## ⚙️ Hardware Specs
 
 ### 🧠 Core & Power
-* **MCU:** ESP32-S3 N16R8 Module
-* **Power:** 3S LiPo Battery (6x Samsung INR18650-25R)
+* **MCU:** ESP32-S3 N16R8 Module (Dual-Core Xtensa at 240MHz, 16MB Flash, 8MB PSRAM)
+* **Power:** 3S LiPo Battery with XT60 Connector (11.1V, ~2200mAh). [How to choose your battery](https://tny-robotics.com/docs/tny-360/build-it/battery-guide)
 * **Monitoring:** INA219 (Voltage/Current sensor)
 
 ### 🦵 Actuators
-* **Legs:** 12x MG996R Servos *(Must be modified for analog feedback)*
-* **Head:** 2x SG-90 Micro Servos (Ears)
+* **Legs:** 12x MG996R Servomotors *(Must be modified for [analog feedback](https://tny-robotics.com/docs/tny-360/build-it/sourcing/motors))*
+* **Head:** 2x MG90D Metal Servomotors (Ears)
 * **Driver:** PCA9685 (16-Channel PWM)
 
 ### 📡 Sensors & I/O
-* **Vision:** OV2640 Camera Module
-* **Distance:** VL53L0X Time-of-Flight (Lidar)
-* **Orientation:** MPU6050 6-axis IMU
-* **Display:** SH1106 OLED (128x64)
-* **Audio:** I2S MEMS Microphone + Speaker
-
----
-
-## 📂 Repository Structure
-
-* `BOM/` — **Bill of Materials.** Detailed lists of all components, PCBs, screws, and cables, with links.
-* `CAD/` — **Hardware Source.** FreeCAD project files and ready-to-print STLs.
-* `Electronics/PCBs/` — **PCB Designs.** Gerber files, BOMs, and Pick'n'Place for all PCBs.
-* `Firmware/` — **Codebase.** PlatformIO project (C++/ESP-IDF).
-* `Firmware/components/` — **Drivers.** Custom libraries for sensors/actuators.
+* **Vision:** OV3660 Camera Module
+* **Distance:** VL53L0X Time-of-Flight Sensor
+* **Orientation:** LSM6SD3 6-axis IMU
+* **Display:** SSD1309 OLED Screen
+* **Audio:** PDM Microphone (MEMS) + I2S Speaker (3W 4Ω 3525 Speaker)
 
 ## ☕ Support the Project
 
