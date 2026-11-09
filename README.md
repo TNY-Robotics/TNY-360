@@ -38,7 +38,7 @@ If you know what you are doing and just want the raw files, here is your toolkit
 
 ## ✨ Features
 
-* 🧬 **Dual-Core Architecture:**<br> A [segregated system](https://tny-robotics.com/docs/tny-360/understand-it/firmware/) using the ESP32-S3. Core 0 ("Reflex") runs a strict 200Hz kinematics/control loop, while Core 1 ("Brain") handles WebSockets, UI, and orchestration.
+* 🧬 **Dual-Core Architecture:**<br> A [segregated system](https://tny-robotics.com/docs/tny-360/understand-it/firmware/) using the ESP32-S3. Core 0 ("Brain") handles WebSockets, UI, and orchestration, while Core 1 ("Reflex") runs a strict 200Hz kinematics/control loop.
 * 🔄 **Closed-Loop at 200Hz:**<br> We ditched blind PWM. The TNY-360 uses digital MG996R servos modified with a [custom **Op-Amp buffer PCB**](https://tny-robotics.com/docs/tny-360/build-it/sourcing/motors) for noise-free, high-speed position feedback.
 * ⚡ **Zero Cable Spaghetti:**<br> A fully [modular hardware ecosystem](https://tny-robotics.com/docs/tny-360/understand-it/hardware/electrical/pcb-ecosystem/). Dedicated PCBs (Backbone, Motor Driver, Analog Reader, etc.) that plug into each other.
 * 🛠️ **Smart Auto-Calibration:**<br> Integrated Mechanical Endstops used for automatic joint calibration (servo centering, assembly validation, etc.)
