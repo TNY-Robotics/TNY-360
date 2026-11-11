@@ -3,6 +3,7 @@
 #include "settings/Settings.hpp"
 #include "locomotion/IMUMPU.hpp"
 #include "locomotion/IMULSM.hpp"
+#include "common/config.hpp"
 
 IMU* IMU::Create()
 {
@@ -28,8 +29,9 @@ Status IMU::estimateState(float dt)
         return err;
     }
 
-    // Apply gyro bias correction
-    angularVelocity -= gyro_bias;
+    // Apply corrections from calibration data
+    angularVelocity -= calibrationData.gyro_bias;
+    acceleration *= calibrationData.accel_scale;
 
     float gx = angularVelocity.x; 
     float gy = angularVelocity.y;
@@ -82,5 +84,138 @@ Status IMU::estimateState(float dt)
 
     downVector = q.rotate(Vec3f(0.f, 0.f, -1.f));
 
+    return Status::Ok;
+}
+
+/// /// /// CALIBRATION
+
+Status IMU::init_nvs()
+{
+    if (Status err = NVS::Init(); err != Status::Ok)
+    {
+        return err;
+    }
+
+    if (Status err = NVS::Open("imu", &nvsHandle); err != Status::Ok)
+    {
+        return err;
+    }
+
+    calibrationState = CalibrationState::UNCALIBRATED;
+    return Status::Ok;
+}
+
+Status IMU::load_calib_from_nvs()
+{
+    if (nvsHandle == nullptr)
+    {
+        return Status::InvalidState;
+    }
+
+    if (Status err = nvsHandle->get("calib", calibrationData); err != Status::Ok)
+    {
+        return err;
+    }
+
+    calibrationState = CalibrationState::CALIBRATED;
+    return Status::Ok;
+}
+
+Status IMU::save_calib_to_nvs()
+{
+    if (nvsHandle == nullptr)
+    {
+        return Status::InvalidState;
+    }
+
+    if (Status err = nvsHandle->set("calib", calibrationData); err != Status::Ok)
+    {
+        return err;
+    }
+
+    return Status::Ok;
+}
+
+Status IMU::delete_calib_from_nvs()
+{
+    if (nvsHandle == nullptr)
+    {
+        return Status::InvalidState;
+    }
+
+    if (Status err = nvsHandle->erase("calib"); err != Status::Ok)
+    {
+        return err;
+    }
+
+    return Status::Ok;
+}
+
+Status IMU::startCalibration(bool save)
+{
+    if (calibrationState == CalibrationState::CALIBRATING)
+    {
+        return Status::InvalidState; // Already calibrating
+    }
+
+    calibrationState = CalibrationState::CALIBRATING;
+    calibrationProgress = 0.0f;
+
+    // Launch the actual freeRTOS task for calibration
+    BaseType_t result = xTaskCreatePinnedToCore([](void* pvParameters) {
+        IMU* imu = static_cast<IMU*>(pvParameters);
+        if (Status err = imu->calibration_sequence(); err != Status::Ok)
+        {
+            imu->calibrationState = CalibrationState::ERROR;
+        }
+        else
+        {
+            imu->calibrationState = CalibrationState::CALIBRATED;
+            if (Status err = imu->save_calib_to_nvs(); err != Status::Ok)
+            {
+                imu->calibrationState = CalibrationState::ERROR;
+            }
+        }
+        // remove the task handle after completion
+        imu->calibrationTaskHandle = nullptr;
+        vTaskDelete(nullptr);
+    }, "imu_calib", 2048, this, 5, &calibrationTaskHandle, CORE_BRAIN);
+
+    if (result != pdTRUE)
+    {
+        return Status::Failure;
+    }
+
+    return Status::Ok;
+}
+
+Status IMU::stopCalibration()
+{
+    if (calibrationState != CalibrationState::CALIBRATING)
+    {
+        return Status::InvalidState;
+    }
+
+    calibrationState = CalibrationState::UNCALIBRATED;
+
+    if (calibrationTaskHandle != nullptr)
+    {
+        vTaskDelete(calibrationTaskHandle);
+        calibrationTaskHandle = nullptr;
+    }
+
+    return Status::Ok;
+}
+
+Status IMU::resetCalibration(bool save)
+{
+    this->calibrationData = CalibrationData(); // Reset to default
+    if (save)
+    {
+        if (Status err = save_calib_to_nvs(); err != Status::Ok)
+        {
+            return err;
+        }
+    }
     return Status::Ok;
 }

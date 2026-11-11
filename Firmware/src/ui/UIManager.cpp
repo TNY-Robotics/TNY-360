@@ -1,6 +1,4 @@
 #include "ui/UIManager.hpp"
-#include "ui/ScreenSH.hpp"
-#include "ui/ScreenSSD.hpp"
 #include "ui/Menus.hpp"
 #include "ui/Icons.hpp"
 #include "common/Log.hpp"
@@ -13,20 +11,7 @@ UIManager::UIManager()
 
 Status UIManager::init()
 {
-    // get screen type from settings
-    switch (Settings::GetConfig().screen.type)
-    {
-        case ScreenType::SCREEN_SH1106:
-            screen = new ScreenSH();
-            break;
-        case ScreenType::SCREEN_SSD1309:
-            screen = new ScreenSSD();
-            break;
-        default:
-            LOG_ERROR(TAG, "Unknown screen type in settings. Disabling screen.");
-            break;
-    }
-
+    screen = Screen::Create();
     if (screen)
     {
         if (Status err = screen->init(); err != Status::Ok)

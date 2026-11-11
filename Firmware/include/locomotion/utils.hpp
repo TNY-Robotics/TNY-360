@@ -50,10 +50,10 @@ struct BodyJointState
     /// @brief Leg joints (FL, BL, BR, FR order)
     LegJointState leg_joints[4];
 
-    /// @brief Left ear joint for animations
-    float ear_l_rad = 0.0f;
     /// @brief Right ear joint for animations
     float ear_r_rad = 0.0f;
+    /// @brief Left ear joint for animations
+    float ear_l_rad = 0.0f;
 };
 
 class JointStateModifier

@@ -1,6 +1,8 @@
 #pragma once
 #include "common/utils.hpp"
 #include "common/geometry.hpp"
+#include "common/NVS.hpp"
+#include <freertos/FreeRTOS.h>
 
 class IMU
 {
@@ -30,7 +32,9 @@ public:
     struct CalibrationData
     {
         /// @brief Bias to apply to the raw gyro readings to compensate for drift
-        Vec3f gyro_bias;
+        Vec3f gyro_bias = Vec3f::Zero();
+        /// @brief Scale factor to apply to the raw accelerometer readings to compensate for scale errors
+        float accel_scale = 1.0f;
     };
 
     IMU() = default;
@@ -80,6 +84,50 @@ public:
      */
     const Vec3f& getAcceleration() const { return acceleration; }
 
+    /// /// /// CALIBRATION
+
+    /**
+     * @brief Get the current calibration state of the IMU.
+     * @return Current calibration state.
+     */
+    CalibrationState getCalibrationState() const { return calibrationState; }
+
+    /**
+     * @brief Get the current calibration data of the IMU.
+     * @return Current calibration data.
+     */
+    CalibrationData getCalibrationData() const { return calibrationData; }
+
+    /**
+     * @brief Get the current calibration progress ratio (0.0 to 1.0).
+     * @return Current calibration progress ratio.
+     * @note This value is only valid when the calibration state is CALIBRATING.
+     */
+    float getCalibrationProgress() const { return calibrationProgress; }
+
+    /**
+     * @brief Start the calibration process.
+     * @param save Whether to save the calibration data after the process is complete.
+     * @return Status code indicating success or failure of the operation.
+     * @note The robot should be stationary during calibration, with control loop disabled.
+     * @note This function will return immediately, and the calibration process will run in the background.
+     * @note Use getCalibrationProgress() and getCalibrationState() to monitor.
+     */
+    Status startCalibration(bool save = true);
+
+    /**
+     * @brief Stop the calibration process.
+     * @return Status code indicating success or failure of the operation.
+     */
+    Status stopCalibration();
+
+    /**
+     * @brief Reset the calibration data to default values.
+     * @param save Whether to save the reset calibration data after the operation.
+     * @return Status code indicating success or failure of the operation.
+     */
+    Status resetCalibration(bool save = true);
+
 protected:
     /**
      * @brief Internal override to provide IMU data to the controller.
@@ -90,14 +138,31 @@ protected:
      */
     virtual Status provide_data(Vec3f &accel, Vec3f &angular_vel) = 0;
 
+    /// NVS-Related functions for calibration data storage 
+    Status init_nvs();
+    Status load_calib_from_nvs();
+    Status save_calib_to_nvs();
+    Status delete_calib_from_nvs();
+
 private:
+    /// @brief Internal function to run the calibration sequence
+    Status calibration_sequence();
+
     /// @brief Madgwick filter quaternion state
     Quatf q;
     /// @brief Madgwick filter gain
     float beta = 0.1f;
 
-    /// @brief Gyroscope bias for calibration
-    Vec3f gyro_bias;
+    /// @brief Current calibration data
+    CalibrationData calibrationData;
+    /// @brief Current calibration state
+    CalibrationState calibrationState = CalibrationState::UNCALIBRATED;
+    /// @brief Calibration progress ratio (0.0 to 1.0), valid only when calibrationState is CALIBRATING
+    float calibrationProgress = 0.0f;
+    /// @brief Calibration task handle for FreeRTOS
+    TaskHandle_t calibrationTaskHandle = nullptr;
+    /// @brief NVS Handle for storing calibration data
+    NVS::Handle* nvsHandle = nullptr;
 
     /// @brief Gravity down vector in body frame
     Vec3f downVector = Vec3f(0.f, 0.f, -1.f);

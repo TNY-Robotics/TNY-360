@@ -3,9 +3,10 @@
 
 MenuCalibration::MenuCalibration(Menu* parent)
     : MenuList("Calibration", parent, Icons::CalibrationMenu),
-    menuMotorCalib(MenuMotorCalib(this))
+    menuMotorCalib(MenuMotorCalib(this)), menuIMUCalib(MenuIMUCalib(this))
 {
     setItems({
-        &menuMotorCalib
+        &menuMotorCalib,
+        &menuIMUCalib
     });
 }

@@ -19,6 +19,15 @@ Status IMULSM::init()
         return err;
     }
 
+    if (Status err = this->init_nvs(); err != Status::Ok)
+    {
+        return err;
+    }
+    if (Status err = this->load_calib_from_nvs(); err != Status::Ok)
+    {
+        LOG_WARNING(TAG, "Failed to load calibration data from NVS, using default calibration");
+    }
+
     lsm6ds3_info_t lsm_info = LSM6DS3_DEFAULT_INFO();
     if (esp_err_t err = lsm6ds3_create(I2C::handle_primary, lsm_info, &lsm_handle); err != ESP_OK)
     {

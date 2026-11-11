@@ -19,6 +19,15 @@ Status IMUMPU::init()
         return err;
     }
 
+    if (Status err = this->init_nvs(); err != Status::Ok)
+    {
+        return err;
+    }
+    if (Status err = this->load_calib_from_nvs(); err != Status::Ok)
+    {
+        LOG_WARNING(TAG, "Failed to load calibration data from NVS, using default calibration");
+    }
+
     mpu6050_info_t mpu_info = {
         .address = IMU_I2C_ADDR,
         .clock_speed = IMU_I2C_CLOCK

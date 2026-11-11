@@ -113,7 +113,7 @@ Status MotorController::run_calibration_sequence()
                 return Status::Unknown;
             }
         }
-        LOG_DEBUG(TAG, "==> Deadband size : %.1f ms (%.2f deg)", deadband_size, deadband_size * 90.f);
+        LOG_DEBUG(TAG, "==> Deadband size : %.2f ms (%.2f deg)", deadband_size, deadband_size * 90.f);
     }
     this->calibration_progress = 0.6f;
 

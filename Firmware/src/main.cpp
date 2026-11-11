@@ -1,15 +1,7 @@
-#include <freertos/FreeRTOS.h>
-#include "common/Log.hpp"
-#include "Robot.hpp"
-#include "common/config.hpp"
-#include "common/RPC.hpp"
 #include "boot/BootManager.hpp"
-#include "soc/usb_serial_jtag_reg.h"
-#include "common/LED.hpp"
-#include "ui/Button.hpp"
-#include "audio/MusicProvider.hpp"
-#include "audio/SineProvider.hpp"
-#include "common/I2C.hpp"
+#include "common/Log.hpp"
+#include "System.Error.hpp"
+#include "Robot.hpp"
 
 static const char* TAG = "Main";
 
@@ -33,7 +25,8 @@ void app_main()
 
     if (Status err = robot.init(); err != Status::Ok)
     {
-        // LOG_ERROR(TAG, "Failed to initialize robot. Error : %s", StatusToString(err));
+        LOG_ERROR(TAG, "Failed to initialize robot. Error : %s", StatusToString(err));
+        Error::RegisterErrorEvent(System::ErrorEventInitFailed());
         return;
     }
 
@@ -43,7 +36,8 @@ void app_main()
 
     if (Status err = robot.start(); err != Status::Ok)
     {
-        // LOG_ERROR(TAG, "Failed to start robot. Error : %s", StatusToString(err));
+        LOG_ERROR(TAG, "Failed to start robot. Error : %s", StatusToString(err));
+        Error::RegisterErrorEvent(System::ErrorEventStartFailed());
         return;
     }
 

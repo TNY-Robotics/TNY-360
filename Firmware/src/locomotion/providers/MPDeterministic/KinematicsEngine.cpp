@@ -1,4 +1,4 @@
-#include "locomotion/KinematicsEngine.hpp"
+#include "locomotion/providers/MPDeterministic/KinematicsEngine.hpp"
 #include <cmath>
 #include "common/Log.hpp"
 

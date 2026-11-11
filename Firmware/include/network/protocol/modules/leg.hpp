@@ -126,16 +126,7 @@ namespace Leg
             clearOverrides = true; // clear overrides by default
         }
 
-        if (clearOverrides)
-        {
-            for (int i = 0; i < (int) ::Leg::JointId::Count; i++)
-            {
-                Joint::Id joint_id = static_cast<Joint::Id>(legId * (int) ::Leg::JointId::Count + i);
-                Robot::GetInstance().getDecisionLoop().askJointAngle(joint_id, 0, IPC::OverrideMode::None);
-            }
-        }
-
-        Robot::GetInstance().getDecisionLoop().askLegPosition((::Leg::Id) legId, x_m, y_m, z_m);
+        // Robot::GetInstance().getDecisionLoop().askLegPosition((::Leg::Id) legId, x_m, y_m, z_m);
         ctx.respond(ResponseStatus::Ok);
     }
 
@@ -158,8 +149,7 @@ namespace Leg
             return;
         }
 
-        const Vec3f& pos = Robot::GetInstance().getDecisionLoop().getControlIntent().leg_overrides[(int) legId].value_pos;
-        ctx.respond(ResponseStatus::Ok, (uint8_t*) &pos, sizeof(pos));
+        ctx.respond(ResponseStatus::Ok); //, (uint8_t*) &pos, sizeof(pos));
     }
 
     /** <API_REF>

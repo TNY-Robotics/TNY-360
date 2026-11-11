@@ -1,6 +1,5 @@
 #pragma once
 #include "locomotion/Joint.hpp"
-#include "locomotion/LegKinematics.hpp"
 #include "locomotion/utils.hpp"
 #include "common/geometry.hpp"
 

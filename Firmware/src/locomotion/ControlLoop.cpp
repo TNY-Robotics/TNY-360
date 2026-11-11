@@ -1,27 +1,12 @@
 #include "locomotion/ControlLoop.hpp"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include "esp_log_timestamp.h"
 #include "Robot.hpp"
-#include "common/PID.hpp"
 #include "common/Log.hpp"
 #include "common/config.hpp"
-#include "common/RPC.hpp"
-#include "locomotion/IPC.hpp"
 #include "drivers/AnalogDriver.hpp"
 #include "drivers/MotorDriver.hpp"
-#include "common/analysis/PerfMonitor.hpp"
 
-// Perf monitoring : Remove this when control loop is optimized and stable
-PerfMonitor perf_global;
-PerfMonitor perf_reader;
-PerfMonitor perf_imu;
-PerfMonitor perf_estimation;
-PerfMonitor perf_gait;
-PerfMonitor perf_ik;
-PerfMonitor perf_command;
-PerfMonitor perf_driver;
-uint16_t perf_counter = 0;
 
 TaskHandle_t timer_task_handle;
 bool running = false;
@@ -44,21 +29,6 @@ Status ControlLoop::init()
     //         to avoid cache issues and delays in the control loop when brain core is doing heavy operations
 
     if (initialized) return Status::Ok;
-
-    // Initialize kinematics engine with the right config
-    kinematics_engine = KinematicsEngine(KinematicsEngine::KinematicsConfig{
-        .hip_shift_x = HIP_POS_X_M,
-        .hip_shift_y = HIP_POS_Y_M,
-        .hip_offset = HIP_OFFSET_M,
-        .length_thigh = LEG_THIGH_LENGTH_M,
-        .length_calf = LEG_CALF_LENGTH_M,
-        .leg_inverted = {
-            Robot::GetInstance().getBody().getLeg(Leg::Id::FrontLeft).isInverted(),
-            Robot::GetInstance().getBody().getLeg(Leg::Id::BackLeft).isInverted(),
-            Robot::GetInstance().getBody().getLeg(Leg::Id::BackRight).isInverted(),
-            Robot::GetInstance().getBody().getLeg(Leg::Id::FrontRight).isInverted(),
-        },
-    });
 
     if (Status err = create_internal_task(); err != Status::Ok)
     {
@@ -116,6 +86,31 @@ Status ControlLoop::init()
     return Status::Ok;
 }
 
+Status ControlLoop::deinit()
+{
+    if (!initialized) return Status::Ok;
+
+    running = false; // ask the control loop to end
+
+    // wait 2 control cycle to be sure the control loop is stopped
+    vTaskDelay(pdMS_TO_TICKS(CONTROL_LOOP_DT_MS*2));
+
+    if (timer_task_handle != nullptr)
+    {
+        vTaskDelete(timer_task_handle);
+        timer_task_handle = nullptr;
+    }
+
+    if (esp_err_t err = gptimer_disable(timer); err != ESP_OK)
+    {
+        LOG_ERROR(TAG, "Error disabling Control Loop gptimer ; 0x%0X", err);
+        return Status::Failure;
+    }
+
+    initialized = false;
+    return Status::Ok;
+}
+
 Status ControlLoop::start()
 {
     if (Status err = create_internal_task(); err != Status::Ok)
@@ -151,276 +146,27 @@ bool ControlLoop::isRunning() const
     return running;
 }
 
-Status ControlLoop::deinit()
+Status ControlLoop::setMotionProvider(MotionProvider* provider)
 {
-    if (!initialized) return Status::Ok;
+    if (!initialized) return Status::InvalidState;
 
-    running = false; // ask the control loop to end
-
-    // wait 2 control cycle to be sure the control loop is stopped
-    vTaskDelay(pdMS_TO_TICKS(CONTROL_LOOP_DT_MS*2));
-
-    if (timer_task_handle != nullptr)
+    if (motion_provider != nullptr)
     {
-        vTaskDelete(timer_task_handle);
-        timer_task_handle = nullptr;
-    }
-
-    if (esp_err_t err = gptimer_disable(timer); err != ESP_OK)
-    {
-        LOG_ERROR(TAG, "Error disabling Control Loop gptimer ; 0x%0X", err);
-        return Status::Failure;
-    }
-
-    initialized = false;
-    return Status::Ok;
-}
-
-Status ControlLoop::control_task()
-{
-    perf_global.start();
-
-    static bool watchdog_active = false;
-
-    /*** UPDATE CONTROL INTENT ***/
-    // update from IPC
-    static IPC::ControlIntent intent;
-    bool new_intent = IPC::getIntent(&intent);
-
-    // security timestamp
-    uint32_t current_time = esp_log_timestamp();
-    if ((current_time - intent.timestamp_ms) > CONTROL_INTENT_WATCHDOG_MS)
-    {
-        // Brain is overloaded or crashed. Force robot stop.
-        intent.body_vel = Vec3f(0.f, 0.f, 0.f);
-
-        if (!watchdog_active) {
-            LOG_WARNING(TAG, "Control intent watchdog triggered. Stop overthinking!");
-            watchdog_active = true;
-        }
-    }
-    else
-    {
-        if (watchdog_active) {
-            LOG_INFO(TAG, "Brain is back online!");
-            watchdog_active = false;
-        }
-    }
-
-    /*** 1 - STATE ESTIMATION - READ ALL SENSORS ***/
-
-    // Read the ADC channels
-    perf_reader.start();
-    if (Status err = AnalogDriver::ReadAllChannels(); err != Status::Ok)
-    {
-        LOG_ERROR(TAG, "Error reading all ADC channels");
-    }
-    perf_reader.stop();
-
-    // Estimate body state from new IMU and Analog data (calls Legs, Joint, IMU estimateState functions)
-    perf_estimation.start();
-    if (Status err = Robot::GetInstance().getBody().estimateState(CONTROL_LOOP_DT_S); err != Status::Ok)
-    {
-        LOG_ERROR(TAG, "Error estimating body state");
-    }
-    perf_estimation.stop();
-
-    /// Store the state in the IPC to be read by the Brain core (we don't check return error here, no time to manage them)
-    IPC::RobotState state;
-    state.timestamp_ms = current_time;
-    for (int i = 0; i < (int) Joint::Id::Count; i++)
-    {
-        Joint::Id joint_id = static_cast<Joint::Id>(i);
-        Joint* joint = Joint::GetJoint(joint_id);
-        if (joint == nullptr) continue;
-        joint->getTarget(state.joints[i].target_angle_rad);
-        joint->getFeedback(state.joints[i].feedback_angle_rad);
-        joint->getPrediction(state.joints[i].model_angle_rad);
-        joint->getPosition(state.joints[i].estimated_angle_rad);
-    }
-    IMU* imu = Robot::GetInstance().getBody().getIMU();
-    if (imu != nullptr)
-    {
-        state.body_orientation = Quatf(imu->getOrientation());
-    }
-    else
-    {
-        // If no IMU is present, set default values.
-        state.body_orientation = Quatf::Identity();
-    }
-    IPC::setState(state);
-
-    /*** 2 - RUN CARTESIAN CONTROL (USING BRAIN CONTROL INTENT) ***/
-
-    // build the initial state
-    BodyCartesianState cartesian_state;
-    cartesian_state.body_pos = intent.body_pos;
-    cartesian_state.body_rot = intent.body_rot;
-    for (int i = 0; i < (int) Leg::Id::Count; i++)
-    {
-        Leg::Id leg_id = static_cast<Leg::Id>(i);
-        cartesian_state.legs[i].is_grounded = Robot::GetInstance().getBody().getLeg(leg_id).isGrounded();
-    }
-
-    // Gait planner (ideal movement)
-    if (new_intent)
-    {
-        gait_planner.setVelocityCommand(intent.body_vel.x, intent.body_vel.y, intent.body_vel.z);
-    }
-    perf_gait.start();
-    gait_planner.update(CONTROL_LOOP_DT_S, cartesian_state);
-    perf_gait.stop();
-
-    // Animation override (leg override + body override)
-    for (uint8_t leg_id = 0; leg_id < (uint8_t) Leg::Id::Count; leg_id++)
-    {
-        IPC::LegOverride& leg_override = intent.leg_overrides[leg_id];
-        if (leg_override.mode == IPC::OverrideMode::None) continue;
-        else if (leg_override.mode == IPC::OverrideMode::Absolute)
+        if (Status err = motion_provider->destroy(); err != Status::Ok)
         {
-            cartesian_state.legs[leg_id].target_pos = leg_override.value_pos;
+            return err;
         }
-        else if (leg_override.mode == IPC::OverrideMode::Relative)
+        delete motion_provider;
+        motion_provider = nullptr;
+    }
+
+    motion_provider = provider;
+    if (motion_provider != nullptr)
+    {
+        if (Status err = motion_provider->create(); err != Status::Ok)
         {
-            cartesian_state.legs[leg_id].target_pos += leg_override.value_pos;
+            return err;
         }
-    }
-    IPC::BodyOverride& body_override = intent.body_override;
-    if (body_override.mode == IPC::OverrideMode::Absolute)
-    {
-        cartesian_state.body_pos = body_override.value_pos;
-        cartesian_state.body_rot = body_override.value_rot;
-    }
-    else if (body_override.mode == IPC::OverrideMode::Relative)
-    {
-        cartesian_state.body_pos += body_override.value_pos;
-        cartesian_state.body_rot += body_override.value_rot;
-    }
-
-    ////////////////////////////////////////////////// FIXME : TEMPORARY : Stabilisation
-
-    // static Vec3f rotation = Vec3f(0.f, 0.f, 0.f);
-    // static PID pid_roll(2.0f, 2.5f, 0.0f);
-    // static PID pid_pitch(2.0f, 2.5f, 0.0f);
-
-    // const Vec3f& orient = imu->getOrientation().toEulerAngles();
-
-    // rotation.x -= pid_roll.compute(0.f, orient.x, CONTROL_LOOP_DT_S) * 0.01f;
-    // rotation.y -= pid_pitch.compute(0.f, orient.y, CONTROL_LOOP_DT_S) * 0.01f;
-
-    // if (std::fabs(rotation.x) > 0.7f || std::fabs(rotation.y) > 0.7f)
-    // {
-    //     rotation.x = 0.f;
-    //     rotation.y = 0.f;
-    //     pid_roll.reset();
-    //     pid_pitch.reset();
-    // }
-
-    // Vec3f position = Quatf::FromEulerAngles(Vec3f(-rotation.x, -rotation.y, 0.f)).rotate(Vec3f(0.02f, 0.f, 0.14f));
-
-    // cartesian_state.body_pos = position;
-    // cartesian_state.body_rot = Vec3f(-rotation.x, -rotation.y, rotation.z);
-
-    ////////////////////////////////////////////////// FIXME : TEMPORARY : Stabilisation
-
-
-    /*** 3 - CONVERT CARTESIAN CONTROL TO JOINT CONTROL ***/
-
-    BodyJointState joint_state;
-
-    // IK
-    perf_ik.start();
-    if (Status err = kinematics_engine.computeBodyIK(cartesian_state, joint_state); err != Status::Ok)
-    {
-        // LOG_ERROR(TAG, "KinematicsEngine failed to calculate body IK with error: %s", ErrorToString(err));
-        return err;
-    }
-    perf_ik.stop();
-
-
-    /*** 4 - RUN JOINT CONTROL (USING BRAIN CONTROL INTENT) ***/
-
-    // Joint Override
-    for (uint8_t leg_id = 0; leg_id < (uint8_t) Leg::Id::Count; leg_id++)
-    {
-        for (uint8_t leg_joint_id = 0; leg_joint_id < (uint8_t) Leg::JointId::Count; leg_joint_id++)
-        {
-            uint8_t joint_id = leg_id * (uint8_t) Leg::JointId::Count + leg_joint_id;
-
-            IPC::JointOverride& joint_override = intent.joint_overrides[joint_id];
-            if (joint_override.mode == IPC::OverrideMode::None) continue;
-            else if (joint_override.mode == IPC::OverrideMode::Absolute)
-            {
-                joint_state.leg_joints[leg_id].joint_angles_rad[leg_joint_id] = joint_override.value_rad;
-                // rotation.x = 0.f;
-                // rotation.y = 0.f;
-                // pid_roll.reset();
-                // pid_pitch.reset();
-            }
-            else if (joint_override.mode == IPC::OverrideMode::Relative)
-            {
-                joint_state.leg_joints[leg_id].joint_angles_rad[leg_joint_id] += joint_override.value_rad;
-            }
-        }
-    }
-    // ears
-    IPC::JointOverride& ear_l_override = intent.joint_overrides[(uint8_t) Joint::Id::EarLeft];
-    if (ear_l_override.mode == IPC::OverrideMode::Absolute) joint_state.ear_l_rad = ear_l_override.value_rad;
-    else if (ear_l_override.mode == IPC::OverrideMode::Relative) joint_state.ear_l_rad += ear_l_override.value_rad;
-    IPC::JointOverride& ear_r_override = intent.joint_overrides[(uint8_t) Joint::Id::EarRight];
-    if (ear_r_override.mode == IPC::OverrideMode::Absolute) joint_state.ear_r_rad = ear_r_override.value_rad;
-    else if (ear_r_override.mode == IPC::OverrideMode::Relative) joint_state.ear_r_rad += ear_r_override.value_rad;
-
-    /*** 5 - SEND EVERYTHING ***/
-
-    // Update the body (this updates all joints in the body)
-    perf_command.start();
-    if (Status err = Robot::GetInstance().getBody().applyCommand(joint_state, CONTROL_LOOP_DT_S); err != Status::Ok)
-    {
-        // LOG_ERROR(TAG, "Failed to apply command in control task with error: %s", ErrorToString(err));
-        // return err;
-    }
-    perf_command.stop();
-    
-    // Send the new motor values
-    perf_driver.start();
-    if (Status err = MotorDriver::SendData(); err != Status::Ok)
-    {
-        // // LOG_ERROR(TAG, "Error sending MotorDriver data with error: %s", ErrorToString(err));
-    }
-    perf_driver.stop();
-
-    /*** 6 - OTHER CORE1 JOBS ***/
-
-    // All done, we can execute pending jobs if there's any (Handle RPC Calls)
-    RPC::Process_Core1();
-    
-    // Performance tracking (as lightweight as possible)
-    perf_global.stop();
-    if (perf_counter++ == CONTROL_LOOP_FREQ_HZ)
-    {
-        // float ms_global = perf_global.get_avg_ms();
-        // float ms_reader = perf_reader.get_avg_ms();
-        // float ms_imu = perf_imu.get_avg_ms();
-        // float ms_estimation = perf_estimation.get_avg_ms();
-        // float ms_gait = perf_gait.get_avg_ms();
-        // float ms_ik = perf_ik.get_avg_ms();
-        // float ms_command = perf_command.get_avg_ms();
-        // float ms_driver = perf_driver.get_avg_ms();
-
-        // LOG_DEBUG(TAG, "Control loop perfs:");
-        // LOG_DEBUG(TAG, "| Global | Reader |  IMU   | Estim  |  Gait  |   IK   |Command | Driver |");
-        // LOG_DEBUG(TAG, "|--------|--------|--------|--------|--------|--------|--------|--------|");
-        // LOG_DEBUG(TAG, "| %5.2f  | %5.2f  | %5.2f  | %5.2f  | %5.2f  | %5.2f  | %5.2f  | %5.2f  |", ms_global, ms_reader, ms_imu, ms_estimation, ms_gait, ms_ik, ms_command, ms_driver);
-        perf_counter = 0;
-        perf_global.reset();
-        perf_reader.reset();
-        perf_imu.reset();
-        perf_estimation.reset();
-        perf_gait.reset();
-        perf_ik.reset();
-        perf_command.reset();
-        perf_driver.reset();
     }
 
     return Status::Ok;

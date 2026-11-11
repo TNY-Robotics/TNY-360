@@ -4,6 +4,7 @@
 #include <memory.h>
 #include "common/Log.hpp"
 #include "common/Error.hpp"
+#include "settings/Settings.hpp"
 #include "audio/Speaker.Error.hpp"
 
 SoundMixer::SoundMixer()
@@ -22,7 +23,7 @@ Status SoundMixer::init(Speaker* speaker)
     }
     this->speaker = speaker;
     
-    masterVolume = 0.5f; // default volume
+    masterVolume = Settings::GetConfig().audio.speaker.volume;
     running = true; // start running
 
     if (this->speaker)

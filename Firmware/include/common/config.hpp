@@ -86,7 +86,7 @@ constexpr gpio_num_t I2C_SECONDARY_SCL_GPIO_NUM = GPIO_NUM_48;
 
 /** Analog Readings **/
 // EMA filter alpha value (1.0 = no filtering, 0.1 = big inertia)
-constexpr float ANALOG_EMA_ALPHA = 0.05f;
+constexpr float ANALOG_EMA_ALPHA = 1.0f;
 
 /** Timer management **/
 // Control loop frequency

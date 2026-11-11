@@ -2,6 +2,7 @@
 #include "ui/Menus.hpp"
 #include "ui/menus/List.hpp"
 #include "ui/menus/MotorCalib.hpp"
+#include "ui/menus/IMUCalib.hpp"
 
 class MenuCalibration : public MenuList
 {
@@ -12,4 +13,5 @@ public:
 
 private:
     MenuMotorCalib menuMotorCalib;
+    MenuIMUCalib menuIMUCalib;
 };

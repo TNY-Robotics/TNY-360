@@ -1,7 +1,7 @@
 #include "boot/BootManager.hpp"
+#include "settings/Settings.hpp"
 #include "common/Log.hpp"
 #include "common/NVS.hpp"
-#include "settings/Settings.hpp"
 
 namespace BootManager
 {
@@ -9,17 +9,17 @@ namespace BootManager
     {
         LOG_SCOPE(TAG, "BootManager::CheckForSpecialBoot");
 
-        // Initialize Settings system
-        if (Status err = Settings::Init(); err != Status::Ok)
-        {
-            LOG_ERROR(TAG, "Failed to initialize Settings module : %s", StatusToString(err));
-            return true; // block robot from booting as normal
-        }
-
         // Init NVS to check for flags
         if (Status err = NVS::Init(); err != Status::Ok)
         {
             LOG_ERROR(TAG, "Error initializing NVS : %s", StatusToString(err));
+            return true; // block robot from booting as normal
+        }
+
+        // Initialize Settings system
+        if (Status err = Settings::Init(); err != Status::Ok)
+        {
+            LOG_ERROR(TAG, "Failed to initialize Settings module : %s", StatusToString(err));
             return true; // block robot from booting as normal
         }
 

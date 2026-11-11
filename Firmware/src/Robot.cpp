@@ -2,6 +2,10 @@
 #include "common/Log.hpp"
 #include "common/LED.hpp"
 #include "settings/Settings.hpp"
+#include "audio/SynthProvider.hpp"
+
+#include "locomotion/providers/MPDeterministic.hpp"
+#include "locomotion/providers/MPAnimation.hpp"
 
 Robot* Robot::instance = nullptr;
 
@@ -28,8 +32,8 @@ Status Robot::init()
         return err;
     }
 
-    // Set yellow color (init color)
-    LED::SetColor(0, LED::Color(16, 16, 0), 0.1f);
+    // Set purple color (init color)
+    LED::SetColor(0, LED::Color(1, 0, 2), 0.1f);
 
     if (Status err = network_manager.init(); err != Status::Ok)
     {
@@ -73,7 +77,7 @@ Status Robot::init()
     }
 
     // all good, turn orange for startup
-    LED::SetColor(0, LED::Color(16, 8, 0), 0.1f);
+    LED::SetColor(0, LED::Color(2, 1, 0), 0.1f);
 
     return Status::Ok;
 }
@@ -104,9 +108,101 @@ Status Robot::start()
 
     // robot is ready ! Turn green (low intensity to avoid using power for nothing)
     LED::SetColor(0, LED::Color(0, 1, 0), 0.1f);
-
     // Set the menu to face (face only displays when everything is working)
     Menus::SetCurrentMenu(Menus::GetMenuFace());
+    // Play the success jingle :)
+    audio_manager.getMixer().addSoundProvider(new SynthProvider(Jingle::Success));
+
+    // TODO : This should probably be somewhere else
+    control_loop.setMotionProvider(new MPDeterministic());
+    // control_loop.setMotionProvider(new MPAnimation(AnimationSequence{
+    //     .frames = {
+    //         { 5.0f, BodyJointState{ .leg_joints = {
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(- 44), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //         }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+    //         { 2.0f, BodyJointState{ .leg_joints = {
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //         }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+    //         { 2.0f, BodyJointState{ .leg_joints = {
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD(   0) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //         }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+    //         { 2.0f, BodyJointState{ .leg_joints = {
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD(   0) },
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //         }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+    //         { 2.0f, BodyJointState{ .leg_joints = {
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD(   0) },
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //         }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+    //         { 2.0f, BodyJointState{ .leg_joints = {
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD(   0) },
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD(   0) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //         }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+    //         { 4.0f, BodyJointState{ .leg_joints = {
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD(   0) },
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD(   0) },
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(- 89), DEG_TO_RAD( 149) },
+    //         }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+    //         { 2.0f, BodyJointState{ .leg_joints = {
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD(   0) },
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD(   0) },
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD( 149) },
+    //         }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+    //         { 2.0f, BodyJointState{ .leg_joints = {
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD(   0) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(   0), DEG_TO_RAD(   0) },
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD( 149) },
+    //         }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+    //         { 2.0f, BodyJointState{ .leg_joints = {
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(   0), DEG_TO_RAD(   0) },
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD( 149) },
+    //         }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+    //         { 2.0f, BodyJointState{ .leg_joints = {
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(   0), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(   0), DEG_TO_RAD(   0) },
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD( 149) },
+    //         }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+    //         { 2.0f, BodyJointState{ .leg_joints = {
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(   0), DEG_TO_RAD(   0) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(   0), DEG_TO_RAD(   0) },
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(  44), DEG_TO_RAD(-134), DEG_TO_RAD( 149) },
+    //         }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+    //         { 4.0f, BodyJointState{ .leg_joints = {
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(   0), DEG_TO_RAD(   0) },
+    //             { DEG_TO_RAD(- 44), DEG_TO_RAD(   0), DEG_TO_RAD(   0) },
+    //             { DEG_TO_RAD(   0), DEG_TO_RAD(-134), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(   0), DEG_TO_RAD(-134), DEG_TO_RAD( 149) },
+    //         }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+    //         { 4.0f, BodyJointState{ .leg_joints = {
+    //             { DEG_TO_RAD(   15), DEG_TO_RAD(- 60), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(   15), DEG_TO_RAD(- 60), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(   15), DEG_TO_RAD(- 60), DEG_TO_RAD( 149) },
+    //             { DEG_TO_RAD(   15), DEG_TO_RAD(- 60), DEG_TO_RAD( 149) },
+    //         }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+    //     }
+    // }));
 
     return Status::Ok;
 }

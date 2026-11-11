@@ -1,4 +1,4 @@
-#include "locomotion/LegKinematics.hpp"
+#include "locomotion/providers/MPDeterministic/LegKinematics.hpp"
 #include "common/Log.hpp"
 
 constexpr const char* TAG = "IK";

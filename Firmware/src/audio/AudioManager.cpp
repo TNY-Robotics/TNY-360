@@ -1,6 +1,7 @@
 #include "audio/AudioManager.hpp"
 #include "settings/Settings.hpp"
 #include "audio/Speaker.hpp"
+#include "audio/SynthProvider.hpp"
 #include "common/Log.hpp"
 
 AudioManager::AudioManager()
@@ -28,6 +29,9 @@ Status AudioManager::init()
     {
         return err;
     }
+
+    // Speaker stack enabled, play a little boot sound
+    mixer.addSoundProvider(new SynthProvider(Jingle::Boot));
 
     microphone = Microphone::Create();
     if (microphone)

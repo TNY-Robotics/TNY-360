@@ -1,8 +1,7 @@
 #pragma once
 #include "common/utils.hpp"
 #include "driver/gptimer.h"
-#include "locomotion/GaitPlanner.hpp"
-#include "locomotion/KinematicsEngine.hpp"
+#include "locomotion/providers/MotionProvider.hpp"
 
 class ControlLoop
 {
@@ -40,14 +39,18 @@ public:
     bool isRunning() const;
 
     /**
-     * @brief Get the control loop's GaitPlanner object.
+     * @brief Sets the current motion provider to be used by the control loop.
+     * @param provider Pointer to the motion provider to set.
+     * @return Error code indicating success or failure.
+     * @note The Control Loop takes ownership of the motion provider and will manage its lifecycle. Do not delete the motion provider after passing it to this function.
      */
-    inline GaitPlanner& getGaitPlanner() { return gait_planner; }
+    Status setMotionProvider(MotionProvider* provider);
 
     /**
-     * @brief Get the control loop's KinematicsEngine object.
+     * @brief Gets the current motion provider used by the control loop.
+     * @return Pointer to the current motion provider, nullptr if none is set.
      */
-    inline KinematicsEngine& getKinematicsEngine() { return kinematics_engine; }
+    MotionProvider* getMotionProvider() const { return motion_provider; }
 
     /**
      * @brief Internal Task for Control loop at 50 Hz.
@@ -56,11 +59,18 @@ public:
     Status control_task();
     
 private:
+    /// @brief Creates the internal task for the control loop.
+    /// @return Error code indicating success or failure.
     Status create_internal_task();
 
+    /// @brief Flag indicating if the control loop is initialized.
     bool initialized;
+    /// @brief Control loop timer handle.
     gptimer_handle_t timer = NULL;
 
-    GaitPlanner gait_planner;
-    KinematicsEngine kinematics_engine;
+    /// @brief Flag indicating if the robot has fallen (and is in recovery mode).
+    bool fallen = false;
+
+    /// @brief Current motion provider in use by the control loop.
+    MotionProvider* motion_provider = nullptr;
 };

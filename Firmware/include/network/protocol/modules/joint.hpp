@@ -117,7 +117,7 @@ namespace Joint
             return;
         }
 
-        Robot::GetInstance().getDecisionLoop().askJointAngle((::Joint::Id) jointId, angle);
+        // Robot::GetInstance().getDecisionLoop().askJointAngle((::Joint::Id) jointId, angle);
         ctx.respond(ResponseStatus::Ok);
     }
 
@@ -255,14 +255,14 @@ namespace Joint
             }
         }
 
-        for (int i = 0; i < 14; i++)
-        {
-            if (Robot::GetInstance().getDecisionLoop().askJointAngle((::Joint::Id) i, angles[i]) != Status::Ok)
-            {
-                ctx.respond(ResponseStatus::InvalidParameters);
-                return;
-            }
-        }
+        // for (int i = 0; i < 14; i++)
+        // {
+        //     if (Robot::GetInstance().getDecisionLoop().askJointAngle((::Joint::Id) i, angles[i]) != Status::Ok)
+        //     {
+        //         ctx.respond(ResponseStatus::InvalidParameters);
+        //         return;
+        //     }
+        // }
         ctx.respond(ResponseStatus::Ok);
     }
 

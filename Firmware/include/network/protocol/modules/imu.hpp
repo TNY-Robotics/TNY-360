@@ -57,7 +57,7 @@ namespace IMU
      */
     static void GetOrientation(const RequestContext& ctx, const uint8_t* payload)
     {
-        const Quatf& orient = Robot::GetInstance().getDecisionLoop().getRobotState().body_orientation;
+        const Quatf& orient = Robot::GetInstance().getDecisionLoop().getRobotState().orientation;
         ctx.respond(ResponseStatus::Ok, (uint8_t*) &orient, sizeof(orient));
     }
 

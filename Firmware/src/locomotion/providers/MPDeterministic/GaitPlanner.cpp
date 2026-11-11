@@ -1,4 +1,4 @@
-#include "locomotion/GaitPlanner.hpp"
+#include "locomotion/providers/MPDeterministic/GaitPlanner.hpp"
 #include "common/Log.hpp"
 #include "Robot.hpp"
 #include <cmath>

@@ -1,7 +1,5 @@
 #pragma once
 #include "ui/Menus.hpp"
-#include "audio/SineProvider.hpp"
-#include "audio/MusicProvider.hpp"
 
 class MenuSpeaker : public Menus::Menu
 {
@@ -22,17 +20,4 @@ protected:
     virtual void onUpdate() override;
 
 private:
-    float frequency = 440.0f; // A4 note
-    float volume = 0.1f; // 10% volume
-    bool enabled = false;
-    bool sound = false;
-
-    int optIndex = 0; // 0: frequency, 1: volume, 2: enabled, 3: sound
-    bool editing = false;
-
-    void applySoundSettings();
-
-    MusicProvider* musicProvider = nullptr;
-    SineProvider sineProvider;
-    bool isProviderAdded = false;
 };

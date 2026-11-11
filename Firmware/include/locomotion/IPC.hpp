@@ -1,7 +1,6 @@
 #pragma once
 #include "common/utils.hpp"
 #include "common/geometry.hpp"
-#include "locomotion/GaitPlanner.hpp"
 #include "locomotion/Leg.hpp"
 #include "locomotion/Joint.hpp"
 
@@ -11,59 +10,46 @@ namespace IPC
     constexpr int NB_LEGS = (int) Leg::Id::Count;
     constexpr int NB_JOINTS = (int) Joint::Id::Count;
     
-    enum class OverrideMode {
-        None,      // No override
-        Absolute,  // Replace the IK result with the given angle
-        Relative,  // Add the given angle to the IK result
-    };
-    
-    struct JointOverride {
-        OverrideMode mode = OverrideMode::None;
-        float value_rad = 0.0f;
-    };
-
-    struct LegOverride {
-        OverrideMode mode = OverrideMode::None;
-        Vec3f value_pos = Vec3f::Zero();
-    };
-
-    struct BodyOverride {
-        OverrideMode mode = OverrideMode::None;
-        Vec3f value_pos = Vec3f::Zero();
-        Vec3f value_rot = Vec3f::Zero();
-    };
-    
     struct ControlIntent {
-        uint32_t timestamp_ms = 0; // timestamp for safeguard watchdog
+        /// @brief Timestamp of the intent command
+        uint32_t timestamp_ms = 0;
 
-        // movement planning infos
+        /// @brief Desired body velocity in the robot's local frame (vx [m/s], vy [m/s], vz [rad/s])
         Vec3f body_vel = Vec3f::Zero();
+        /// @brief Desired body orientation in the robot's local frame (roll [rad], pitch [rad], yaw [rad])
         Vec3f body_rot = Vec3f::Zero();
+        /// @brief Desired body position in the ground's frame (x [m], y [m], z [m])
         Vec3f body_pos = Vec3f::Zero();
-
-        // cartesian override for animation
-        LegOverride leg_overrides[NB_LEGS];
-        BodyOverride body_override;
-    
-        // joint control override
-        JointOverride joint_overrides[NB_JOINTS];
     };
 
     struct RobotState {
+        /// @brief Timestamp of the state measurements
         uint32_t timestamp_ms = 0;
 
+        /// @brief State of each joint in the robot, ordered by Joint::Id
         struct JointState {
+            /// @brief Target angle for the joint [rad]
             float target_angle_rad = 0.0f;
+            /// @brief Feedback angle from the joint [rad]
             float feedback_angle_rad = 0.0f;
+            /// @brief Model angle for the joint [rad]
             float model_angle_rad = 0.0f;
+            /// @brief Estimated angle for the joint [rad]
             float estimated_angle_rad = 0.0f;
         } joints[NB_JOINTS];
 
-        Quatf body_orientation = Quatf::Identity();
+        /// @brief Orientation of the robot in world frame
+        Quatf orientation = Quatf::Identity();
+        /// @brief Which legs are currently grounded, ordered by Leg::Id
+        bool grounded[NB_LEGS] = {true, true, true, true};
     };
 
+    /// @brief Initialize the IPC system.
+    /// @return Error code indicating success or failure of the operation.
     Status Init();
 
+    /// @brief Deinitialize the IPC system.
+    /// @return Error code indicating success or failure of the operation.
     Status Deinit();
 
     /// @brief [Brain Core] Set the control intent to be read by the Reflex core.

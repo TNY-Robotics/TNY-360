@@ -99,13 +99,6 @@ namespace Body
             clearOverrides = true; // clear overrides by default
         }
 
-        if (clearOverrides)
-        {
-            for (int i = 0; i < (int) ::Joint::Id::Count; i++)
-            {
-                Robot::GetInstance().getDecisionLoop().askJointAngle((::Joint::Id) i, 0, IPC::OverrideMode::None);
-            }
-        }
         Robot::GetInstance().getDecisionLoop().askBodyVelocity(x_ms, y_ms, z_rads);
         ctx.respond(ResponseStatus::Ok);
     }
@@ -144,19 +137,7 @@ namespace Body
             ctx.respond(ResponseStatus::InvalidParameters);
             return;
         }
-        bool clearOverrides;
-        if (reader.read(clearOverrides) != Status::Ok)
-        {
-            clearOverrides = true; // clear overrides by default
-        }
 
-        if (clearOverrides)
-        {
-            for (int i = 0; i < (int) ::Joint::Id::Count; i++)
-            {
-                Robot::GetInstance().getDecisionLoop().askJointAngle((::Joint::Id) i, 0, IPC::OverrideMode::None);
-            }
-        }
         Robot::GetInstance().getDecisionLoop().askBodyPosition(pos.x, pos.y, pos.z);
         Robot::GetInstance().getDecisionLoop().askBodyRotation(rot.x, rot.y, rot.z);
         ctx.respond(ResponseStatus::Ok);

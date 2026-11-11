@@ -11,6 +11,12 @@ public:
     static constexpr const char* TAG = "Screen";
 
     /**
+     * @brief Factory method to create a Screen instance based on the settings.
+     * @return Pointer to the created Screen instance, or nullptr if disabled or creation failed.
+     */
+    static Screen* Create();
+
+    /**
      * Color type
      * - `COLOR_BLACK`: black color
      * - `COLOR_WHITE`: white color

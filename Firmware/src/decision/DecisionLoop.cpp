@@ -87,26 +87,6 @@ Status DecisionLoop::askBodyPosition(float x_m, float y_m, float z_m)
     return Status::Ok;
 }
 
-Status DecisionLoop::askLegPosition(Leg::Id leg_id, float x_m, float y_m, float z_m, IPC::OverrideMode mode)
-{
-    last_ask_timestamp_ms = esp_log_timestamp();
-    askedLegOverrides[(int) leg_id].mode = mode;
-    askedLegOverrides[(int) leg_id].value_pos = {x_m, y_m, z_m};
-    return Status::Ok;
-}
-
-Status DecisionLoop::askJointAngle(Joint::Id joint_id, float angle_rad, IPC::OverrideMode mode)
-{
-    last_ask_timestamp_ms = esp_log_timestamp();
-    if (joint_id >= Joint::Id::Count)
-    {
-        return Status::InvalidParameters;
-    }
-    askedJointAngles[(int) joint_id].mode = mode;
-    askedJointAngles[(int) joint_id].value_rad = angle_rad;
-    return Status::Ok;
-}
-
 void DecisionLoop::decision_loop()
 {
     TickType_t xLastWakeTime = xTaskGetTickCount();
@@ -129,14 +109,6 @@ void DecisionLoop::decision_loop()
         final_intent.body_vel = askedBodyVel;
         final_intent.body_rot = askedBodyRot;
         final_intent.body_pos = askedBodyPos;
-        for (int i = 0; i < (int) Joint::Id::Count; i++)
-        {
-            final_intent.joint_overrides[i] = askedJointAngles[i];
-        }
-        for (int i = 0; i < (int) Leg::Id::Count; i++)
-        {
-            final_intent.leg_overrides[i] = askedLegOverrides[i];
-        }
         // Then override with auto life features
         fillIntent(final_intent, state);
 

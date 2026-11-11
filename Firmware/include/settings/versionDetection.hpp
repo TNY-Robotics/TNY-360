@@ -67,8 +67,6 @@ namespace Settings
         // - If it works, it's V1, if not, try V2 config.
         // - If it works, it's V2, if not, it's unknown.
 
-        constexpr uint8_t SCREEN_I2C_ADDRESS = 0x3C;
-
         LOG_SCOPE(TAG, "Detecting robot version...");
 
         // First, try V1
@@ -83,7 +81,7 @@ namespace Settings
                 return Status::Failure;
             }
 
-            if (pingI2CDevice(v1Handle, SCREEN_I2C_ADDRESS))
+            if (pingI2CDevice(v1Handle, 0x3C))
             {
                 LOG_DEBUG(TAG, "Detected robot version: V1");
                 deleteI2CDevice(v1Handle);
@@ -105,7 +103,7 @@ namespace Settings
                 LOG_ERROR(TAG, "Failed to initialize V2 I2C bus");
                 return Status::Failure;
             }
-            if (pingI2CDevice(v2Handle, SCREEN_I2C_ADDRESS))
+            if (pingI2CDevice(v2Handle, 0x3D))
             {
                 LOG_DEBUG(TAG, "Detected robot version: V2");
                 deleteI2CDevice(v2Handle);

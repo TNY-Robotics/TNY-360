@@ -20,7 +20,7 @@ constexpr RobotConfig CONFIG_V2 = {
                 .gpio_ws = 1,
                 .gpio_data = 42,
             },
-            .volume = 0.5f,
+            .volume = 0.1f,
             .sampleRate = 22050,
             .nb_providers = 4,
         },
@@ -53,7 +53,7 @@ constexpr RobotConfig CONFIG_V2 = {
             .pin_href = 47,
             .pin_pclk = 11,
         },
-        .xclk_freq_hz = 20000000,
+        .xclk_freq_hz = 27000000,
     },
     .screen = {
         .type = ScreenType::SCREEN_SSD1309,
