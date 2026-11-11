@@ -57,6 +57,7 @@ constexpr RobotConfig CONFIG_V2 = {
     },
     .screen = {
         .type = ScreenType::SCREEN_SSD1309,
+        .refresh_rate = 30.0f,
     },
     .buttons = {
         .gpio_left = 41,
@@ -70,8 +71,23 @@ constexpr RobotConfig CONFIG_V2 = {
         .gpio_select_3 = 17,
         .gpio_select_4 = 18,
         .channel = 7,
+        .ema_alpha = 0.5f
     },
     .imu = {
         .type = IMUType::IMU_LSM6DS3,
+        .i2c_address = 0x6A,
+        .i2c_clock_speed = 400000,
+    },
+    .kinematics = {
+        .leg_thigh_length = 0.1f,
+        .leg_calf_length = 0.1f,
+        .hip_offset = 0.034f,
+        .hip_pos_x = 0.086f,
+        .hip_pos_y = 0.052f,
+    },
+    .wifi = {
+        .max_retries = 5,
+        .ap_ssid = "TNY-360",
+        .ap_password = "",
     },
 };

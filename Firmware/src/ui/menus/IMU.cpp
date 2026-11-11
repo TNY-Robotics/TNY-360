@@ -3,6 +3,7 @@
 #include "ui/Draw.hpp"
 #include "ui/Screen.hpp"
 #include "common/config.hpp"
+#include "settings/Settings.hpp"
 #include "Robot.hpp"
 
 MenuIMU::MenuIMU(Menu* parent)
@@ -115,7 +116,7 @@ void MenuIMU::onRender()
 
 void MenuIMU::onUpdate()
 {
-    if (updateCounter++ >= SCREEN_REFRESH_RATE / updateFreq)
+    if (updateCounter++ >= Settings::GetConfig().screen.refresh_rate / updateFreq)
     {
         updateCounter = 0;
         triggerRender();

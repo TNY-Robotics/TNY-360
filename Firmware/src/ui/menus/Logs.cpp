@@ -2,6 +2,7 @@
 #include "ui/Icons.hpp"
 #include "ui/Draw.hpp"
 #include "common/Log.hpp"
+#include "settings/Settings.hpp"
 
 MenuLogs::MenuLogs(Menu* parent)
     : Menu("Logs", parent, Icons::LogsMenu)
@@ -55,7 +56,7 @@ void MenuLogs::onRender()
 void MenuLogs::onUpdate()
 {
     // update every second to get new logs
-    if (updateCounter++ > SCREEN_REFRESH_RATE / updateFrequency)
+    if (updateCounter++ > Settings::GetConfig().screen.refresh_rate / updateFrequency)
     {
         updateCounter = 0;
         triggerRender();

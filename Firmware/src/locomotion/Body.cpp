@@ -4,6 +4,9 @@
 #include "drivers/PowerDriver.hpp"
 #include "common/RPC.hpp"
 #include "locomotion/IPC.hpp"
+#include "locomotion/providers/MPDeterministic.hpp"
+#include "locomotion/providers/MPAnimation.hpp"
+#include "locomotion/providers/MPAnimation/Animations.hpp"
 #include "common/RPC.hpp"
 #include "Robot.hpp"
 
@@ -266,10 +269,38 @@ Status Body::disable()
 
 float Body::enableSmooth()
 {
-    return -1; // TODO : Implement
+    // TODO : Check if already enabled
+
+    enable();
+    Robot::GetInstance().getControlLoop().setMotionProvider((new MPAnimation(Animations::StandUp))->onFinished([]() {
+        Robot::GetInstance().getControlLoop().setMotionProvider(new MPDeterministic());
+    }));
+
+    // Calculate animation time
+    float totalTime = 0.0f;
+    for (const auto& frame : Animations::StandUp.frames)
+    {
+        totalTime += frame.duration;
+    }
+
+    return totalTime + 0.5f; // Add a small buffer time
 }
 
 float Body::disableSmooth()
 {
-    return -1; // TODO : Implement
+    // TODO : Check if already disabled
+
+    Robot::GetInstance().getControlLoop().setMotionProvider((new MPAnimation(Animations::SitDown))->onFinished([]() {
+        Robot::GetInstance().getControlLoop().setMotionProvider(nullptr);
+        Robot::GetInstance().getBody().disable();
+    }));
+
+    // Calculate animation time
+    float totalTime = 0.0f;
+    for (const auto& frame : Animations::SitDown.frames)
+    {
+        totalTime += frame.duration;
+    }
+
+    return totalTime + 0.5f; // Add a small buffer time
 }

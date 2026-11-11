@@ -42,10 +42,5 @@ Status MotionProvider::tick(float dt, const MotionState& state, const MotionInte
 {
     if (!used) return Status::InvalidState; // not created yet
 
-    if (Status err = onTick(dt, state, input, command); err != Status::Ok)
-    {
-        return err;
-    }
-
-    return Status::Ok;
+    return onTick(dt, state, input, command);
 }

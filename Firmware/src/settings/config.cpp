@@ -220,6 +220,7 @@ inline void convertToJson(const ScreenConfig& src, JsonVariant& dst)
     if (src.type == ScreenType::SCREEN_SH1106) { dst["type"] = "SH1106"; }
     else if (src.type == ScreenType::SCREEN_SSD1309) { dst["type"] = "SSD1309"; }
     else { dst["type"] = "NONE"; }
+    dst["refresh_rate"] = src.refresh_rate;
 }
 inline void convertFromJson(JsonVariantConst src, ScreenConfig& dst)
 {
@@ -227,6 +228,7 @@ inline void convertFromJson(JsonVariantConst src, ScreenConfig& dst)
     if (screenTypeStr == "SH1106") { dst.type = ScreenType::SCREEN_SH1106; }
     else if (screenTypeStr == "SSD1309") { dst.type = ScreenType::SCREEN_SSD1309; }
     else { dst.type = ScreenType::SCREEN_NONE; }
+    dst.refresh_rate = src["refresh_rate"] | dst.refresh_rate;
 }
 inline bool canConvertFromJson(JsonVariantConst src, ScreenConfig& dst) { return src.is<JsonObject>(); }
 
@@ -254,6 +256,7 @@ inline void convertToJson(const AnalogConfig& src, JsonVariant& dst)
     dst["gpio_select_3"] = src.gpio_select_3;
     dst["gpio_select_4"] = src.gpio_select_4;
     dst["channel"] = src.channel;
+    dst["ema_alpha"] = src.ema_alpha;
 }
 inline void convertFromJson(JsonVariantConst src, AnalogConfig& dst) {
     dst.gpio_select_1 = src["gpio_select_1"] | dst.gpio_select_1;
@@ -261,6 +264,7 @@ inline void convertFromJson(JsonVariantConst src, AnalogConfig& dst) {
     dst.gpio_select_3 = src["gpio_select_3"] | dst.gpio_select_3;
     dst.gpio_select_4 = src["gpio_select_4"] | dst.gpio_select_4;
     dst.channel = src["channel"] | dst.channel;
+    dst.ema_alpha = src["ema_alpha"] | dst.ema_alpha;
 }
 inline bool canConvertFromJson(JsonVariantConst src, AnalogConfig& dst) { return src.is<JsonObject>(); }
 
@@ -270,6 +274,8 @@ inline void convertToJson(const IMUConfig& src, JsonVariant& dst)
     if (src.type == IMUType::IMU_MPU6050) { dst["type"] = "MPU6050"; }
     else if (src.type == IMUType::IMU_LSM6DS3) { dst["type"] = "LSM6DS3"; }
     else { dst["type"] = "NONE"; }
+    dst["i2c_address"] = src.i2c_address;
+    dst["i2c_clock_speed"] = src.i2c_clock_speed;
 }
 inline void convertFromJson(JsonVariantConst src, IMUConfig& dst)
 {
@@ -277,8 +283,42 @@ inline void convertFromJson(JsonVariantConst src, IMUConfig& dst)
     if (imuTypeStr == "MPU6050") { dst.type = IMUType::IMU_MPU6050; }
     else if (imuTypeStr == "LSM6DS3") { dst.type = IMUType::IMU_LSM6DS3; }
     else { dst.type = IMUType::IMU_NONE; }
+    dst.i2c_address = src["i2c_address"] | dst.i2c_address;
+    dst.i2c_clock_speed = src["i2c_clock_speed"] | dst.i2c_clock_speed;
 }
 inline bool canConvertFromJson(JsonVariantConst src, IMUConfig& dst) { return src.is<JsonObject>(); }
+
+/// KinematicsConfig
+inline void convertToJson(const KinematicsConfig& src, JsonVariant& dst)
+{
+    dst["leg_thigh_length"] = src.leg_thigh_length;
+    dst["leg_calf_length"] = src.leg_calf_length;
+    dst["hip_offset"] = src.hip_offset;
+    dst["hip_pos_x"] = src.hip_pos_x;
+    dst["hip_pos_y"] = src.hip_pos_y;
+}
+inline void convertFromJson(JsonVariantConst src, KinematicsConfig& dst) {
+    dst.leg_thigh_length = src["leg_thigh_length"] | dst.leg_thigh_length;
+    dst.leg_calf_length = src["leg_calf_length"] | dst.leg_calf_length;
+    dst.hip_offset = src["hip_offset"] | dst.hip_offset;
+    dst.hip_pos_x = src["hip_pos_x"] | dst.hip_pos_x;
+    dst.hip_pos_y = src["hip_pos_y"] | dst.hip_pos_y;
+}
+inline bool canConvertFromJson(JsonVariantConst src, KinematicsConfig& dst) { return src.is<JsonObject>(); }
+
+/// WiFiConfig
+inline void convertToJson(const WiFiConfig& src, JsonVariant& dst)
+{
+    dst["max_retries"] = src.max_retries;
+    dst["ap_ssid"] = src.ap_ssid;
+    dst["ap_password"] = src.ap_password;
+}
+inline void convertFromJson(JsonVariantConst src, WiFiConfig& dst) {
+    dst.max_retries = src["max_retries"] | dst.max_retries;
+    dst.ap_ssid = src["ap_ssid"] | dst.ap_ssid;
+    dst.ap_password = src["ap_password"] | dst.ap_password;
+}
+inline bool canConvertFromJson(JsonVariantConst src, WiFiConfig& dst) { return src.is<JsonObject>(); }
 
 /// RobotConfig
 inline void convertToJson(const RobotConfig& src, JsonVariant& dst)

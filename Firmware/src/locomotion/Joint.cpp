@@ -1,8 +1,9 @@
 #include "locomotion/Joint.hpp"
 #include "common/config.hpp"
 #include "common/Log.hpp"
+#include <algorithm> // For std::clamp
 
-Joint* Joint::joints[JOINT_COUNT] = { nullptr }; // Static array to hold Joint instances
+Joint* Joint::joints[static_cast<size_t>(Joint::Id::Count)] = { nullptr }; // Static array to hold Joint instances
 float Joint::joint_velocity_clamp_rad_s = Joint::MAX_VELOCITY_RAD_S; // Initialize static max velocity variable
 
 Joint* Joint::GetJoint(Joint::Id id)
@@ -18,8 +19,9 @@ Status Joint::ClampVelocity(float max_velocity_rad_s)
 {
     if (max_velocity_rad_s < 0.f || max_velocity_rad_s > MAX_VELOCITY_RAD_S)
     {
-        LOG_ERROR(TAG, "Requested max joint velocity %.2f rad/s is out of bounds (0 - %.2f rad/s)", max_velocity_rad_s, MAX_VELOCITY_RAD_S);
-        return Status::InvalidParameters;
+        // LOG_ERROR(TAG, "Requested max joint velocity %.2f rad/s is out of bounds (0 - %.2f rad/s)", max_velocity_rad_s, MAX_VELOCITY_RAD_S);
+        // return Status::InvalidParameters;
+        max_velocity_rad_s = std::clamp(max_velocity_rad_s, 0.f, MAX_VELOCITY_RAD_S);
     }
     if (max_velocity_rad_s == 0.f) // if zero, disable clamp
     {
@@ -120,10 +122,11 @@ Status Joint::estimateState(float dt)
 
 Status Joint::applyCommand(float joint_angle_rad, float dt)
 {
-    if (joint_angle_rad < min_angle_rad || joint_angle_rad > max_angle_rad)
+    if (joint_angle_rad < (min_angle_rad - 0.01f) || joint_angle_rad > (max_angle_rad + 0.01f)) // Allow a small tolerance for floating-point errors
     {
         // LOG_ERROR(TAG, "JOINT %d - Requested target angle %.2f rad is out of bounds (%.2f - %.2f rad)", id, joint_angle_rad, min_angle_rad, max_angle_rad);
-        return Status::InvalidParameters;
+        // return Status::InvalidParameters;
+        joint_angle_rad = std::clamp(joint_angle_rad, min_angle_rad, max_angle_rad);
     }
     target_angle_rad = joint_angle_rad;
 

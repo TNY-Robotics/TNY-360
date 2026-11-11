@@ -3,6 +3,7 @@
 #include "common/geometry.hpp"
 #include "locomotion/IMU.Error.hpp"
 #include "locomotion/IMUMPU.hpp"
+#include "settings/Settings.hpp"
 #include "mpu6050.h"
 
 static mpu6050_handle_t mpu_handle;
@@ -29,10 +30,11 @@ Status IMUMPU::init()
     }
 
     mpu6050_info_t mpu_info = {
-        .address = IMU_I2C_ADDR,
-        .clock_speed = IMU_I2C_CLOCK
+        .address = static_cast<uint16_t>(Settings::GetConfig().imu.i2c_address),
+        .clock_speed = static_cast<uint32_t>(Settings::GetConfig().imu.i2c_clock_speed),
     };
 
+    LOG_INFO(TAG, "Initializing MPU6050 with I2C address 0x%02X and clock speed %d Hz", mpu_info.address, mpu_info.clock_speed);
     if (esp_err_t err = mpu6050_create(I2C::handle_primary, mpu_info, &mpu_handle); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Failed to create MPU6050 handle with error: 0x%0x", err);

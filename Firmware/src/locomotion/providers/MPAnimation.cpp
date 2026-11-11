@@ -1,10 +1,17 @@
 #include "locomotion/providers/MPAnimation.hpp"
 #include "common/Lerp.hpp"
+#include "common/Log.hpp"
 #include "Robot.hpp"
 
 MPAnimation::MPAnimation(const AnimationSequence& animation)
     : currentAnimation(animation)
 {
+}
+
+MPAnimation* MPAnimation::onFinished(std::function<void()> callback)
+{
+    finishedCallback = callback;
+    return this;
 }
 
 Status MPAnimation::onCreate()
@@ -39,6 +46,7 @@ Status MPAnimation::onTick(float dt, const MotionState& state, const MotionInten
 {
     if (currentFrameIndex >= currentAnimation.frames.size())
     {
+        if (finishedCallback) finishedCallback();
         return Status::OutOfBounds; // No more frames to process
     }
 
@@ -47,13 +55,13 @@ Status MPAnimation::onTick(float dt, const MotionState& state, const MotionInten
 
     float blendFactor = (currentFrame.duration > 0.0f) ? (frameTimeElapsed / currentFrame.duration) : 1.0f;
 
-    // command.ear_r_rad = Lerp::Linear(previousFrame.jointState.ear_r_rad, currentFrame.jointState.ear_r_rad, blendFactor);
-    // command.ear_l_rad = Lerp::Linear(previousFrame.jointState.ear_l_rad, currentFrame.jointState.ear_l_rad, blendFactor);
+    command.ear_r_rad = Lerp::EaseInOut(previousFrame.jointState.ear_r_rad, currentFrame.jointState.ear_r_rad, blendFactor);
+    command.ear_l_rad = Lerp::EaseInOut(previousFrame.jointState.ear_l_rad, currentFrame.jointState.ear_l_rad, blendFactor);
     for (int i = 0; i < 4; ++i)
     {
         for (int j = 0; j < 3; ++j)
         {
-            command.leg_joints[i].joint_angles_rad[j] = Lerp::Linear(
+            command.leg_joints[i].joint_angles_rad[j] = Lerp::EaseInOut(
                 previousFrame.jointState.leg_joints[i].joint_angles_rad[j],
                 currentFrame.jointState.leg_joints[i].joint_angles_rad[j],
                 blendFactor

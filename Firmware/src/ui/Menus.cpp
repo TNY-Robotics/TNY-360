@@ -6,6 +6,7 @@
 #include "ui/menus/Error.hpp"
 #include "common/config.hpp"
 #include "common/Log.hpp"
+#include "settings/Settings.hpp"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <cmath>
@@ -139,7 +140,7 @@ namespace Menus
     void update_task(void* pvParams)
     {
         TickType_t xLastWakeTime = xTaskGetTickCount();
-        const TickType_t xFrequency = pdMS_TO_TICKS(SCREEN_REFRESH_RATE);
+        const TickType_t xFrequency = pdMS_TO_TICKS(Settings::GetConfig().screen.refresh_rate);
 
         while (true)
         {

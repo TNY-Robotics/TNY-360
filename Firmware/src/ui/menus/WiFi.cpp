@@ -1,5 +1,6 @@
 #include "ui/menus/WiFi.hpp"
 #include "common/Log.hpp"
+#include "settings/Settings.hpp"
 #include "ui/Icons.hpp"
 #include "ui/Draw.hpp"
 #include "Robot.hpp"
@@ -70,7 +71,7 @@ void MenuWiFi::onRender()
 
 void MenuWiFi::onUpdate()
 {
-    if (counter++ > SCREEN_REFRESH_RATE)
+    if (counter++ > Settings::GetConfig().screen.refresh_rate) // Update every second
     {
         counter = 0;
         triggerRender();

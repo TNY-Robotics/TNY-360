@@ -24,6 +24,6 @@ private:
     int jointId;
     bool calibrating = false;
 
-    int updateFreq = SCREEN_REFRESH_RATE / 5; // Update every 200ms
+    int updateFreq = 10;
     int updateCounter = 0;
 };

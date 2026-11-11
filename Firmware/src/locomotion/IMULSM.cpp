@@ -1,6 +1,7 @@
 #include "common/I2C.hpp"
 #include "common/Log.hpp"
 #include "common/geometry.hpp"
+#include "settings/Settings.hpp"
 #include "locomotion/IMU.Error.hpp"
 #include "locomotion/IMULSM.hpp"
 #include "lsm6ds3.h"
@@ -28,7 +29,10 @@ Status IMULSM::init()
         LOG_WARNING(TAG, "Failed to load calibration data from NVS, using default calibration");
     }
 
-    lsm6ds3_info_t lsm_info = LSM6DS3_DEFAULT_INFO();
+    lsm6ds3_info_t lsm_info = {
+        .address = static_cast<uint16_t>(Settings::GetConfig().imu.i2c_address),
+        .clock_speed = static_cast<uint32_t>(Settings::GetConfig().imu.i2c_clock_speed),
+    };
     if (esp_err_t err = lsm6ds3_create(I2C::handle_primary, lsm_info, &lsm_handle); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Failed to create LSM6DS3 handle with error: 0x%0x", err);

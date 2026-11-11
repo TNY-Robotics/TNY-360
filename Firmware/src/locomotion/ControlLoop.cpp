@@ -3,10 +3,10 @@
 #include <freertos/task.h>
 #include "Robot.hpp"
 #include "common/Log.hpp"
+#include "common/RPC.hpp"
 #include "common/config.hpp"
 #include "drivers/AnalogDriver.hpp"
 #include "drivers/MotorDriver.hpp"
-
 
 TaskHandle_t timer_task_handle;
 bool running = false;
@@ -29,12 +29,6 @@ Status ControlLoop::init()
     //         to avoid cache issues and delays in the control loop when brain core is doing heavy operations
 
     if (initialized) return Status::Ok;
-
-    if (Status err = create_internal_task(); err != Status::Ok)
-    {
-        return err;
-    }
-    running = true; // allow the control loop task to run
 
     // Configure the timer
     gptimer_config_t timer_config = {
@@ -82,6 +76,7 @@ Status ControlLoop::init()
         return Status::Failure;
     }
 
+    running = false;
     initialized = true;
     return Status::Ok;
 }
@@ -113,11 +108,13 @@ Status ControlLoop::deinit()
 
 Status ControlLoop::start()
 {
+    if (running) return Status::Ok;
+    running = true; // allow the control loop task to run
+
     if (Status err = create_internal_task(); err != Status::Ok)
     {
         return err;
     }
-    running = true; // allow the control loop task to run
 
     if (esp_err_t err = gptimer_start(timer); err != ESP_OK)
     {
@@ -131,7 +128,9 @@ Status ControlLoop::start()
 
 Status ControlLoop::stop()
 {
+    if (!running) return Status::Ok;
     running = false; // ask the control loop to end
+
     if (esp_err_t err = gptimer_stop(timer); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Error stopping Control Loop timer : 0x%0X", err);
@@ -147,6 +146,19 @@ bool ControlLoop::isRunning() const
 }
 
 Status ControlLoop::setMotionProvider(MotionProvider* provider)
+{
+    if (!initialized) return Status::InvalidState;
+    
+    // Either we are on the REFLEX core, or we are on the BRAIN core
+    // We want to set the new motion provider at the end of the current control loop tick
+    // (and the RPC calls are executed at the end of the control loop tick)
+    RPC::ExecuteThreadSafe<Status>([this, provider]() {
+        return set_motion_provider(provider);
+    }, [](Status s) {});
+    return Status::Ok;
+}
+
+Status ControlLoop::set_motion_provider(MotionProvider* provider)
 {
     if (!initialized) return Status::InvalidState;
 
@@ -168,6 +180,7 @@ Status ControlLoop::setMotionProvider(MotionProvider* provider)
             return err;
         }
     }
+
 
     return Status::Ok;
 }

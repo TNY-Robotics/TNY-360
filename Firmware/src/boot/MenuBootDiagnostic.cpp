@@ -4,6 +4,7 @@
 #include "common/config.hpp"
 #include "common/NVS.hpp"
 #include "common/Log.hpp"
+#include "settings/Settings.hpp"
 #include "drivers/MotorDriver.hpp"
 #include "ui/Animations.hpp"
 
@@ -15,14 +16,16 @@ MenuBootDiagnostic::MenuBootDiagnostic(NetworkManager* networkManager)
     qr_code(nullptr, 64, 0, 64, 64),
     networkManager(networkManager)
     {
+        refresh_rate = Settings::GetConfig().screen.refresh_rate;
+
         char wifi_str[128];
-        if (strlen(WIFI_AP_PASSWORD) > 0)
+        if (strlen(Settings::GetConfig().wifi.ap_ssid) > 0)
         {
-            snprintf(wifi_str, sizeof(wifi_str), "WIFI:S:%s;T:WPA;P:%s;;", WIFI_AP_SSID, WIFI_AP_PASSWORD);
+            snprintf(wifi_str, sizeof(wifi_str), "WIFI:S:%s;T:WPA;P:%s;;", Settings::GetConfig().wifi.ap_ssid, Settings::GetConfig().wifi.ap_password);
         }
         else
         {
-            snprintf(wifi_str, sizeof(wifi_str), "WIFI:S:%s;T:nopass;;", WIFI_AP_SSID);
+            snprintf(wifi_str, sizeof(wifi_str), "WIFI:S:%s;T:nopass;;", Settings::GetConfig().wifi.ap_ssid);
         }
         qr_code.setData(wifi_str);
     }
@@ -86,7 +89,7 @@ void MenuBootDiagnostic::onUpdate()
         if (phone_spawn.isFinished())
         {
             spawning = false;
-            scan_delay = 1 * SCREEN_REFRESH_RATE; // 1s
+            scan_delay = 1 * refresh_rate; // 1s
         }
     }
     else
@@ -112,7 +115,7 @@ void MenuBootDiagnostic::onUpdate()
                 triggerRender();
                 if (phone_scan.isFinished())
                 {
-                    scan_delay = 3 * SCREEN_REFRESH_RATE; // 3s
+                    scan_delay = 2 * refresh_rate; // 2s
                 }
             }
         }

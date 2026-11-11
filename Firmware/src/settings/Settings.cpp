@@ -44,8 +44,7 @@ namespace Settings
         else
         {
             LOG_ERROR(TAG, "Failed to detect robot version, unknown version");
-            // return Status::NotFound;
-            config = CONFIG_V2;
+            return Status::NotFound;
         }
 
         if (Status err = LittleFS::Init(); err != Status::Ok)

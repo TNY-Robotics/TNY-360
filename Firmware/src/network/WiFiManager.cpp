@@ -1,6 +1,7 @@
 #include "network/WiFiManager.hpp"
 #include "common/Log.hpp"
 #include "common/NVS.hpp"
+#include "settings/Settings.hpp"
 #include "Robot.hpp"
 
 static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
@@ -281,6 +282,16 @@ Status WiFiManager::startAP(const char* _ssid, const char* _password)
         return Status::InvalidState;
     }
 
+    if (!_ssid || strlen(_ssid) == 0)
+    {
+        _ssid = Settings::GetConfig().wifi.ap_ssid;
+    }
+
+    if (!_password)
+    {
+        _password = Settings::GetConfig().wifi.ap_password;
+    }
+
     if (state == Connected)
     {
         // If already connected, disconnect first
@@ -413,7 +424,7 @@ Status WiFiManager::__connect_to_ap(const char* _ssid, const char* _password, bo
     {
         strncpy((char*)wifi_config.sta.password, _password, sizeof(wifi_config.sta.password) - 1);
     }
-    wifi_config.sta.failure_retry_cnt = WIFI_MAX_RETRIES;
+    wifi_config.sta.failure_retry_cnt = Settings::GetConfig().wifi.max_retries;
 
     // Set WiFi mode to Station
     if (esp_err_t err = esp_wifi_set_mode(WIFI_MODE_STA); err != ESP_OK)
@@ -685,7 +696,7 @@ void WiFiManager::on_ap_failed_connect()
     if (should_fallback_to_ap)
     {
         LOG_DEBUG(TAG, "Falling back to AP mode");
-        if (Status err = __start_ap(WIFI_AP_SSID, WIFI_AP_PASSWORD); err != Status::Ok)
+        if (Status err = __start_ap(Settings::GetConfig().wifi.ap_ssid, Settings::GetConfig().wifi.ap_password); err != Status::Ok)
         {
             LOG_ERROR(TAG, "Failed to start AP after failed connection: %d", static_cast<int>(err));
         }

@@ -2,6 +2,7 @@
 #include "ui/Icons.hpp"
 #include "ui/Draw.hpp"
 #include "common/config.hpp"
+#include "settings/Settings.hpp"
 #include "drivers/PowerDriver.hpp"
 
 MenuPower::MenuPower(Menu* parent)
@@ -64,7 +65,7 @@ void MenuPower::onRender()
 
 void MenuPower::onUpdate()
 {
-    if (updateCounter++ >= SCREEN_REFRESH_RATE / updateFreq)
+    if (updateCounter++ >= Settings::GetConfig().screen.refresh_rate / updateFreq)
     {
         updateCounter = 0;
         triggerRender();

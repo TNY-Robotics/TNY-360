@@ -50,7 +50,6 @@ Status ControlLoop::control_task()
     }
 
     /*** STATE ESTIMATION - READ ALL SENSORS ***/
-
     // Read the ADC channels
     if (Status err = AnalogDriver::ReadAllChannels(); err != Status::Ok)
     {
@@ -85,7 +84,7 @@ Status ControlLoop::control_task()
     if (imu != nullptr) state.orientation = Quatf(imu->getOrientation());
     else state.orientation = Quatf::Identity(); // No IMU, default value
     IPC::setState(state);
-
+    
     /*** MOTION PROVIDER EXECUTION ***/
 
     MotionCommand command = COMMAND_DEFAULT;
@@ -94,11 +93,10 @@ Status ControlLoop::control_task()
         // Execute the motion provider to get the desired joint angles
         if (Status err = motion_provider->tick(CONTROL_LOOP_DT_S, state, intent, command); err != Status::Ok)
         {
-            LOG_ERROR(TAG, "Error executing motion provider, destroying it");
+            LOG_ERROR(TAG, "Error [%s] executing motion provider, destroying it", StatusToString(err));
             motion_provider->destroy();
             delete motion_provider;
             motion_provider = nullptr;
-            Robot::GetInstance().getBody().disable();
         }
     }
 
@@ -107,20 +105,20 @@ Status ControlLoop::control_task()
     // Update the body (this updates all joints in the body)
     if (Status err = Robot::GetInstance().getBody().applyCommand(command, CONTROL_LOOP_DT_S); err != Status::Ok)
     {
-        // LOG_ERROR(TAG, "Failed to apply command in control task with error: %s", ErrorToString(err));
+        LOG_ERROR(TAG, "Failed to apply command in control task with error: %s", StatusToString(err));
         return err;
     }
     
     // Send the new motor values
     if (Status err = MotorDriver::SendData(); err != Status::Ok)
     {
-        // LOG_ERROR(TAG, "Error sending MotorDriver data with error: %s", ErrorToString(err));
+        LOG_ERROR(TAG, "Error sending MotorDriver data with error: %s", StatusToString(err));
         Error::RegisterErrorEvent(System::ErrorEventStartFailed());
         return err;
     }
 
-    /*** OTHER CORE1 JOBS ***/
-
+    /*** OTHER TASKS ***/
+    
     // All done, we can execute pending jobs if there's any (Handle RPC Calls)
     RPC::Process_Core1();
 

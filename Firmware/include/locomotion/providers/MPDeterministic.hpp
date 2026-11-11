@@ -8,6 +8,8 @@
 class MPDeterministic : public MotionProvider
 {
 public:
+    constexpr static const char* TAG = "MPDeterministic";
+
     MPDeterministic() = default;
     virtual ~MPDeterministic() = default;
 

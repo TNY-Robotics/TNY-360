@@ -59,6 +59,11 @@ public:
     Status control_task();
     
 private:
+    /// @brief Sets the current motion provider to be used by the control loop.
+    /// @param provider Pointer to the motion provider to set.
+    /// @return Error code indicating success or failure.
+    Status set_motion_provider(MotionProvider* provider);
+
     /// @brief Creates the internal task for the control loop.
     /// @return Error code indicating success or failure.
     Status create_internal_task();

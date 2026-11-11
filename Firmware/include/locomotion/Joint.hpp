@@ -177,7 +177,7 @@ public:
     bool isInverted() const { return inverted; }
 
 private:
-    static Joint* joints[JOINT_COUNT]; // static array of all joints (index is motor channel)
+    static Joint* joints[static_cast<size_t>(Joint::Id::Count)]; // static array of all joints (index is motor channel)
     static float joint_velocity_clamp_rad_s; // static variable for global maximum joint velocity
 
     Joint::Id id;

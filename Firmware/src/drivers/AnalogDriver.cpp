@@ -28,6 +28,7 @@ namespace AnalogDriver
     adc_channel_t channel = ADC_CHANNEL_1; // Default channel, will be overridden by settings
 
     static Channel cur_channel = 0;
+    static float ema_alpha = 0.5f;
     
     namespace internal
     {
@@ -88,6 +89,7 @@ namespace AnalogDriver
         gpio_select_3 = static_cast<gpio_num_t>(Settings::GetConfig().analog.gpio_select_3);
         gpio_select_4 = static_cast<gpio_num_t>(Settings::GetConfig().analog.gpio_select_4);
         channel = static_cast<adc_channel_t>(Settings::GetConfig().analog.channel);
+        ema_alpha = Settings::GetConfig().analog.ema_alpha;
 
         // Setup select pins
         gpio_config_t io_conf;
@@ -224,7 +226,7 @@ namespace AnalogDriver
             RETURN_ON_ERROR(internal::select(i));
             esp_rom_delay_us(10); // Wait for signal to stabilize after switching
             RETURN_ON_ERROR(internal::read(val));
-            voltages_buffer[i] += ANALOG_EMA_ALPHA * (val - voltages_buffer[i]);
+            voltages_buffer[i] += ema_alpha * (val - voltages_buffer[i]);
         }
         return Status::Ok;
     }

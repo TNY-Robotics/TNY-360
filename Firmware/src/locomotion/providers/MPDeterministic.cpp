@@ -1,4 +1,6 @@
 #include "locomotion/providers/MPDeterministic.hpp"
+#include "settings/Settings.hpp"
+#include "common/Log.hpp"
 #include "Robot.hpp"
 
 Status MPDeterministic::onCreate()
@@ -9,11 +11,11 @@ Status MPDeterministic::onCreate()
 
     // Initialize kinematics engine with the right config
     kinematicsEngine = KinematicsEngine(KinematicsEngine::KinematicsConfig{
-        .hip_shift_x = HIP_POS_X_M,
-        .hip_shift_y = HIP_POS_Y_M,
-        .hip_offset = HIP_OFFSET_M,
-        .length_thigh = LEG_THIGH_LENGTH_M,
-        .length_calf = LEG_CALF_LENGTH_M,
+        .hip_shift_x = Settings::GetConfig().kinematics.hip_pos_x,
+        .hip_shift_y = Settings::GetConfig().kinematics.hip_pos_y,
+        .hip_offset = Settings::GetConfig().kinematics.hip_offset,
+        .length_thigh = Settings::GetConfig().kinematics.leg_thigh_length,
+        .length_calf = Settings::GetConfig().kinematics.leg_calf_length,
         .leg_inverted = {
             Robot::GetInstance().getBody().getLeg(Leg::Id::FrontLeft).isInverted(),
             Robot::GetInstance().getBody().getLeg(Leg::Id::BackLeft).isInverted(),
@@ -48,6 +50,7 @@ Status MPDeterministic::onTick(float dt, const MotionState& state, const MotionI
     BodyCartesianState body_state;
     if (Status err = gaitPlanner.update(dt, body_state); err != Status::Ok)
     {
+        LOG_ERROR(TAG, "Gait planner update failed with error: %s", StatusToString(err));
         return err;
     }
 
@@ -69,6 +72,7 @@ Status MPDeterministic::onTick(float dt, const MotionState& state, const MotionI
 
     if (Status err = kinematicsEngine.computeBodyIK(body_state, command); err != Status::Ok)
     {
+        LOG_ERROR(TAG, "Kinematics engine failed to compute IK with error: %s", StatusToString(err));
         return err;
     }
 

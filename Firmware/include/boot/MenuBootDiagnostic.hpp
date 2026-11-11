@@ -32,5 +32,6 @@ private:
     bool spawning = true;
     bool connected = false;
     int scan_delay = 0;
+    int refresh_rate = 30;
     NetworkManager* networkManager = nullptr;
 };

@@ -105,6 +105,7 @@ enum class ScreenType {
 
 struct ScreenConfig {
     ScreenType type;
+    float refresh_rate;
 };
 
 struct ButtonsConfig {
@@ -120,6 +121,7 @@ struct AnalogConfig {
     int gpio_select_3;
     int gpio_select_4;
     int channel;
+    float ema_alpha;
 };
 
 enum class IMUType {
@@ -130,6 +132,22 @@ enum class IMUType {
 
 struct IMUConfig {
     IMUType type;
+    int i2c_address;
+    int i2c_clock_speed;
+};
+
+struct KinematicsConfig {
+    float leg_thigh_length;
+    float leg_calf_length;
+    float hip_offset;
+    float hip_pos_x;
+    float hip_pos_y;
+};
+
+struct WiFiConfig {
+    uint8_t max_retries;
+    const char* ap_ssid;
+    const char* ap_password;
 };
 
 struct RobotConfig {
@@ -140,6 +158,8 @@ struct RobotConfig {
     ButtonsConfig buttons;
     AnalogConfig analog;
     IMUConfig imu;
+    KinematicsConfig kinematics;
+    WiFiConfig wifi;
 
     ////////////
     // Helper functions to load/save the config from/to JSON

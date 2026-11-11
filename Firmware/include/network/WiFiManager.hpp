@@ -200,7 +200,7 @@ public:
 
     /// AP MODE FUNCTIONS ///
 
-    Status startAP(const char* ssid = WIFI_AP_SSID, const char* password = WIFI_AP_PASSWORD);
+    Status startAP(const char* ssid = nullptr, const char* password = nullptr);
 
     Status stopAP();
 
