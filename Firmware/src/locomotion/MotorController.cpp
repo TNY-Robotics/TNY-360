@@ -115,7 +115,7 @@ Status MotorController::startCalibration()
                 LOG_DEBUG(TAG, "Disabling control loop");
                 if (Status err = ctrl.stop(); err != Status::Ok)
                 {
-                    // LOG_ERROR(TAG, "Failed to stop control loop for motor calibration. Error [%s]", ErrorToString(err));
+                    LOG_ERROR(TAG, "Failed to stop control loop for motor calibration. Error [%s]", StatusToString(err));
                     return;
                 }
             }
@@ -136,7 +136,7 @@ Status MotorController::startCalibration()
             // disable motor for safety
             if (Status err = controller->disable(); err != Status::Ok)
             {
-                // LOG_ERROR(TAG, "Failed to disable motor after calibration. Error [%s]", ErrorToString(err));
+                LOG_ERROR(TAG, "Failed to disable motor after calibration. Error [%s]", StatusToString(err));
             }
 
             // Restart the control loop (back to normal operation)
@@ -145,7 +145,7 @@ Status MotorController::startCalibration()
                 LOG_DEBUG(TAG, "Restarting control loop");
                 if (Status err = Robot::GetInstance().getControlLoop().start(); err != Status::Ok)
                 {
-                    // LOG_ERROR(TAG, "Failed to start control loop after motor calibration. Error [%s]", ErrorToString(err));
+                    LOG_ERROR(TAG, "Failed to start control loop after motor calibration. Error [%s]", StatusToString(err));
                     return;
                 }
             }

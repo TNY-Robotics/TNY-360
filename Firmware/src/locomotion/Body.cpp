@@ -10,22 +10,6 @@
 #include "common/RPC.hpp"
 #include "Robot.hpp"
 
-constexpr float JOINT_POSE_REST[12] = {
-    // HIP_ROLL     , HIP_PITCH         , KNEE_PITCH
-    DEG_TO_RAD(0.0f), DEG_TO_RAD(-60.0f), DEG_TO_RAD(150.0f),  // FRONT_LEFT
-    DEG_TO_RAD(0.0f), DEG_TO_RAD(-60.0f), DEG_TO_RAD(150.0f),  // BACK_LEFT
-    DEG_TO_RAD(0.0f), DEG_TO_RAD(-60.0f), DEG_TO_RAD(150.0f),  // BACK_RIGHT
-    DEG_TO_RAD(0.0f), DEG_TO_RAD(-60.0f), DEG_TO_RAD(150.0f)   // FRONT_RIGHT
-};
-
-constexpr float JOINT_POSE_STAND[12] = {
-    // HIP_ROLL     , HIP_PITCH         , KNEE_PITCH
-    DEG_TO_RAD(5.0f), DEG_TO_RAD(-50.0f), DEG_TO_RAD(100.0f),  // FRONT_LEFT
-    DEG_TO_RAD(5.0f), DEG_TO_RAD(-50.0f), DEG_TO_RAD(100.0f),  // BACK_LEFT
-    DEG_TO_RAD(5.0f), DEG_TO_RAD(-50.0f), DEG_TO_RAD(100.0f),  // BACK_RIGHT
-    DEG_TO_RAD(5.0f), DEG_TO_RAD(-50.0f), DEG_TO_RAD(100.0f)   // FRONT_RIGHT
-};
-
 Body::Body()
 {
     // Create the 4 legs

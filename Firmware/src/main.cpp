@@ -5,6 +5,8 @@
 
 static const char* TAG = "Main";
 
+#include "audio/SynthProvider.hpp"
+
 static Robot robot;
 
 #ifdef __cplusplus
@@ -46,8 +48,6 @@ void app_main()
     // Nothing to do here
 
     LOG_INFO(TAG, ">>> Robot is operational.");
-
-    robot.getBody().enableSmooth();
 }
 #ifdef __cplusplus
 }

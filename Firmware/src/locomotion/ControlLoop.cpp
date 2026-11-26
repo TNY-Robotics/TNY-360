@@ -83,23 +83,39 @@ Status ControlLoop::init()
 
 Status ControlLoop::deinit()
 {
-    if (!initialized) return Status::Ok;
+    if (!initialized) return Status::InvalidState;
 
-    running = false; // ask the control loop to end
-
-    // wait 2 control cycle to be sure the control loop is stopped
-    vTaskDelay(pdMS_TO_TICKS(CONTROL_LOOP_DT_MS*2));
-
-    if (timer_task_handle != nullptr)
+    // ask the control loop to stop (in case it was running)
+    if (running)
     {
-        vTaskDelete(timer_task_handle);
-        timer_task_handle = nullptr;
+        if (Status err = stop(); err != Status::Ok)
+        {
+            LOG_ERROR(TAG, "Failed to stop Control Loop");
+            return err;
+        }
     }
 
+    // disable the timer and free resources
     if (esp_err_t err = gptimer_disable(timer); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Error disabling Control Loop gptimer ; 0x%0X", err);
         return Status::Failure;
+    }
+    if (esp_err_t err = gptimer_del_timer(timer); err != ESP_OK)
+    {
+        LOG_ERROR(TAG, "Error deleting Control Loop gptimer ; 0x%0X", err);
+        return Status::Failure;
+    }
+
+    // if there's a motion provider, remove it
+    if (motion_provider != nullptr)
+    {
+        if (Status err = motion_provider->destroy(); err != Status::Ok)
+        {
+            return err;
+        }
+        delete motion_provider;
+        motion_provider = nullptr;
     }
 
     initialized = false;
@@ -108,7 +124,9 @@ Status ControlLoop::deinit()
 
 Status ControlLoop::start()
 {
+    if (!initialized) return Status::InvalidState;
     if (running) return Status::Ok;
+
     running = true; // allow the control loop task to run
 
     if (Status err = create_internal_task(); err != Status::Ok)
@@ -116,6 +134,7 @@ Status ControlLoop::start()
         return err;
     }
 
+    // STart the timer to trigger the control loop task
     if (esp_err_t err = gptimer_start(timer); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Error starting Control Loop timer : 0x%0X", err);
@@ -128,9 +147,16 @@ Status ControlLoop::start()
 
 Status ControlLoop::stop()
 {
+    if (!initialized) return Status::InvalidState;
     if (!running) return Status::Ok;
     running = false; // ask the control loop to end
 
+    // wait 2 control cycle to be sure the control loop is stopped
+    vTaskDelay(pdMS_TO_TICKS(CONTROL_LOOP_DT_MS*2));
+    
+    // No need to delete the task, it will delete itself
+
+    // stop the timer
     if (esp_err_t err = gptimer_stop(timer); err != ESP_OK)
     {
         LOG_ERROR(TAG, "Error stopping Control Loop timer : 0x%0X", err);
@@ -149,9 +175,10 @@ Status ControlLoop::setMotionProvider(MotionProvider* provider)
 {
     if (!initialized) return Status::InvalidState;
     
-    // Either we are on the REFLEX core, or we are on the BRAIN core
+    // Whether we are on the REFLEX core, or we are on the BRAIN core
     // We want to set the new motion provider at the end of the current control loop tick
     // (and the RPC calls are executed at the end of the control loop tick)
+    // NOTE : Yes, this is a "dirty" trick, but is it really worth it to do it in an other way ?
     RPC::ExecuteThreadSafe<Status>([this, provider]() {
         return set_motion_provider(provider);
     }, [](Status s) {});
@@ -162,6 +189,7 @@ Status ControlLoop::set_motion_provider(MotionProvider* provider)
 {
     if (!initialized) return Status::InvalidState;
 
+    // if there's a motion provider, remove it
     if (motion_provider != nullptr)
     {
         if (Status err = motion_provider->destroy(); err != Status::Ok)
@@ -172,6 +200,7 @@ Status ControlLoop::set_motion_provider(MotionProvider* provider)
         motion_provider = nullptr;
     }
 
+    // then, add the new motion provider
     motion_provider = provider;
     if (motion_provider != nullptr)
     {
@@ -190,19 +219,19 @@ Status ControlLoop::create_internal_task()
     // Create the control loop task ON REFLEX CORE
     BaseType_t err = xTaskCreatePinnedToCore([](void* PvParams){
         ControlLoop* control_loop = static_cast<ControlLoop*>(PvParams);
-        running = true;
+        running = true; // just in case, set the running flag to true (it should already be true)
         
         // Main loop
         while (running)
         {
             // wait for timer interrupt notification
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
+            // execute the control loop task
             control_loop->control_task();
         }
 
         // clean up and delete task
-        running = false;
+        running = false; // just in case
         if (timer_task_handle != nullptr)
         {
             vTaskDelete(nullptr);
