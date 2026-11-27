@@ -7,7 +7,7 @@
 #include "drivers/AnalogDriver.hpp"
 #include "drivers/MotorDriver.hpp"
 #include "drivers/PowerDriver.hpp"
-#include "locomotion/MotorController.Errors.hpp"
+#include "locomotion/MotorCalibration.Errors.hpp"
 #include <cmath>
 
 struct PhysicalBoundParams
@@ -63,7 +63,7 @@ struct HistorySample {
 struct BoundDescription
 {
     MotorDriver::Value dc_value; // Duty Cycle value at which the bound is detected
-    AnalogDriver::Value feedback_value; // Feedback value at which the bound is detected
+    AnalogDriver::Value fb_value; // Feedback value at which the bound is detected
 };
 
 struct ProfilingParams
@@ -280,7 +280,7 @@ Status get_physical_bound(PhysicalBoundParams params, MotorDriver::Channel motor
                 // Just before the impact is where the current goes back under the base threshold
                 if (history[check_idx].current < base_threshold) {
                     out_value.dc_value = history[check_idx].dc;
-                    out_value.feedback_value = history[check_idx].feedback;
+                    out_value.fb_value = history[check_idx].feedback;
                     origin_found = true;                    
                     break;
                 }
@@ -292,7 +292,7 @@ Status get_physical_bound(PhysicalBoundParams params, MotorDriver::Channel motor
                 // Use the oldest sample in the buffer as a fallback (least accurate but better than nothing)
                 int oldest_idx = (history_idx - samples_collected + params.history_buffer_size) % params.history_buffer_size;
                 out_value.dc_value = history[oldest_idx].dc;
-                out_value.feedback_value = history[oldest_idx].feedback;
+                out_value.fb_value = history[oldest_idx].feedback;
             }
         }
     }

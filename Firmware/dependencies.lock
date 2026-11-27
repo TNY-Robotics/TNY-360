@@ -7,7 +7,7 @@ dependencies:
       type: service
     version: 7.4.3
   espressif/esp32-camera:
-    component_hash: bc9c8a6b51df777a014fa295825b3de5069bc0300c317acff20c97cf4a10ac7d
+    component_hash: 0f387314ef24dcb2b2290333c8efeb3377d5916b862efdab7d4609c7b36bb7d3
     dependencies:
     - name: espressif/esp_jpeg
       registry_url: https://components.espressif.com
@@ -19,7 +19,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 2.1.7
+    version: 2.2.0
   espressif/esp_jpeg:
     component_hash: 47d19eac5f76fac06798c04f4d2579c7ab26fd33280ed10f43d8895175376bdf
     dependencies:
@@ -35,7 +35,7 @@ dependencies:
       type: idf
     version: 6.0.0
   joltwallet/littlefs:
-    component_hash: 3af20a3d75c49db9dc2286fd50862c34055c9f578419ad1f2bf7ed3ed01391fe
+    component_hash: f633efcd615b58206ec1b131591f7fc5b212716603ebc24697900aab71e9d3bd
     dependencies:
     - name: idf
       require: private
@@ -43,7 +43,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 1.22.3
+    version: 1.23.3
 direct_dependencies:
 - bblanchon/arduinojson
 - espressif/esp32-camera

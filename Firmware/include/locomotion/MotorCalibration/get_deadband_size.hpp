@@ -5,7 +5,7 @@
 #include "common/analysis/ArrayStats.hpp"
 #include "drivers/AnalogDriver.hpp"
 #include "drivers/MotorDriver.hpp"
-#include "locomotion/MotorController.Errors.hpp"
+#include "locomotion/MotorCalibration.Errors.hpp"
 #include <cmath>
 
 struct DeadbandSizeParams
@@ -15,7 +15,7 @@ struct DeadbandSizeParams
     /// @brief Maximum duty cycle value to test (to avoid going too far in case of no feedback change)
     MotorDriver::Value max_dc = 2.5;
     /// @brief Motor's feedback noise
-    AnalogDriver::Value feedback_noise;
+    AnalogDriver::Value fb_noise;
     /// @brief Number of test for deadband size estimation
     uint16_t nb_samples = 5;
     /// @brief Number of subsamples to take for each sample
@@ -68,7 +68,7 @@ Status get_deadband_size(DeadbandSizeParams params, MotorDriver::Channel motor_c
 
         // If feedback has changed, record deadband size
         AnalogDriver::Value abs_diff = std::abs(new_feedback - last_feedback);
-        if (abs_diff > params.feedback_noise) // 2x margin to be sure (should be feedback_noise/2, but we add a safety margin to avoid false positives)
+        if (abs_diff > params.fb_noise) // 2x margin to be sure (should be fb_noise/2, but we add a safety margin to avoid false positives)
         {
             deadbands[sample_index] = current_dc - last_dc;
             last_feedback = new_feedback;

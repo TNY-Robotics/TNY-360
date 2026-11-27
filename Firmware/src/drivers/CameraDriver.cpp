@@ -7,6 +7,8 @@
 #include "driver/i2c_master.h"
 #include "esp_timer.h"
 
+#include "esp_heap_caps.h"
+
 constexpr const char* TAG = "CameraDriver";
 
 typedef struct {
@@ -135,11 +137,19 @@ Status CameraDriver::init()
 {
     LOG_SCOPE(TAG, "CameraDriver::init");
 
+    if (!heap_caps_check_integrity_all(true)) {
+        abort();
+    }
+
     // initialize i2c for camera configuration
     if (Status err = I2C::Init(); err != Status::Ok)
     {
         Error::RegisterErrorEvent(ErrorEventI2CInitFailed());
         return err;
+    }
+
+    if (!heap_caps_check_integrity_all(true)) {
+        abort();
     }
 
     camera_config_t camera_config = {
@@ -174,6 +184,7 @@ Status CameraDriver::init()
         .grab_mode = CAMERA_GRAB_WHEN_EMPTY,
 
         .sccb_i2c_port = I2C_NUM_1, // using secondary i2c bus (the "slow" one)
+        .jpeg_buffer_size = 0,
     };
 
     // initialize the camera
@@ -184,6 +195,10 @@ Status CameraDriver::init()
         return Status::Failure;
     }
 
+    if (!heap_caps_check_integrity_all(true)) {
+        abort();
+    }
+
     // flip the image (sensor is upside down)
     sensor = esp_camera_sensor_get();
     if (sensor == nullptr)
@@ -192,8 +207,17 @@ Status CameraDriver::init()
         Error::RegisterErrorEvent(ErrorEventGetSensorFailed());
         return Status::Unknown;
     }
+
+    if (!heap_caps_check_integrity_all(true)) {
+        abort();
+    }
+
     sensor->set_vflip(sensor, true);
     sensor->set_hmirror(sensor, true);
+
+    if (!heap_caps_check_integrity_all(true)) {
+        abort();
+    }
 
     return Status::Ok;
 }

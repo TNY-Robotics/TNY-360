@@ -297,7 +297,8 @@ inline void convertToJson(const KinematicsConfig& src, JsonVariant& dst)
     dst["hip_pos_x"] = src.hip_pos_x;
     dst["hip_pos_y"] = src.hip_pos_y;
 }
-inline void convertFromJson(JsonVariantConst src, KinematicsConfig& dst) {
+inline void convertFromJson(JsonVariantConst src, KinematicsConfig& dst)
+{
     dst.leg_thigh_length = src["leg_thigh_length"] | dst.leg_thigh_length;
     dst.leg_calf_length = src["leg_calf_length"] | dst.leg_calf_length;
     dst.hip_offset = src["hip_offset"] | dst.hip_offset;
@@ -305,6 +306,69 @@ inline void convertFromJson(JsonVariantConst src, KinematicsConfig& dst) {
     dst.hip_pos_y = src["hip_pos_y"] | dst.hip_pos_y;
 }
 inline bool canConvertFromJson(JsonVariantConst src, KinematicsConfig& dst) { return src.is<JsonObject>(); }
+
+/// JointConfig
+inline void convertToJson(const JointConfig& src, JsonVariant& dst)
+{
+    dst["motor_driver_index"] = src.motor_driver_index;
+    dst["analog_reader_index"] = src.analog_reader_index;
+    dst["min_angle_rad"] = src.min_angle_rad;
+    dst["max_angle_rad"] = src.max_angle_rad;
+    dst["is_inverted"] = src.is_inverted;
+    dst["has_feedback"] = src.has_feedback;
+    dst["has_mechanical_stops"] = src.has_mechanical_stops;
+}
+inline void convertFromJson(JsonVariantConst src, JointConfig& dst)
+{
+    dst.motor_driver_index = src["motor_driver_index"] | dst.motor_driver_index;
+    dst.analog_reader_index = src["analog_reader_index"] | dst.analog_reader_index;
+    dst.min_angle_rad = src["min_angle_rad"] | dst.min_angle_rad;
+    dst.max_angle_rad = src["max_angle_rad"] | dst.max_angle_rad;
+    dst.is_inverted = src["is_inverted"] | dst.is_inverted;
+    dst.has_feedback = src["has_feedback"] | dst.has_feedback;
+    dst.has_mechanical_stops = src["has_mechanical_stops"] | dst.has_mechanical_stops;
+}
+inline bool canConvertFromJson(JsonVariantConst src, JointConfig& dst) { return src.is<JsonObject>(); }
+
+/// LegConfig
+inline void convertToJson(const LegConfig& src, JsonVariant& dst)
+{
+    dst["hip_roll"] = src.hip_roll;
+    dst["hip_pitch"] = src.hip_pitch;
+    dst["knee_pitch"] = src.knee_pitch;
+    dst["contact_sensor_index"] = src.contact_sensor_index;
+    dst["has_y_inverted"] = src.has_y_inverted;
+}
+inline void convertFromJson(JsonVariantConst src, LegConfig& dst)
+{
+    dst.hip_roll = src["hip_roll"] | dst.hip_roll;
+    dst.hip_pitch = src["hip_pitch"] | dst.hip_pitch;
+    dst.knee_pitch = src["knee_pitch"] | dst.knee_pitch;
+    dst.contact_sensor_index = src["contact_sensor_index"] | dst.contact_sensor_index;
+    dst.has_y_inverted = src["has_y_inverted"] | dst.has_y_inverted;
+}
+inline bool canConvertFromJson(JsonVariantConst src, LegConfig& dst) { return src.is<JsonObject>(); }
+
+/// BodyConfig
+inline void convertToJson(const BodyConfig& src, JsonVariant& dst)
+{
+    dst["ear_r"] = src.ear_r;
+    dst["ear_l"] = src.ear_l;
+    dst["leg_fl"] = src.leg_fl;
+    dst["leg_bl"] = src.leg_bl;
+    dst["leg_br"] = src.leg_br;
+    dst["leg_fr"] = src.leg_fr;
+}
+inline void convertFromJson(JsonVariantConst src, BodyConfig& dst)
+{
+    dst.ear_r = src["ear_r"] | dst.ear_r;
+    dst.ear_l = src["ear_l"] | dst.ear_l;
+    dst.leg_fl = src["leg_fl"] | dst.leg_fl;
+    dst.leg_bl = src["leg_bl"] | dst.leg_bl;
+    dst.leg_br = src["leg_br"] | dst.leg_br;
+    dst.leg_fr = src["leg_fr"] | dst.leg_fr;
+}
+inline bool canConvertFromJson(JsonVariantConst src, BodyConfig& dst) { return src.is<JsonObject>(); }
 
 /// WiFiConfig
 inline void convertToJson(const WiFiConfig& src, JsonVariant& dst)

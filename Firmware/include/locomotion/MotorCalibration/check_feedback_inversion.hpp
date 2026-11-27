@@ -1,9 +1,10 @@
 #pragma once
 #include <freertos/FreeRTOS.h>
-#include "common/utils.hpp"
 #include "drivers/MotorDriver.hpp"
 #include "drivers/AnalogDriver.hpp"
-#include "locomotion/MotorController.Errors.hpp"
+#include "locomotion/MotorCalibration.Errors.hpp"
+#include "common/utils.hpp"
+#include "common/log.hpp"
 #include <cmath>
 
 struct FeedbackInversionParams
@@ -13,15 +14,15 @@ struct FeedbackInversionParams
     /// @brief Duty cycle gap to apply to the center position to move the motor in each direction
     MotorDriver::Value dc_delta = 0.2;
     /// @brief Motor's feedback noise (to detect if dc_delta isn't big enough)
-    AnalogDriver::Value feedback_noise;
+    AnalogDriver::Value fb_noise;
     /// @brief Number of subsamples to take for each sample
     uint16_t nb_subsamples = 10;
     /// @brief Number of ms to wait after moving motor to center
     int base_delay_ms = 500;
     /// @brief Number of ms to wait between a movement and the feedback sampling
-    int feedback_delay_ms = 200;
+    int fb_delay_ms = 200;
     /// @brief Number of ms to wait between forward and backward movement
-    int movement_delay_ms = 100;
+    int mv_delay_ms = 100;
 };
 
 /**
@@ -46,24 +47,24 @@ Status check_feedback_inversion(FeedbackInversionParams params, MotorDriver::Cha
     AnalogDriver::Value feedback_forward;
     RETURN_ON_ERROR(MotorDriver::SetDutyCycle(motor_channel, params.dc_center + params.dc_delta));
     RETURN_ON_ERROR(MotorDriver::SendData());
-    vTaskDelay(pdMS_TO_TICKS(params.feedback_delay_ms));
+    vTaskDelay(pdMS_TO_TICKS(params.fb_delay_ms));
     RETURN_ON_ERROR(AnalogDriver::internal::read_subsampled(feedback_forward, params.nb_subsamples));
-    vTaskDelay(pdMS_TO_TICKS(params.movement_delay_ms));
+    vTaskDelay(pdMS_TO_TICKS(params.mv_delay_ms));
 
     // Move forward, wait a bit, and take feedback
     AnalogDriver::Value feedback_backward;
     RETURN_ON_ERROR(MotorDriver::SetDutyCycle(motor_channel, params.dc_center - params.dc_delta));
     RETURN_ON_ERROR(MotorDriver::SendData());
-    vTaskDelay(pdMS_TO_TICKS(params.feedback_delay_ms));
+    vTaskDelay(pdMS_TO_TICKS(params.fb_delay_ms));
     RETURN_ON_ERROR(AnalogDriver::internal::read_subsampled(feedback_backward, params.nb_subsamples));
-    vTaskDelay(pdMS_TO_TICKS(params.movement_delay_ms));
+    vTaskDelay(pdMS_TO_TICKS(params.mv_delay_ms));
 
     // Compare feedbacks and return result
     AnalogDriver::Value abs_diff = std::abs(feedback_forward - feedback_backward);
-    if (abs_diff <= params.feedback_noise)
+    if (abs_diff <= params.fb_noise)
     {
-        LOG_ERROR("FDB_INV", "Feedback inversion test failed: no significant feedback change detected (abs diff: %f, noise: %f)", abs_diff, params.feedback_noise);
-        Error::RegisterErrorEvent(ErrorEventFeedbackInversionFailed(abs_diff, params.feedback_noise));
+        LOG_ERROR("FDB_INV", "Feedback inversion test failed: no significant feedback change detected (abs diff: %f, noise: %f)", abs_diff, params.fb_noise);
+        Error::RegisterErrorEvent(ErrorEventFeedbackInversionFailed(abs_diff, params.fb_noise));
         return Status::Failure;
     }
 

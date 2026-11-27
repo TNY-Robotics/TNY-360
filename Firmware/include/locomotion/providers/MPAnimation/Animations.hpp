@@ -10,19 +10,19 @@ namespace Animations
                 { DEG_TO_RAD(  45), DEG_TO_RAD(- 60), DEG_TO_RAD( 150) },
                 { DEG_TO_RAD(  45), DEG_TO_RAD(- 60), DEG_TO_RAD( 150) },
                 { DEG_TO_RAD(  45), DEG_TO_RAD(- 60), DEG_TO_RAD( 150) },
-            }, .ear_r_rad = 1.570f, .ear_l_rad = 1.570f } },
+            }, .ear_r_rad = -0.785f, .ear_l_rad = -0.785f } },
             {1.0f, BodyJointState{ .leg_joints = {
                 { DEG_TO_RAD(   0), DEG_TO_RAD(- 60), DEG_TO_RAD( 150) },
                 { DEG_TO_RAD(   0), DEG_TO_RAD(- 60), DEG_TO_RAD( 150) },
                 { DEG_TO_RAD(   0), DEG_TO_RAD(- 60), DEG_TO_RAD( 150) },
                 { DEG_TO_RAD(   0), DEG_TO_RAD(- 60), DEG_TO_RAD( 150) },
-            }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+            }, .ear_r_rad = -0.785f, .ear_l_rad = -0.785f } },
             {1.5f, BodyJointState{ .leg_joints = {
                 { DEG_TO_RAD(   0), DEG_TO_RAD(- 50), DEG_TO_RAD( 100) },
                 { DEG_TO_RAD(   0), DEG_TO_RAD(- 50), DEG_TO_RAD( 100) },
                 { DEG_TO_RAD(   0), DEG_TO_RAD(- 50), DEG_TO_RAD( 100) },
                 { DEG_TO_RAD(   0), DEG_TO_RAD(- 50), DEG_TO_RAD( 100) },
-            }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+            }, .ear_r_rad = 0.f, .ear_l_rad = 0.f } },
         }
     };
     AnimationSequence SitDown = {
@@ -32,19 +32,19 @@ namespace Animations
                 { DEG_TO_RAD(   0), DEG_TO_RAD(- 50), DEG_TO_RAD( 100) },
                 { DEG_TO_RAD(   0), DEG_TO_RAD(- 50), DEG_TO_RAD( 100) },
                 { DEG_TO_RAD(   0), DEG_TO_RAD(- 50), DEG_TO_RAD( 100) },
-            }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+            }, .ear_r_rad = 0.f, .ear_l_rad = 0.f } },
             {1.5f, BodyJointState{ .leg_joints = {
                 { DEG_TO_RAD(   0), DEG_TO_RAD(- 60), DEG_TO_RAD( 150) },
                 { DEG_TO_RAD(   0), DEG_TO_RAD(- 60), DEG_TO_RAD( 150) },
                 { DEG_TO_RAD(   0), DEG_TO_RAD(- 60), DEG_TO_RAD( 150) },
                 { DEG_TO_RAD(   0), DEG_TO_RAD(- 60), DEG_TO_RAD( 150) },
-            }, .ear_r_rad = 0.785f, .ear_l_rad = 0.785f } },
+            }, .ear_r_rad = -0.785f, .ear_l_rad = -0.785f } },
             {1.0f, BodyJointState{ .leg_joints = {
                 { DEG_TO_RAD(  45), DEG_TO_RAD(- 60), DEG_TO_RAD( 150) },
                 { DEG_TO_RAD(  45), DEG_TO_RAD(- 60), DEG_TO_RAD( 150) },
                 { DEG_TO_RAD(  45), DEG_TO_RAD(- 60), DEG_TO_RAD( 150) },
                 { DEG_TO_RAD(  45), DEG_TO_RAD(- 60), DEG_TO_RAD( 150) },
-            }, .ear_r_rad = 1.570f, .ear_l_rad = 1.570f } },
+            }, .ear_r_rad = -0.785f, .ear_l_rad = -0.785f } },
         }
     };
 

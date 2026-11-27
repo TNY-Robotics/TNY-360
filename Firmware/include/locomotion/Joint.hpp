@@ -3,6 +3,7 @@
 #include "common/KalmanFilter.hpp"
 #include "common/geometry.hpp"
 #include "common/config.hpp"
+#include "settings/config.hpp"
 
 class Joint
 {
@@ -36,16 +37,16 @@ public:
      */
     static Joint* GetJoint(Joint::Id id);
 
+    /// CLASS Joint
+
+    Joint() = default;
+
     /**
-     * @brief Clamp maximum velocity for all joints.
-     * @param max_velocity_rad_s Maximum velocity in radians per second. Set to 0 to disable clamping.
-     * @return Error code indicating success or failure.
+     * @brief Construct a Joint instance.
+     * @param id The ID of the joint.
+     * @param config The configuration for the joint.
      */
-    static Status ClampVelocity(float max_velocity_rad_s);
-
-    Joint();
-
-    Joint(Joint::Id id, MotorController motor_controller, float min_angle_rad = 0.f, float max_angle_rad = TWO_PI, bool inverted = false, bool has_feedback = true);
+    Joint(Joint::Id id, JointConfig config);
 
     /**
      * @brief Initialize the joint.
@@ -76,7 +77,8 @@ public:
     /**
      * @brief Enable the joint (motor).
      * @return Error code indicating success or failure.
-     * @note Useless if no feedback. Motor will be enabled when calling setTarget()
+     * @note If no feedback is available (`getConfig().has_feedback == false`), the joint will only be enabled
+     * on the next call to `applyCommand` with a valid target angle.
      */
     Status enable();
 
@@ -93,105 +95,46 @@ public:
     bool isEnabled() const;
 
     /**
-     * @brief Set the speed for the joint movement.
-     * @param velocity_rad_s Velocity in radians per second.
-     * @note Velocity is clamped to the range [0, MAX_VELOCITY_RAD_S].
-     * @return Error code indicating success or failure.
-     */
-    Status setVelocity(float velocity_rad_s);
-
-    /**
-     * @brief Get the current velocity of the joint.
-     * @param result Velocity in radians per second.
-     * @return Error code indicating success or failure.
-     */
-    Status getVelocity(float &result) const;
-
-    /**
      * @brief Get the target angle of the joint.
-     * @param result Target angle in radians.
-     * @return Error code indicating success or failure.
+     * @return Target angle in radians.
      */
-    Status getTarget(float &result) const;
+    float getTargetAngle() const;
 
     /**
-     * @brief Get the current position of the joint.
-     * @param result Current angle in radians.
-     * @note This method fuses feedback and model prediction for improved accuracy.
-     * @return Error code indicating success or failure.
+     * @brief Get the current angle of the joint.
+     * @return Current angle in radians.
+     * @note If the joint has no feedback (`getConfig().has_feedback == false`), a model approximation will be used instead.
+     * @note This is just a getter. The actual current angle is updated during the estimateState() call.
      */
-    Status getPosition(float &result) const;
+    float getCurrentAngle() const;
 
     /**
-     * @brief Get the feedback angle of the joint.
-     * @param result Feedback angle in radians.
-     * @note Typical latency is 40ms between command and feedback.
-     * @return Error code indicating success or failure.
+     * @brief Get the joint ID.
+     * @return Joint ID.
      */
-    Status getFeedback(float &result) const;
-
+    Joint::Id getId() const;
+    
     /**
-     * @brief Get the predicted angle of the joint (using joint model).
-     * @param result Predicted angle in radians.
-     * @note Fusion of feedback and model prediction is accessible using getPosition().
-     * @return Error code indicating success or failure.
+     * @brief Get the joint configuration.
+     * @return Joint configuration.
      */
-    Status getPrediction(float &result) const;
-
-    /**
-     * @brief Get the uncertainty of the joint's angle.
-     * @param result Uncertainty value.
-     * @return Error code indicating success or failure.
-     */
-    Status getUncertainty(float &result) const;
-
-    /**
-     * @brief Return the estimated time to reach the given target from the current position.
-     * @param target_angle_rad Target angle in radians.
-     * @return Estimated time in seconds. (negative value if an error occurs)
-     */
-    float getTimeEstimate(float target_angle_rad) const;
-
-    /**
-     * @brief Get the underlying MotorController.
-     * @return Reference to the MotorController.
-     */
-    MotorController& getMotorController() { return motor_controller; }
-
-    /**
-     * @brief Get the minimum angle of the joint.
-     * @return Minimum angle in radians.
-     */
-    float getMinAngle() const { return min_angle_rad; }
-
-    /**
-     * @brief Get the maximum angle of the joint.
-     * @return Maximum angle in radians.
-     */
-    float getMaxAngle() const { return max_angle_rad; }
-
-    /**
-     * @brief Check if the joint is inverted.
-     * @return True if the joint is inverted, false otherwise.
-     */
-    bool isInverted() const { return inverted; }
+    const JointConfig& getConfig() const;
 
 private:
-    static Joint* joints[static_cast<size_t>(Joint::Id::Count)]; // static array of all joints (index is motor channel)
-    static float joint_velocity_clamp_rad_s; // static variable for global maximum joint velocity
+    static Joint* joints[static_cast<size_t>(Joint::Id::Count)];
 
     Joint::Id id;
-    MotorController motor_controller;
+    JointConfig config;
+    
     KalmanFilter1D kalman_filter;
-    float min_angle_rad;
-    float max_angle_rad;
-    bool inverted;
+    MotorController motor_controller;
+    
+    bool enabled;
+    float feedback_angle_rad;
+    float model_angle_rad;
+    float filtered_angle_rad;
     float target_angle_rad;
-    float feedback_angle_rad = 0;
-    float estimate_angle_rad = 0;
-    float model_angle_rad = 0;
-    float velocity_rad_s;
 
-    Status send_motorcontroller_position(const float& position);
-    Status get_motorcontroller_position(float &result) const;
+    Status set_motor_position(const float& position);
+    Status get_motor_position(float &result) const;
 };

@@ -30,12 +30,8 @@ namespace IPC
         struct JointState {
             /// @brief Target angle for the joint [rad]
             float target_angle_rad = 0.0f;
-            /// @brief Feedback angle from the joint [rad]
-            float feedback_angle_rad = 0.0f;
-            /// @brief Model angle for the joint [rad]
-            float model_angle_rad = 0.0f;
-            /// @brief Estimated angle for the joint [rad]
-            float estimated_angle_rad = 0.0f;
+            /// @brief Current angle from the joint [rad]
+            float current_angle_rad = 0.0f;
         } joints[NB_JOINTS];
 
         /// @brief Orientation of the robot in world frame

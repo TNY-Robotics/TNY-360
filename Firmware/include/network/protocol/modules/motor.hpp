@@ -21,40 +21,40 @@ namespace Motor
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        uint8_t joint_id;
-        if (reader.read(joint_id) != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // uint8_t joint_id;
+        // if (reader.read(joint_id) != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        float duty_cycle;
-        if (reader.read(duty_cycle) != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // float duty_cycle;
+        // if (reader.read(duty_cycle) != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
-        if (joint == nullptr)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
-        ::MotorController& motor = joint->getMotorController();
+        // ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
+        // if (joint == nullptr)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
+        // ::MotorController& motor = joint->getMotorController();
         
-        if (MotorDriver::SetDutyCycle(motor.getMotorChannel(), duty_cycle) != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::UnknownError);
-            return;
-        }
-        if (MotorDriver::SendData() != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::UnknownError);
-            return;
-        }
+        // if (MotorDriver::SetDutyCycle(motor.getMotorChannel(), duty_cycle) != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::UnknownError);
+        //     return;
+        // }
+        // if (MotorDriver::SendData() != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::UnknownError);
+        //     return;
+        // }
 
-        ctx.respond(ResponseStatus::Ok);
+        // ctx.respond(ResponseStatus::Ok);
     }
 
     /** <API_REF>
@@ -69,29 +69,29 @@ namespace Motor
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        uint8_t joint_id;
-        if (reader.read(joint_id) != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // uint8_t joint_id;
+        // if (reader.read(joint_id) != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
-        if (joint == nullptr)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
-        ::MotorController& motor = joint->getMotorController();
+        // ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
+        // if (joint == nullptr)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
+        // ::MotorController& motor = joint->getMotorController();
 
-        float duty_cycle;
-        if (MotorDriver::GetDutyCycle(motor.getMotorChannel(), duty_cycle) != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::UnknownError);
-            return;
-        }
+        // float duty_cycle;
+        // if (MotorDriver::GetDutyCycle(motor.getMotorChannel(), duty_cycle) != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::UnknownError);
+        //     return;
+        // }
 
-        ctx.respond(ResponseStatus::Ok, (uint8_t*) &duty_cycle, sizeof(duty_cycle));
+        // ctx.respond(ResponseStatus::Ok, (uint8_t*) &duty_cycle, sizeof(duty_cycle));
     }
 
     /** <API_REF>
@@ -106,23 +106,23 @@ namespace Motor
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        uint8_t joint_id;
-        if (reader.read(joint_id) != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // uint8_t joint_id;
+        // if (reader.read(joint_id) != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
-        if (joint == nullptr)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
+        // if (joint == nullptr)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::MotorController& motor = joint->getMotorController();
-        ::MotorController::CalibrationState calib_state = motor.getCalibrationState();
-        ctx.respond(ResponseStatus::Ok, (uint8_t*) &calib_state, sizeof(calib_state));
+        // ::MotorController& motor = joint->getMotorController();
+        // ::MotorController::CalibrationState calib_state = motor.getCalibrationState();
+        // ctx.respond(ResponseStatus::Ok, (uint8_t*) &calib_state, sizeof(calib_state));
     }
 
     /** <API_REF>
@@ -137,22 +137,22 @@ namespace Motor
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        uint8_t joint_id;
-        if (reader.read(joint_id) != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // uint8_t joint_id;
+        // if (reader.read(joint_id) != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
-        if (joint == nullptr)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
-        ::MotorController& motor = joint->getMotorController();
+        // ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
+        // if (joint == nullptr)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
+        // ::MotorController& motor = joint->getMotorController();
 
-        ctx.respond(ResponseStatus::Ok, (uint8_t*) &motor.getCalibrationData(), sizeof(::MotorController::CalibrationData));
+        // ctx.respond(ResponseStatus::Ok, (uint8_t*) &motor.getCalibrationData(), sizeof(::MotorController::CalibrationData));
     }
 
     /** <API_REF>
@@ -167,38 +167,38 @@ namespace Motor
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        uint8_t joint_id;
-        if (reader.read(joint_id) != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // uint8_t joint_id;
+        // if (reader.read(joint_id) != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
-        if (joint == nullptr)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
-        ::MotorController& motor = joint->getMotorController();
+        // ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
+        // if (joint == nullptr)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
+        // ::MotorController& motor = joint->getMotorController();
         
-        ::MotorController::CalibrationData calib_data;
-        if (reader.read(calib_data.dc_min) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
-        if (reader.read(calib_data.dc_max) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
-        if (reader.read(calib_data.dc_deadband) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
-        if (reader.read(calib_data.feedback_min) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
-        if (reader.read(calib_data.feedback_max) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
-        if (reader.read(calib_data.feedback_noise) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
-        if (reader.read(calib_data.feedback_latency_ms) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
-        if (reader.read(calib_data.feedback_inverted) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
-        if (reader.read(calib_data.max_speed) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        // ::MotorController::CalibrationData calib_data;
+        // if (reader.read(calib_data.dc_min) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        // if (reader.read(calib_data.dc_max) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        // if (reader.read(calib_data.dc_deadband) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        // if (reader.read(calib_data.feedback_min) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        // if (reader.read(calib_data.feedback_max) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        // if (reader.read(calib_data.feedback_noise) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        // if (reader.read(calib_data.feedback_latency_ms) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        // if (reader.read(calib_data.feedback_inverted) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
+        // if (reader.read(calib_data.max_speed) != Status::Ok) { ctx.respond(ResponseStatus::InvalidParameters); return; }
 
-        if (Status err = motor.setCalibrationData(calib_data); err != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::UnknownError);
-            return;
-        }
-        ctx.respond(ResponseStatus::Ok);
+        // if (Status err = motor.setCalibrationData(calib_data); err != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::UnknownError);
+        //     return;
+        // }
+        // ctx.respond(ResponseStatus::Ok);
     }
 
     /** <API_REF>
@@ -212,27 +212,27 @@ namespace Motor
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        uint8_t joint_id;
-        if (reader.read(joint_id) != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // uint8_t joint_id;
+        // if (reader.read(joint_id) != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
-        if (joint == nullptr)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
+        // if (joint == nullptr)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::MotorController& motor = joint->getMotorController();
-        if (Status err = motor.deleteCalibrationData(); err != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::UnknownError);
-            return;
-        }
-        ctx.respond(ResponseStatus::Ok);
+        // ::MotorController& motor = joint->getMotorController();
+        // if (Status err = motor.deleteCalibrationData(); err != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::UnknownError);
+        //     return;
+        // }
+        // ctx.respond(ResponseStatus::Ok);
     }
 
     /** <API_REF>
@@ -246,27 +246,27 @@ namespace Motor
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        uint8_t joint_id;
-        if (reader.read(joint_id) != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // uint8_t joint_id;
+        // if (reader.read(joint_id) != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
-        if (joint == nullptr)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
+        // if (joint == nullptr)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::MotorController& motor = joint->getMotorController();
-        if (Status err = motor.startCalibration(); err != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::UnknownError);
-            return;
-        }
-        ctx.respond(ResponseStatus::Ok);
+        // ::MotorController& motor = joint->getMotorController();
+        // if (Status err = motor.startCalibration(); err != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::UnknownError);
+        //     return;
+        // }
+        // ctx.respond(ResponseStatus::Ok);
     }
 
     /** <API_REF>
@@ -280,27 +280,27 @@ namespace Motor
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        uint8_t joint_id;
-        if (reader.read(joint_id) != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // uint8_t joint_id;
+        // if (reader.read(joint_id) != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
-        if (joint == nullptr)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
+        // if (joint == nullptr)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::MotorController& motor = joint->getMotorController();
-        if (Status err = motor.stopCalibration(); err != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::UnknownError);
-            return;
-        }
-        ctx.respond(ResponseStatus::Ok);
+        // ::MotorController& motor = joint->getMotorController();
+        // if (Status err = motor.stopCalibration(); err != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::UnknownError);
+        //     return;
+        // }
+        // ctx.respond(ResponseStatus::Ok);
     }
 
     /** <API_REF>
@@ -315,24 +315,24 @@ namespace Motor
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        uint8_t joint_id;
-        if (reader.read(joint_id) != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // uint8_t joint_id;
+        // if (reader.read(joint_id) != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
-        if (joint == nullptr)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // ::Joint* joint = ::Joint::GetJoint((::Joint::Id) joint_id);
+        // if (joint == nullptr)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::MotorController& motor = joint->getMotorController();
-        float progress = motor.getCalibrationProgress();
+        // ::MotorController& motor = joint->getMotorController();
+        // float progress = motor.getCalibrationProgress();
 
-        ctx.respond(ResponseStatus::Ok, (uint8_t*) &progress, sizeof(float));
+        // ctx.respond(ResponseStatus::Ok, (uint8_t*) &progress, sizeof(float));
     }
 
 

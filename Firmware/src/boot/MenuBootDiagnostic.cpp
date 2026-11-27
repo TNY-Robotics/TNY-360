@@ -19,7 +19,7 @@ MenuBootDiagnostic::MenuBootDiagnostic(NetworkManager* networkManager)
         refresh_rate = Settings::GetConfig().screen.refresh_rate;
 
         char wifi_str[128];
-        if (strlen(Settings::GetConfig().wifi.ap_ssid) > 0)
+        if (strlen(Settings::GetConfig().wifi.ap_password) > 0)
         {
             snprintf(wifi_str, sizeof(wifi_str), "WIFI:S:%s;T:WPA;P:%s;;", Settings::GetConfig().wifi.ap_ssid, Settings::GetConfig().wifi.ap_password);
         }

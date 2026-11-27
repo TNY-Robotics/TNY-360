@@ -1,10 +1,12 @@
 #include "settings/Settings.hpp"
 #include "common/LittleFS.hpp"
 #include "common/Log.hpp"
+#include "common/NVS.hpp"
 #include "esp_system.h"
 #include "settings/versionDetection.hpp"
 #include "settings/V1.hpp"
 #include "settings/V2.hpp"
+#include <cstdint>
 #include <fstream>
 
 namespace Settings
@@ -12,9 +14,87 @@ namespace Settings
     RobotConfig config;
     bool initialized = false;
 
+    constexpr const char* ROBOT_NVS_NAMESPACE = "settings";
+    constexpr const char* ROBOT_VERSION_KEY = "hw_ver";
+    constexpr uint8_t ROBOT_VERSION_V1 = 1;
+    constexpr uint8_t ROBOT_VERSION_V2 = 2;
+
     /// INTERNAL
     Status __save();
     Status __load();
+
+    Status __get_robot_version(RobotVersion& version)
+    {
+        NVS::Handle* nvsHandle = nullptr;
+        if (Status err = NVS::Open(ROBOT_NVS_NAMESPACE, &nvsHandle); err != Status::Ok)
+        {
+            LOG_ERROR(TAG, "Failed to open NVS for robot version, Error : %s", StatusToString(err));
+            return err;
+        }
+
+        uint8_t storedVersion = 0;
+        Status readStatus = nvsHandle->get(ROBOT_VERSION_KEY, storedVersion);
+        if (readStatus == Status::Ok)
+        {
+            NVS::Close(nvsHandle);
+            if (storedVersion == ROBOT_VERSION_V1)
+            {
+                version = RobotVersion::V1;
+                LOG_INFO(TAG, "Loaded robot version V1 from NVS");
+                return Status::Ok;
+            }
+            if (storedVersion == ROBOT_VERSION_V2)
+            {
+                version = RobotVersion::V2;
+                LOG_INFO(TAG, "Loaded robot version V2 from NVS");
+                return Status::Ok;
+            }
+
+            LOG_ERROR(TAG, "Invalid robot version value in NVS: %u", storedVersion);
+            return Status::Failure;
+        }
+
+        if (readStatus != Status::NotFound)
+        {
+            NVS::Close(nvsHandle);
+            LOG_ERROR(TAG, "Failed to read robot version from NVS, Error : %s", StatusToString(readStatus));
+            return readStatus;
+        }
+
+        LOG_INFO(TAG, "No robot version saved in NVS; detecting hardware");
+        if (Status err = detectRobotVersion(version); err != Status::Ok)
+        {
+            NVS::Close(nvsHandle);
+            return err;
+        }
+
+        uint8_t versionToStore;
+        if (version == RobotVersion::V1)
+        {
+            versionToStore = ROBOT_VERSION_V1;
+        }
+        else if (version == RobotVersion::V2)
+        {
+            versionToStore = ROBOT_VERSION_V2;
+        }
+        else
+        {
+            NVS::Close(nvsHandle);
+            return Status::Ok;
+        }
+
+        if (Status err = nvsHandle->set(ROBOT_VERSION_KEY, versionToStore); err != Status::Ok)
+        {
+            LOG_WARNING(TAG, "Couldn't save robot version to NVS, Error : %s; it will be detected again next boot", StatusToString(err));
+        }
+        else
+        {
+            LOG_INFO(TAG, "Saved robot version %s to NVS", version == RobotVersion::V1 ? "V1" : "V2");
+        }
+
+        NVS::Close(nvsHandle);
+        return Status::Ok;
+    }
 
     Status Init()
     {
@@ -25,7 +105,7 @@ namespace Settings
         }
 
         RobotVersion detectedVersion;
-        if (Status err = detectRobotVersion(detectedVersion); err != Status::Ok)
+        if (Status err = __get_robot_version(detectedVersion); err != Status::Ok)
         {
             LOG_ERROR(TAG, "Failed to detect robot version, Error : %s", StatusToString(err));
             return err;

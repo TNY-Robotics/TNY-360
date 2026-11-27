@@ -1,8 +1,9 @@
 #include "ui/menus/MotorCalib.hpp"
-#include "ui/Icons.hpp"
-#include "common/Log.hpp"
-#include "ui/Draw.hpp"
+#include "locomotion/MotorCalibration.hpp"
 #include "locomotion/Joint.hpp"
+#include "common/Log.hpp"
+#include "ui/Icons.hpp"
+#include "ui/Draw.hpp"
 
 const char* jointId2Str(Joint::Id id)
 {
@@ -35,13 +36,8 @@ bool MenuMotorCalib::onBack()
 {
     if (calibrating)
     {
-        Joint* joint = Joint::GetJoint((Joint::Id) jointId);
-        if (joint)
-        {
-            joint->getMotorController().stopCalibration();
-            calibrating = false;
-        }
-        else LOG_ERROR("MenuMotorCalib", "Joint not found");
+        MotorCalibration::StopJointCalibration();
+        calibrating = false;
         triggerRender();
         return true;
     }
@@ -56,7 +52,7 @@ bool MenuMotorCalib::onSelect()
         Joint* joint = Joint::GetJoint((Joint::Id) jointId);
         if (joint)
         {
-            joint->getMotorController().startCalibration();
+            MotorCalibration::StartJointCalibration(joint->getId());
             calibrating = true;
             triggerRender();
         }
@@ -87,14 +83,16 @@ void MenuMotorCalib::onShow()
 {
     jointId = 0;
     calibrating = false;
+    triggerRender();
 }
 
 void MenuMotorCalib::onHide()
 {
-    Joint* joint = Joint::GetJoint((Joint::Id) jointId);
-    if (joint && joint->getMotorController().getCalibrationState() == MotorController::CalibrationState::CALIBRATING) 
+    if (MotorCalibration::GetCalibrationState().running)
     {
-        joint->getMotorController().stopCalibration();
+        MotorCalibration::StopJointCalibration();
+        calibrating = false;
+        triggerRender();
     }
 }
 
@@ -106,7 +104,7 @@ void MenuMotorCalib::onRender()
     
     if (calibrating)
     {
-        float progress = joint ? joint->getMotorController().getCalibrationProgress() : 0.f;
+        float progress = MotorCalibration::GetCalibrationState().progress;
         Draw::Text(8, HEADER_HEIGHT + 8, "Calibrating...");
         Draw::RectRounded(8, HEADER_HEIGHT + 30, Screen::GetInstance()->getInfo().width - 16, 16, 4);
         Draw::RectRounded(9, HEADER_HEIGHT + 31, Screen::GetInstance()->getInfo().width - 18, 14, 3, Screen::COLOR_BLACK);
@@ -120,7 +118,7 @@ void MenuMotorCalib::onRender()
 
         if (joint)
         {
-            if (joint->getMotorController().getCalibrationState() == MotorController::CalibrationState::CALIBRATED)
+            if (MotorCalibration::GetJointCalibrationState((Joint::Id) jointId) == MotorCalibration::JointCalibrationState::CALIBRATED)
             {
                 Draw::Text(3*8, Screen::GetInstance()->getInfo().height - 8, "Calibrated");
             }
@@ -137,11 +135,11 @@ void MenuMotorCalib::onUpdate()
     if (calibrating)
     {
         Joint* joint = Joint::GetJoint((Joint::Id) jointId);
-        if (joint && joint->getMotorController().getCalibrationState() != MotorController::CalibrationState::CALIBRATING)
+        if (!MotorCalibration::GetCalibrationState().running)
         {
             calibrating = false;
-            triggerRender();
         }
+        triggerRender();
     }
 
     if (++updateCounter >= updateFreq)

@@ -5,7 +5,7 @@
 #include "common/analysis/ArrayStats.hpp"
 #include "drivers/AnalogDriver.hpp"
 #include "drivers/MotorDriver.hpp"
-#include "locomotion/MotorController.Errors.hpp"
+#include "locomotion/MotorCalibration.Errors.hpp"
 #include <cmath>
 
 constexpr int LATENCY_TIMEOUT_MS = 1000;
@@ -17,7 +17,7 @@ struct FeedbackLatencyParams
     /// @brief Duty cycle gap to apply to the center position to see a feedback difference
     MotorDriver::Value dc_delta = 0.2;
     /// @brief Motor's feedback noise (to detect if dc_delta isn't big enough)
-    AnalogDriver::Value feedback_noise;
+    AnalogDriver::Value fb_noise;
     /// @brief Number of test for latency estimation
     uint16_t nb_samples = 10;
     /// @brief Number of subsamples to take for each sample
@@ -69,7 +69,7 @@ Status get_feedback_latency(FeedbackLatencyParams params, MotorDriver::Channel m
 
             // If feedback has changed, record latency
             AnalogDriver::Value abs_diff = std::abs(new_feedback - base_feedback);
-            if (abs_diff > params.feedback_noise) // Little margin to be sure
+            if (abs_diff > params.fb_noise) // Little margin to be sure
             {
                 latencies[i] = now_tick - start_tick;
                 break;

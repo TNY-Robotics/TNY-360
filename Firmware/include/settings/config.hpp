@@ -150,6 +150,35 @@ struct WiFiConfig {
     const char* ap_password;
 };
 
+struct JointConfig {
+    int motor_driver_index;
+    int analog_reader_index;
+    float min_angle_rad;
+    float max_angle_rad;
+    bool is_inverted;
+    bool has_feedback;
+    bool has_mechanical_stops;
+    float min_stop_rad;
+    float max_stop_rad;
+};
+
+struct LegConfig {
+    JointConfig hip_roll;
+    JointConfig hip_pitch;
+    JointConfig knee_pitch;
+    int contact_sensor_index;
+    bool has_y_inverted;
+};
+
+struct BodyConfig {
+    JointConfig ear_r;
+    JointConfig ear_l;
+    LegConfig leg_fl;
+    LegConfig leg_bl;
+    LegConfig leg_br;
+    LegConfig leg_fr;
+};
+
 struct RobotConfig {
     I2CConfig i2c;
     AudioConfig audio;
@@ -159,6 +188,7 @@ struct RobotConfig {
     AnalogConfig analog;
     IMUConfig imu;
     KinematicsConfig kinematics;
+    BodyConfig body;
     WiFiConfig wifi;
 
     ////////////

@@ -157,26 +157,44 @@ namespace Menus
     {
         LOG_SCOPE(TAG, "Menus::Init");
 
-        // setup button callbacks
-        if (Status err = Button::Init(); err != Status::Ok)
-        {
-            return err;
-        }
+        SetCurrentMenu(GetMenuSplash());
 
+        // setup button callbacks
         Button::SetCallbacks({
             .onPressed = {
                 []() { Menus::btn_long_pressed[0] = false; },
                 []() { Menus::btn_long_pressed[1] = false; }
             },
             .onReleased = {
-                []() { if (!Menus::btn_long_pressed[0]) GetCurrentMenu()->onLeftPressed(); },
-                []() { if (!Menus::btn_long_pressed[1]) GetCurrentMenu()->onRightPressed(); }
+                []() {
+                    if (!Menus::btn_long_pressed[0])
+                    {
+                        if (Menu* menu = GetCurrentMenu()) menu->onLeftPressed();
+                    }
+                },
+                []() {
+                    if (!Menus::btn_long_pressed[1])
+                    {
+                        if (Menu* menu = GetCurrentMenu()) menu->onRightPressed();
+                    }
+                }
             },
             .onLongPressed = {
-                []() { Menus::btn_long_pressed[0] = true; GetCurrentMenu()->onLeftLongPressed(); },
-                []() { Menus::btn_long_pressed[1] = true; GetCurrentMenu()->onRightLongPressed(); }
+                []() {
+                    Menus::btn_long_pressed[0] = true;
+                    if (Menu* menu = GetCurrentMenu()) menu->onLeftLongPressed();
+                },
+                []() {
+                    Menus::btn_long_pressed[1] = true;
+                    if (Menu* menu = GetCurrentMenu()) menu->onRightLongPressed();
+                }
             }
         });
+
+        if (Status err = Button::Init(); err != Status::Ok)
+        {
+            return err;
+        }
 
         // Start update loop
         TaskHandle_t xTaskHandle = nullptr;

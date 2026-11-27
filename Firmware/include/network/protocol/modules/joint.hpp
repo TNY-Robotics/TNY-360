@@ -25,37 +25,37 @@ namespace Joint
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        uint8_t jointId;
-        if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // uint8_t jointId;
+        // if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        bool enabled;
-        if (reader.read(enabled) != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // bool enabled;
+        // if (reader.read(enabled) != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::Joint* joint = ::Joint::GetJoint((::Joint::Id) jointId);
-        if (joint == nullptr)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // ::Joint* joint = ::Joint::GetJoint((::Joint::Id) jointId);
+        // if (joint == nullptr)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        RPC::ExecuteThreadSafe<Status>([joint, enabled](){
-            Status err;
-            if (enabled) err = joint->enable();
-            else err = joint->disable();
-            return err;
-        }, [ctx](Status err){
-            if (err != Status::Ok)
-                ctx.respond(ResponseStatus::InvalidParameters);
-            else ctx.respond(ResponseStatus::Ok);
-        });
+        // RPC::ExecuteThreadSafe<Status>([joint, enabled](){
+        //     Status err;
+        //     if (enabled) err = joint->enable();
+        //     else err = joint->disable();
+        //     return err;
+        // }, [ctx](Status err){
+        //     if (err != Status::Ok)
+        //         ctx.respond(ResponseStatus::InvalidParameters);
+        //     else ctx.respond(ResponseStatus::Ok);
+        // });
     }
 
     /** <API_REF>
@@ -70,25 +70,25 @@ namespace Joint
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        uint8_t jointId;
-        if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // uint8_t jointId;
+        // if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::Joint* joint = ::Joint::GetJoint((::Joint::Id) jointId);
-        if (joint == nullptr)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // ::Joint* joint = ::Joint::GetJoint((::Joint::Id) jointId);
+        // if (joint == nullptr)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        RPC::ExecuteThreadSafe<bool>([joint](){
-            return joint->isEnabled();
-        }, [ctx](bool enabled){
-            ctx.respond(ResponseStatus::Ok, (uint8_t*) &enabled, sizeof(enabled));
-        });
+        // RPC::ExecuteThreadSafe<bool>([joint](){
+        //     return joint->isEnabled();
+        // }, [ctx](bool enabled){
+        //     ctx.respond(ResponseStatus::Ok, (uint8_t*) &enabled, sizeof(enabled));
+        // });
     }
 
     /** <API_REF>
@@ -103,22 +103,22 @@ namespace Joint
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        uint8_t jointId;
-        if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // uint8_t jointId;
+        // if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        float angle;
-        if (reader.read(angle) != Status::Ok)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // float angle;
+        // if (reader.read(angle) != Status::Ok)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        // Robot::GetInstance().getDecisionLoop().askJointAngle((::Joint::Id) jointId, angle);
-        ctx.respond(ResponseStatus::Ok);
+        // // Robot::GetInstance().getDecisionLoop().askJointAngle((::Joint::Id) jointId, angle);
+        // ctx.respond(ResponseStatus::Ok);
     }
 
     /** <API_REF>
@@ -133,22 +133,22 @@ namespace Joint
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        uint8_t jointId;
-        if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // uint8_t jointId;
+        // if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
         
-        ::Joint* joint = ::Joint::GetJoint((::Joint::Id) jointId);
-        if (joint == nullptr)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // ::Joint* joint = ::Joint::GetJoint((::Joint::Id) jointId);
+        // if (joint == nullptr)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        float targetAngle = Robot::GetInstance().getDecisionLoop().getRobotState().joints[(int) jointId].target_angle_rad;
-        ctx.respond(ResponseStatus::Ok, (uint8_t*) &targetAngle, sizeof(targetAngle));
+        // float targetAngle = Robot::GetInstance().getDecisionLoop().getRobotState().joints[(int) jointId].target_angle_rad;
+        // ctx.respond(ResponseStatus::Ok, (uint8_t*) &targetAngle, sizeof(targetAngle));
     }
 
     /** <API_REF>
@@ -163,15 +163,15 @@ namespace Joint
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        uint8_t jointId;
-        if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // uint8_t jointId;
+        // if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        float feedbackAngle = Robot::GetInstance().getDecisionLoop().getRobotState().joints[(int) jointId].feedback_angle_rad;
-        ctx.respond(ResponseStatus::Ok, (uint8_t*) &feedbackAngle, sizeof(feedbackAngle));
+        // float feedbackAngle = Robot::GetInstance().getDecisionLoop().getRobotState().joints[(int) jointId].feedback_angle_rad;
+        // ctx.respond(ResponseStatus::Ok, (uint8_t*) &feedbackAngle, sizeof(feedbackAngle));
     }
 
     /** <API_REF>
@@ -186,22 +186,22 @@ namespace Joint
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        uint8_t jointId;
-        if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // uint8_t jointId;
+        // if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::Joint* joint = ::Joint::GetJoint((::Joint::Id) jointId);
-        if (joint == nullptr)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // ::Joint* joint = ::Joint::GetJoint((::Joint::Id) jointId);
+        // if (joint == nullptr)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        float modelAngle = Robot::GetInstance().getDecisionLoop().getRobotState().joints[(int) jointId].model_angle_rad;
-        ctx.respond(ResponseStatus::Ok, (uint8_t*) &modelAngle, sizeof(modelAngle));
+        // float modelAngle = Robot::GetInstance().getDecisionLoop().getRobotState().joints[(int) jointId].model_angle_rad;
+        // ctx.respond(ResponseStatus::Ok, (uint8_t*) &modelAngle, sizeof(modelAngle));
     }
 
     /** <API_REF>
@@ -216,22 +216,22 @@ namespace Joint
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        uint8_t jointId;
-        if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // uint8_t jointId;
+        // if (reader.read(jointId) != Status::Ok || jointId >= (int) ::Joint::Id::Count)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        ::Joint* joint = ::Joint::GetJoint((::Joint::Id) jointId);
-        if (joint == nullptr)
-        {
-            ctx.respond(ResponseStatus::InvalidParameters);
-            return;
-        }
+        // ::Joint* joint = ::Joint::GetJoint((::Joint::Id) jointId);
+        // if (joint == nullptr)
+        // {
+        //     ctx.respond(ResponseStatus::InvalidParameters);
+        //     return;
+        // }
 
-        float estimatedAngle = Robot::GetInstance().getDecisionLoop().getRobotState().joints[(int) jointId].estimated_angle_rad;
-        ctx.respond(ResponseStatus::Ok, (uint8_t*) &estimatedAngle, sizeof(estimatedAngle));
+        // float estimatedAngle = Robot::GetInstance().getDecisionLoop().getRobotState().joints[(int) jointId].estimated_angle_rad;
+        // ctx.respond(ResponseStatus::Ok, (uint8_t*) &estimatedAngle, sizeof(estimatedAngle));
     }
 
     /** <API_REF>
@@ -245,15 +245,15 @@ namespace Joint
     {
         BinaryReader reader(payload, ctx.expected_len);
 
-        float angles[14];
-        for (int i = 0; i < 14; i++)
-        {
-            if (reader.read(angles[i]) != Status::Ok)
-            {
-                ctx.respond(ResponseStatus::InvalidParameters);
-                return;
-            }
-        }
+        // float angles[14];
+        // for (int i = 0; i < 14; i++)
+        // {
+        //     if (reader.read(angles[i]) != Status::Ok)
+        //     {
+        //         ctx.respond(ResponseStatus::InvalidParameters);
+        //         return;
+        //     }
+        // }
 
         // for (int i = 0; i < 14; i++)
         // {
@@ -263,7 +263,7 @@ namespace Joint
         //         return;
         //     }
         // }
-        ctx.respond(ResponseStatus::Ok);
+        // ctx.respond(ResponseStatus::Ok);
     }
 
     /** <API_REF>
@@ -275,12 +275,12 @@ namespace Joint
      */
     static void GetJointAngles(const RequestContext& ctx, const uint8_t* payload)
     {
-        float angles[14];
-        for (int i = 0; i < 14; i++)
-        {
-            angles[i] = Robot::GetInstance().getDecisionLoop().getRobotState().joints[i].feedback_angle_rad;
-        }
-        ctx.respond(ResponseStatus::Ok, (uint8_t*) angles, sizeof(angles));
+        // float angles[14];
+        // for (int i = 0; i < 14; i++)
+        // {
+        //     angles[i] = Robot::GetInstance().getDecisionLoop().getRobotState().joints[i].feedback_angle_rad;
+        // }
+        // ctx.respond(ResponseStatus::Ok, (uint8_t*) angles, sizeof(angles));
     }
 
 

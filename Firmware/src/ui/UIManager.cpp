@@ -4,6 +4,9 @@
 #include "common/Log.hpp"
 #include "settings/Settings.hpp"
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
 UIManager::UIManager()
 {
 
@@ -25,6 +28,8 @@ Status UIManager::init()
         }
     }
 
+    LOG_INFO(TAG, "Marge minimale de pile avant caméra: %u octets", (unsigned)uxTaskGetStackHighWaterMark(nullptr));
+
     if (Status err = camera.init(); err == Status::Ok)
     {
         if (Status err = camera.start(); err != Status::Ok)
@@ -41,9 +46,6 @@ Status UIManager::init()
         LOG_DEBUG(TAG, "Camera init failed. Error : 0x%0x", err);
     }
     
-    // Display splash screen
-    Menus::SetCurrentMenu(Menus::GetMenuSplash());
-
     return Status::Ok;
 }
 

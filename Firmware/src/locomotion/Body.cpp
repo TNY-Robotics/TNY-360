@@ -1,51 +1,53 @@
 #include "locomotion/Body.hpp"
-#include "common/config.hpp"
-#include "common/Log.hpp"
-#include "drivers/PowerDriver.hpp"
-#include "common/RPC.hpp"
-#include "locomotion/IPC.hpp"
 #include "locomotion/providers/MPDeterministic.hpp"
 #include "locomotion/providers/MPAnimation.hpp"
 #include "locomotion/providers/MPAnimation/Animations.hpp"
+#include "drivers/PowerDriver.hpp"
+#include "settings/Settings.hpp"
+#include "locomotion/IPC.hpp"
+#include "common/config.hpp"
+#include "common/Log.hpp"
 #include "common/RPC.hpp"
 #include "Robot.hpp"
 
 Body::Body()
 {
-    // Create the 4 legs
-    legs[static_cast<size_t>(Leg::Id::FrontLeft)] = Leg(
-        Joint(Joint::Id::FrontLeftHipRoll, MotorController( 2,  0), DEG_TO_RAD( -45.0f), DEG_TO_RAD( 45.0f), false),  // Hip Roll
-        Joint(Joint::Id::FrontLeftHipPitch, MotorController( 3,  1), DEG_TO_RAD(-135.0f), DEG_TO_RAD( 45.0f), true ),  // Hip Pitch
-        Joint(Joint::Id::FrontLeftKneePitch, MotorController( 4,  2), DEG_TO_RAD(   0.0f), DEG_TO_RAD(150.0f), false),  // Knee Pitch
-        3, true
-    );
-    legs[static_cast<size_t>(Leg::Id::BackLeft)] = Leg(
-        Joint(Joint::Id::BackLeftHipRoll, MotorController( 5,  4), DEG_TO_RAD( -45.0f), DEG_TO_RAD( 45.0f), true ),  // Hip Roll
-        Joint(Joint::Id::BackLeftHipPitch, MotorController( 6,  5), DEG_TO_RAD(-135.0f), DEG_TO_RAD( 45.0f), true ),  // Hip Pitch
-        Joint(Joint::Id::BackLeftKneePitch, MotorController( 7,  6), DEG_TO_RAD(   0.0f), DEG_TO_RAD(150.0f), false),  // Knee Pitch
-        7, true
-    );
-    legs[static_cast<size_t>(Leg::Id::BackRight)] = Leg(
-        Joint(Joint::Id::BackRightHipRoll, MotorController( 8,  8), DEG_TO_RAD( -45.0f), DEG_TO_RAD( 45.0f), false),  // Hip Roll
-        Joint(Joint::Id::BackRightHipPitch, MotorController( 9,  9), DEG_TO_RAD(-135.0f), DEG_TO_RAD( 45.0f), false),  // Hip Pitch
-        Joint(Joint::Id::BackRightKneePitch, MotorController(10,  10), DEG_TO_RAD(   0.0f), DEG_TO_RAD(150.0f), true ),  // Knee Pitch
-        11, false
-    );
-    legs[static_cast<size_t>(Leg::Id::FrontRight)] = Leg(
-        Joint(Joint::Id::FrontRightHipRoll, MotorController(11, 12), DEG_TO_RAD( -45.0f), DEG_TO_RAD( 45.0f), true ),  // Hip Roll
-        Joint(Joint::Id::FrontRightHipPitch, MotorController(12, 13), DEG_TO_RAD(-135.0f), DEG_TO_RAD( 45.0f), false),  // Hip Pitch
-        Joint(Joint::Id::FrontRightKneePitch, MotorController(13, 14), DEG_TO_RAD(   0.0f), DEG_TO_RAD(150.0f), true ),  // Knee Pitch
-        15, false
-    );
-
-    // Create the ears (default calib is for MG996R, using SG90 for ears)
-    ear_r = Joint(Joint::Id::EarRight, MotorController(0, 0, MotorController::MOTOR_ATTR_SG90), DEG_TO_RAD(0.0f), DEG_TO_RAD(180.0f), false, false);
-    ear_l = Joint(Joint::Id::EarLeft, MotorController(1, 0, MotorController::MOTOR_ATTR_SG90), DEG_TO_RAD(0.0f), DEG_TO_RAD(180.0f), true, false);
 }
 
 Status Body::init()
 {
-    LOG_SCOPE(TAG, "Body::Init");
+    // Create the 4 legs
+    legs[static_cast<size_t>(Leg::Id::FrontLeft)] = Leg(
+        Joint(Joint::Id::FrontLeftHipRoll, Settings::GetConfig().body.leg_fl.hip_roll),      // Hip Roll
+        Joint(Joint::Id::FrontLeftHipPitch, Settings::GetConfig().body.leg_fl.hip_pitch),    // Hip Pitch
+        Joint(Joint::Id::FrontLeftKneePitch, Settings::GetConfig().body.leg_fl.knee_pitch),  // Knee Pitch
+        Settings::GetConfig().body.leg_fl.contact_sensor_index,
+        Settings::GetConfig().body.leg_fl.has_y_inverted
+    );
+    legs[static_cast<size_t>(Leg::Id::BackLeft)] = Leg(
+        Joint(Joint::Id::BackLeftHipRoll, Settings::GetConfig().body.leg_bl.hip_roll),       // Hip Roll
+        Joint(Joint::Id::BackLeftHipPitch, Settings::GetConfig().body.leg_bl.hip_pitch),     // Hip Pitch
+        Joint(Joint::Id::BackLeftKneePitch, Settings::GetConfig().body.leg_bl.knee_pitch),   // Knee Pitch
+        Settings::GetConfig().body.leg_bl.contact_sensor_index,
+        Settings::GetConfig().body.leg_bl.has_y_inverted
+    );
+    legs[static_cast<size_t>(Leg::Id::BackRight)] = Leg(
+        Joint(Joint::Id::BackRightHipRoll, Settings::GetConfig().body.leg_br.hip_roll),      // Hip Roll
+        Joint(Joint::Id::BackRightHipPitch, Settings::GetConfig().body.leg_br.hip_pitch),    // Hip Pitch
+        Joint(Joint::Id::BackRightKneePitch, Settings::GetConfig().body.leg_br.knee_pitch),  // Knee Pitch
+        Settings::GetConfig().body.leg_br.contact_sensor_index,
+        Settings::GetConfig().body.leg_br.has_y_inverted
+    );
+    legs[static_cast<size_t>(Leg::Id::FrontRight)] = Leg(
+        Joint(Joint::Id::FrontRightHipRoll, Settings::GetConfig().body.leg_fr.hip_roll),     // Hip Roll
+        Joint(Joint::Id::FrontRightHipPitch, Settings::GetConfig().body.leg_fr.hip_pitch),   // Hip Pitch
+        Joint(Joint::Id::FrontRightKneePitch, Settings::GetConfig().body.leg_fr.knee_pitch), // Knee Pitch
+        Settings::GetConfig().body.leg_fr.contact_sensor_index,
+        Settings::GetConfig().body.leg_fr.has_y_inverted
+    );
+    // Create the ears
+    ear_r = Joint(Joint::Id::EarRight, Settings::GetConfig().body.ear_r);
+    ear_l = Joint(Joint::Id::EarLeft, Settings::GetConfig().body.ear_l);
 
     // Initialize the legs
     for (size_t i = 0; i < static_cast<size_t>(Leg::Id::Count); i++)

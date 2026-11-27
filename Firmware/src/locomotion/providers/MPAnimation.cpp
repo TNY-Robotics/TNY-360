@@ -30,7 +30,7 @@ Status MPAnimation::onReset()
         for (int j = 0; j < 3; ++j)
         {
             Joint& joint = Robot::GetInstance().getBody().getLeg(static_cast<Leg::Id>(i)).getJoint(static_cast<Leg::JointId>(j));
-            joint.getFeedback(feedbackSnapshot.jointState.leg_joints[i].joint_angles_rad[j]);
+            feedbackSnapshot.jointState.leg_joints[i].joint_angles_rad[j] = joint.getCurrentAngle();
         }
     }
 

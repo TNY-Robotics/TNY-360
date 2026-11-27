@@ -80,8 +80,6 @@ namespace AnalogDriver
 
     Status Init()
     {
-        LOG_SCOPE(TAG, "AnalogDriver::Init");
-
         if (initialized) return Status::Ok;
 
         gpio_select_1 = static_cast<gpio_num_t>(Settings::GetConfig().analog.gpio_select_1);
@@ -129,14 +127,7 @@ namespace AnalogDriver
             Error::RegisterErrorEvent(ErrorEventOneshotConfigFailed(err));
             return Status::Unknown;
         }
-
-        // configure calibration handle
-        // adc_cali_curve_fitting_config_t cali_config = {
-        //     .unit_id = ADC_UNIT_1,
-        //     .chan = ADC_CHANNEL_1,
-        //     .atten = ADC_ATTEN_DB_12,
-        //     .bitwidth = ADC_BITWIDTH_DEFAULT,
-        // };
+        
         adc_cali_curve_fitting_config_t cali_config = {
             .unit_id = ADC_UNIT_1,
             .chan = channel,

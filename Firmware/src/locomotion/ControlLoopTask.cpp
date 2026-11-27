@@ -71,10 +71,8 @@ Status ControlLoop::control_task()
         Joint::Id joint_id = static_cast<Joint::Id>(i);
         Joint* joint = Joint::GetJoint(joint_id);
         if (joint == nullptr) continue;
-        joint->getTarget(state.joints[i].target_angle_rad);
-        joint->getFeedback(state.joints[i].feedback_angle_rad);
-        joint->getPrediction(state.joints[i].model_angle_rad);
-        joint->getPosition(state.joints[i].estimated_angle_rad);
+        state.joints[i].target_angle_rad = joint->getTargetAngle();
+        state.joints[i].current_angle_rad = joint->getCurrentAngle();
     }
     for (int i = 0; i < (int) Leg::Id::Count; i++)
     {
