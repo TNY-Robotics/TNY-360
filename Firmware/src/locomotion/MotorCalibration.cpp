@@ -109,7 +109,7 @@ namespace MotorCalibration
             return Status::Ok;
         }
 
-        Status run_calibration_sequence(CalibrationData& calibration_data, MotorDriver::Channel motor_channel, AnalogDriver::Channel analog_channel)
+        Status run_calibration_sequence(CalibrationData& calibration_data, const Joint& joint)
         {
             MotorDriver::Value dc_center = (DC_MIN + DC_MAX) / 2.0f;
 
@@ -120,8 +120,11 @@ namespace MotorCalibration
             BoundDescription min_bound;
             BoundDescription max_bound;
 
-            LOG_SCOPE(TAG, "Starting Motor Calibration [motor_channel=%d, analog_channel=%d]", motor_channel, analog_channel);
+            LOG_SCOPE(TAG, "Starting Motor Calibration [joint_id=%d]", joint.getId());
             current_calibration_state.progress = 0.0f;
+
+            MotorDriver::Channel motor_channel = (MotorDriver::Channel)joint.getConfig().motor_driver_index;
+            AnalogDriver::Channel analog_channel = (AnalogDriver::Channel)joint.getConfig().analog_reader_index;
 
             // Disable all motors
             LOG_DEBUG(TAG, "Disabling all motors");
@@ -145,74 +148,77 @@ namespace MotorCalibration
             }
             internal::current_calibration_state.progress = 0.2f;
 
-            // Get motor feedback noise
-            LOG_DEBUG(TAG, "Getting feedback noise");
+            if (joint.getConfig().has_feedback)
             {
-                FeedbackNoiseParams params;
-                if (Status err = get_feedback_noise(params, analog_channel, noise_v); err != Status::Ok)
+                // Get motor feedback noise
+                LOG_DEBUG(TAG, "Getting feedback noise");
                 {
-                    // LOG_ERROR(TAG, "Feedback noise detection failed with error [%s]", ErrorToString(err));
-                    return Status::Unknown;
-                }
-                LOG_DEBUG(TAG, "==> Feedback noise is %.3f V", noise_v);
-            }
-            internal::current_calibration_state.progress = 0.3f;
-
-            // Check feedback inversion
-            LOG_DEBUG(TAG, "Checking feedback inversion");
-            {
-                FeedbackInversionParams params;
-                params.dc_center = dc_center;
-                params.dc_delta = 0.2;
-                params.fb_noise = noise_v;
-                if (Status err = check_feedback_inversion(params, motor_channel, analog_channel, fb_inverted); err != Status::Ok)
-                {
-                    // LOG_ERROR(TAG, "Feedback invertion detection failed with error [%s]", ErrorToString(err));
-                    return Status::Unknown;
-                }
-                LOG_DEBUG(TAG, "==> Feedback inverted : %s", fb_inverted? "true": "false");
-            }
-            internal::current_calibration_state.progress = 0.4f;
-
-            // Test feedback latency
-            LOG_DEBUG(TAG, "Estimating feedback latency");
-            {
-                FeedbackLatencyParams params;
-                params.dc_center = dc_center;
-                params.dc_delta = 0.2;
-                params.fb_noise = noise_v;
-                params.nb_samples = 6;
-                params.nb_subsamples = 20;
-                if (Status err = get_feedback_latency(params, motor_channel, analog_channel, fb_latency_ms); err != Status::Ok)
-                {
-                    // LOG_ERROR(TAG, "Feedback latency estimation failed with error [%s]", ErrorToString(err));
-                    return Status::Unknown;
-                }
-                LOG_DEBUG(TAG, "==> Feedback latency : %.1f ms", fb_latency_ms);
-            }
-            internal::current_calibration_state.progress = 0.5f;
-
-            // Test deadband size
-            LOG_DEBUG(TAG, "Testing deadband size");
-            {
-                if  (noise_v > 0.01f) // If noise > 10mV, hardcode deadband because we won't be able to detect it properly
-                {
-                    LOG_WARNING(TAG, "Feedback noise is quite high (%.3f V > 10mV). Hardcoding deadband size of around 1 degree", noise_v);
-                    db_size = 0.01; // around 1 degree, which is a common value for servomotors.
-                }
-                else
-                {
-                    DeadbandSizeParams params;
-                    params.dc_center = dc_center;
-                    params.max_dc = 2.0;
-                    params.fb_noise = noise_v;
-                    if (Status err = get_deadband_size(params, motor_channel, analog_channel, db_size); err != Status::Ok)
+                    FeedbackNoiseParams params;
+                    if (Status err = get_feedback_noise(params, analog_channel, noise_v); err != Status::Ok)
                     {
-                        // LOG_ERROR(TAG, "Deadband size estimation failed with error [%s]", ErrorToString(err));
+                        // LOG_ERROR(TAG, "Feedback noise detection failed with error [%s]", ErrorToString(err));
                         return Status::Unknown;
                     }
+                    LOG_DEBUG(TAG, "==> Feedback noise is %.3f V", noise_v);
                 }
-                LOG_DEBUG(TAG, "==> Deadband size : %.2f ms (%.2f deg)", db_size, db_size * 90.f);
+                internal::current_calibration_state.progress = 0.3f;
+
+                // Check feedback inversion
+                LOG_DEBUG(TAG, "Checking feedback inversion");
+                {
+                    FeedbackInversionParams params;
+                    params.dc_center = dc_center;
+                    params.dc_delta = 0.2;
+                    params.fb_noise = noise_v;
+                    if (Status err = check_feedback_inversion(params, motor_channel, analog_channel, fb_inverted); err != Status::Ok)
+                    {
+                        // LOG_ERROR(TAG, "Feedback invertion detection failed with error [%s]", ErrorToString(err));
+                        return Status::Unknown;
+                    }
+                    LOG_DEBUG(TAG, "==> Feedback inverted : %s", fb_inverted? "true": "false");
+                }
+                internal::current_calibration_state.progress = 0.4f;
+
+                // Test feedback latency
+                LOG_DEBUG(TAG, "Estimating feedback latency");
+                {
+                    FeedbackLatencyParams params;
+                    params.dc_center = dc_center;
+                    params.dc_delta = 0.2;
+                    params.fb_noise = noise_v;
+                    params.nb_samples = 6;
+                    params.nb_subsamples = 20;
+                    if (Status err = get_feedback_latency(params, motor_channel, analog_channel, fb_latency_ms); err != Status::Ok)
+                    {
+                        // LOG_ERROR(TAG, "Feedback latency estimation failed with error [%s]", ErrorToString(err));
+                        return Status::Unknown;
+                    }
+                    LOG_DEBUG(TAG, "==> Feedback latency : %.1f ms", fb_latency_ms);
+                }
+                internal::current_calibration_state.progress = 0.5f;
+
+                // Test deadband size
+                LOG_DEBUG(TAG, "Testing deadband size");
+                {
+                    if  (noise_v > 0.01f) // If noise > 10mV, hardcode deadband because we won't be able to detect it properly
+                    {
+                        LOG_WARNING(TAG, "Feedback noise is quite high (%.3f V > 10mV). Hardcoding deadband size of around 1 degree", noise_v);
+                        db_size = 0.01; // around 1 degree, which is a common value for servomotors.
+                    }
+                    else
+                    {
+                        DeadbandSizeParams params;
+                        params.dc_center = dc_center;
+                        params.max_dc = 2.0;
+                        params.fb_noise = noise_v;
+                        if (Status err = get_deadband_size(params, motor_channel, analog_channel, db_size); err != Status::Ok)
+                        {
+                            // LOG_ERROR(TAG, "Deadband size estimation failed with error [%s]", ErrorToString(err));
+                            return Status::Unknown;
+                        }
+                    }
+                    LOG_DEBUG(TAG, "==> Deadband size : %.2f ms (%.2f deg)", db_size, db_size * 90.f);
+                }
             }
             internal::current_calibration_state.progress = 0.6f;
 
@@ -273,12 +279,12 @@ namespace MotorCalibration
             {
                 calibration_data.dc_min = min_bound.dc_value;
                 calibration_data.dc_max = max_bound.dc_value;
-                calibration_data.dc_deadband = db_size;
-                calibration_data.fb_min = min_bound.fb_value;
-                calibration_data.fb_max = max_bound.fb_value;
-                calibration_data.fb_noise = noise_v;
-                calibration_data.fb_inverted = fb_inverted;
-                calibration_data.fb_latency_ms = fb_latency_ms;
+                calibration_data.dc_deadband = joint.getConfig().has_feedback? db_size : 0.f;
+                calibration_data.fb_min = joint.getConfig().has_feedback? min_bound.fb_value : 0.f;
+                calibration_data.fb_max = joint.getConfig().has_feedback? max_bound.fb_value : 0.f;
+                calibration_data.fb_noise = joint.getConfig().has_feedback? noise_v : 0.f;
+                calibration_data.fb_inverted = joint.getConfig().has_feedback? fb_inverted : false;
+                calibration_data.fb_latency_ms = joint.getConfig().has_feedback? fb_latency_ms : 0.f;
                 calibration_data.max_speed = 6.0f; // TODO: implement max speed estimation
             }
             internal::current_calibration_state.progress = 1.0f;
@@ -340,13 +346,20 @@ namespace MotorCalibration
     {
         if (!internal::initialized) return Status::InvalidState;
         if (joint_id >= Joint::Id::Count) return Status::InvalidParameters;
-        if (internal::calibration_task_handle) return Status::InvalidState; // Calibration already running
+        if (internal::calibration_task_handle || internal::current_calibration_state.running)
+            return Status::InvalidState; // Calibration already running
 
         Joint* joint_ptr = Joint::GetJoint(joint_id);
         if (!joint_ptr)
         {
             LOG_ERROR(TAG, "Failed to get joint pointer for joint [%d]. Cannot start calibration.", (int)joint_id);
             return Status::NotFound;
+        }
+
+        if (!joint_ptr->getConfig().has_mechanical_stops)
+        {
+            LOG_ERROR(TAG, "Joint [%d] does not have mechanical stops. Calibration isn't available.", (int)joint_id);
+            return Status::Failure;
         }
         
         LOG_INFO(TAG, "Starting motor calibration");
@@ -357,24 +370,24 @@ namespace MotorCalibration
             Joint::Id* joint_id_ptr = (Joint::Id*)param;
             Joint::Id joint_id = *joint_id_ptr;
             Joint* joint_ptr = Joint::GetJoint(joint_id);
+            
+            ControlLoop& ctrl = Robot::GetInstance().getControlLoop();
+            bool wasRunning = ctrl.isRunning();
+
             if (!joint_ptr)
             {
                 LOG_ERROR(TAG, "Failed to get joint pointer for joint [%d]. Cannot start calibration.", (int)joint_id);
-                internal::current_calibration_state.running = false;
-                return;
+                goto task_cleanup;
             }
 
             // Stop the control loop and take over for the calibration
-            ControlLoop& ctrl = Robot::GetInstance().getControlLoop();
-            bool wasRunning = ctrl.isRunning();
             if (wasRunning)
             {
                 LOG_DEBUG(TAG, "Disabling control loop");
                 if (Status err = ctrl.stop(); err != Status::Ok)
                 {
                     LOG_ERROR(TAG, "Failed to stop control loop for motor calibration. Error [%s]", StatusToString(err));
-                    internal::current_calibration_state.running = false;
-                    return;
+                    goto task_cleanup;
                 }
             }
 
@@ -385,47 +398,46 @@ namespace MotorCalibration
                 if (joint) joint->disable();
             }
 
-            MotorCalibration::CalibrationState& calib_state = internal::current_calibration_state;
-            calib_state.joint_id = joint_id;
-            calib_state.progress = 0.0f;
-            calib_state.has_error = false;
-            calib_state.error_id = 0;
-
-            // Local copy of the current calibration
-            CalibrationData calib_data = internal::calibration_data_registry[(int)joint_id];
-            Status err = internal::run_calibration_sequence(
-                calib_data,
-                (MotorDriver::Channel)joint_ptr->getConfig().motor_driver_index,
-                (AnalogDriver::Channel)joint_ptr->getConfig().analog_reader_index
-            );
-
-            // Disable motor for safety
-            joint_ptr->disable(); // don't care about return value or error here
-
-            if (err != Status::Ok)
             {
-                LOG_ERROR(TAG, "Motor calibration failed with error [%s]", StatusToString(err));
-                Error::RegisterErrorEvent(ErrorEventMotorCalibrationFailed(joint_ptr->getConfig().motor_driver_index, joint_ptr->getConfig().analog_reader_index));
-                calib_state.has_error = true;
-                calib_state.error_id = Error::GetErrorEventByIndex(0).eventId;
-                internal::calibration_state_registry[(int)joint_id] = JointCalibrationState::ERROR;
-            }
-            else
-            {
-                LOG_INFO(TAG, "Motor calibrated, saving calibration data");
+                MotorCalibration::CalibrationState& calib_state = internal::current_calibration_state;
+                calib_state.joint_id = joint_id;
+                calib_state.progress = 0.0f;
+                calib_state.has_error = false;
+                calib_state.error_id = 0;
 
-                // Save the calibration data to NVS
-                internal::calibration_data_registry[(int)joint_id] = calib_data;
-                if (Status err = internal::save_calibration_data(joint_id); err != Status::Ok)
+                // Local copy of the current calibration
+                CalibrationData calib_data = internal::calibration_data_registry[(int)joint_id];
+                Status err = internal::run_calibration_sequence(calib_data, *joint_ptr);
+
+                // Disable motor for safety
+                joint_ptr->disable(); // don't care about return value or error here
+
+                if (err != Status::Ok)
                 {
-                    LOG_ERROR(TAG, "Failed to save calibration data to NVS. Error [%s]", StatusToString(err));
+                    LOG_ERROR(TAG, "Motor calibration failed with error [%s]", StatusToString(err));
+                    Error::RegisterErrorEvent(ErrorEventMotorCalibrationFailed(joint_ptr->getConfig().motor_driver_index, joint_ptr->getConfig().analog_reader_index));
+                    calib_state.has_error = true;
+                    calib_state.error_id = Error::GetErrorEventByIndex(0).eventId;
                     internal::calibration_state_registry[(int)joint_id] = JointCalibrationState::ERROR;
-                    // TODO : as_error + error event trigger
+                    goto task_cleanup;
                 }
                 else
                 {
-                    internal::calibration_state_registry[(int)joint_id] = JointCalibrationState::CALIBRATED;
-                    LOG_INFO(TAG, "Motor calibration completed successfully");
+                    LOG_INFO(TAG, "Motor calibrated, saving calibration data");
+
+                    // Save the calibration data to NVS
+                    internal::calibration_data_registry[(int)joint_id] = calib_data;
+                    if (Status err = internal::save_calibration_data(joint_id); err != Status::Ok)
+                    {
+                        LOG_ERROR(TAG, "Failed to save calibration data to NVS. Error [%s]", StatusToString(err));
+                        internal::calibration_state_registry[(int)joint_id] = JointCalibrationState::ERROR;
+                        // TODO : as_error + error event trigger
+                    }
+                    else
+                    {
+                        internal::calibration_state_registry[(int)joint_id] = JointCalibrationState::CALIBRATED;
+                        LOG_INFO(TAG, "Motor calibration completed successfully");
+                    }
                 }
             }
 
@@ -436,14 +448,14 @@ namespace MotorCalibration
                 if (Status err = Robot::GetInstance().getControlLoop().start(); err != Status::Ok)
                 {
                     LOG_ERROR(TAG, "Failed to start control loop after motor calibration. Error [%s]", StatusToString(err));
-                    internal::current_calibration_state.running = false;
-                    return;
+                    goto task_cleanup;
                 }
             }
 
+task_cleanup:
             // clean up task
-            internal::current_calibration_state.running = false;
             internal::calibration_task_handle = nullptr;
+            internal::current_calibration_state.running = false;
             delete joint_id_ptr; // free the allocated memory for joint_id
             vTaskDelete(nullptr);
         }, "MotorCalib", 4096, joint_id_ptr, tskIDLE_PRIORITY + 1, &internal::calibration_task_handle, CORE_BRAIN);
@@ -452,6 +464,8 @@ namespace MotorCalibration
         {
             LOG_ERROR(TAG, "Failed to create calibration task");
             internal::current_calibration_state.running = false;
+            internal::calibration_task_handle = nullptr;
+            delete joint_id_ptr;
             return Status::NoMemory;
         }
 
@@ -471,10 +485,12 @@ namespace MotorCalibration
         vTaskDelete(internal::calibration_task_handle);
         internal::calibration_task_handle = nullptr;
 
-        // Disable the motor for safety
-        Joint::Id joint_id = internal::current_calibration_state.joint_id;
-        Joint* joint_ptr = Joint::GetJoint(joint_id);
-        if (joint_ptr) joint_ptr->disable();
+        // Disable all the motors for safety
+        for (int i = 0; i < (int)Joint::Id::Count; i++)
+        {
+            Joint* joint = Joint::GetJoint((Joint::Id)i);
+            if (joint) joint->disable();
+        }
 
         internal::current_calibration_state.running = false;
         internal::current_calibration_state.progress = 0.0f;
