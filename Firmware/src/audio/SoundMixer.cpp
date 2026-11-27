@@ -57,6 +57,7 @@ Status SoundMixer::deinit()
             providers[i] = nullptr;
         }
     }
+    // NOTE : we don't delete the speaker, as we don't own it
     return Status::Ok;
 }
 
@@ -149,6 +150,6 @@ void SoundMixer::__internal_task(void* pvParams)
             delete providers[i];
         }
     }
-    delete speaker;
+    // NOTE : we don't delete the speaker, as we don't own it
     vTaskDelete(nullptr);
 }

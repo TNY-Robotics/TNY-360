@@ -8,10 +8,12 @@
 #include "audio/SpeakerPDM.hpp"
 #include "audio/SpeakerI2S.hpp"
 #include "audio/SoundMixer.hpp"
+#include "audio/Microphone.hpp"
 #include "drivers/CameraDriver.hpp"
 #include "drivers/PowerDriver.hpp"
 #include "drivers/MotorDriver.hpp"
 #include "drivers/AnalogDriver.hpp"
+#include "locomotion/IMU.hpp"
 
 namespace Diagnostic
 {
@@ -134,7 +136,8 @@ namespace Diagnostic
         uint8_t LED()
         {
             check_begin();
-            // if (Status err = ::LED::Init(); err != Status::Ok) return check_end();
+            if (Status err = ::LED::Init(); err != Status::Ok) return check_end();
+            // Don't deinit, if something fails bad, we want to keep the LED on for debugging
             // if (Status err = ::LED::Deinit(); err != Status::Ok) return check_end();
             return check_end();
         }
@@ -142,7 +145,8 @@ namespace Diagnostic
         uint8_t I2C()
         {
             check_begin();
-            // if (Status status = ::I2C::Init(); status != Status::Ok) return check_end();
+            if (Status status = ::I2C::Init(); status != Status::Ok) return check_end();
+            // Dont try to deinit, as we are using I2C for the screen and other peripherals
             // if (Status status = ::I2C::Deinit(); status != Status::Ok) return check_end();
             return check_end();
         }
@@ -150,34 +154,45 @@ namespace Diagnostic
         uint8_t Speaker()
         {
             check_begin();
-            // ::Speaker* s = ::Speaker::Create();
-            // if (s == nullptr)
-            // {
-            //     LOG_ERROR(TAG, "Speaker creation returned null");
-            //     return check_end();
-            // }
+            ::Speaker* s = ::Speaker::Create();
+            if (s == nullptr)
+            {
+                LOG_ERROR(TAG, "Speaker creation returned null");
+                return check_end();
+            }
 
-            // ::SoundMixer mixer;
-            // if (Status err = s->init(); err != Status::Ok) return check_end();
-            // if (Status err = mixer.init(s); err != Status::Ok) return check_end();
-            // if (Status err = mixer.deinit(); err != Status::Ok) return check_end();
-            // if (Status err = s->deinit(); err != Status::Ok) return check_end();
+            {
+                ::SoundMixer mixer;
+                if (Status err = s->init(); err != Status::Ok)      { delete s; return check_end(); }
+                if (Status err = mixer.init(s); err != Status::Ok)  { delete s; return check_end(); }
+                if (Status err = mixer.deinit(); err != Status::Ok) { delete s; return check_end(); }
+                if (Status err = s->deinit(); err != Status::Ok)    { delete s; return check_end(); }
+            }
+            delete s;
             return check_end();
         }
 
         uint8_t Microphone()
         {
             check_begin();
-            // TODO
+            ::Microphone* mic = ::Microphone::Create();
+            if (mic == nullptr)
+            {
+                LOG_ERROR(TAG, "Microphone creation returned null");
+                return check_end();
+            }
+            if (Status err = mic->init(); err != Status::Ok) { delete mic; return check_end(); }
+            if (Status err = mic->deinit(); err != Status::Ok) { delete mic; return check_end(); }
+            delete mic;
             return check_end();
         }
 
         uint8_t Camera()
         {
             check_begin();
-            // ::CameraDriver cam;
-            // if (Status err = cam.init(); err != Status::Ok) return check_end();
-            // if (Status err = cam.deinit(); err != Status::Ok) return check_end();
+            ::CameraDriver cam;
+            if (Status err = cam.init(); err != Status::Ok) return check_end();
+            if (Status err = cam.deinit(); err != Status::Ok) return check_end();
             return check_end();
         }
 
@@ -191,32 +206,39 @@ namespace Diagnostic
         uint8_t IMU()
         {
             check_begin();
-            // if (Status err = ::IMUDriver::Init(); err != Status::Ok) return check_end();
-            // if (Status err = ::IMUDriver::Deinit(); err != Status::Ok) return check_end();
+            ::IMU* imu = ::IMU::Create();
+            if (imu == nullptr)
+            {
+                LOG_ERROR(TAG, "IMU creation returned null");
+                return check_end();
+            }
+            if (Status err = imu->init(); err != Status::Ok)   { delete imu; return check_end(); }
+            if (Status err = imu->deinit(); err != Status::Ok) { delete imu; return check_end(); }
+            delete imu;
             return check_end();
         }
 
         uint8_t Power()
         {
             check_begin();
-            // if (Status err = ::PowerDriver::Init(); err != Status::Ok) return check_end();
-            // if (Status err = ::PowerDriver::Deinit(); err != Status::Ok) return check_end();
+            if (Status err = ::PowerDriver::Init(); err != Status::Ok) return check_end();
+            if (Status err = ::PowerDriver::Deinit(); err != Status::Ok) return check_end();
             return check_end();
         }
 
         uint8_t MotorDriver()
         {
             check_begin();
-            // if (Status err = ::MotorDriver::Init(); err != Status::Ok) return check_end();
-            // if (Status err = ::MotorDriver::Deinit(); err != Status::Ok) return check_end();
+            if (Status err = ::MotorDriver::Init(); err != Status::Ok) return check_end();
+            if (Status err = ::MotorDriver::Deinit(); err != Status::Ok) return check_end();
             return check_end();
         }
 
         uint8_t AnalogReader()
         {
             check_begin();
-            // if (Status err = ::AnalogDriver::Init(); err != Status::Ok) return check_end();
-            // if (Status err = ::AnalogDriver::Deinit(); err != Status::Ok) return check_end();
+            if (Status err = ::AnalogDriver::Init(); err != Status::Ok) return check_end();
+            if (Status err = ::AnalogDriver::Deinit(); err != Status::Ok) return check_end();
             return check_end();
         }
 

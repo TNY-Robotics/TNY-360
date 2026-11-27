@@ -46,6 +46,7 @@ Status WebSocket::init()
     config.max_uri_handlers = 8;
     config.ctrl_port = server_port + 1;
     config.max_open_sockets = 3;
+    config.stack_size = 16384; // We have some memory, use it
     // config.task_priority = tskIDLE_PRIORITY + 10;
     // config.lru_purge_enable = true;
 
